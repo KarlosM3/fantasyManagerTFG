@@ -1,0 +1,35 @@
+<div class="app-container">
+  <!-- Opcional: Header/Navbar que se muestra en todas las páginas -->
+  <header class="app-header">
+    <nav class="navbar">
+      <div class="logo">
+        <a routerLink="/"><h3>Domonios <span class="fantasy-text">Fantasy</span></h3></a>
+      </div>
+
+      <!-- Menú de navegación condicional basado en el estado de autenticación -->
+      <div class="nav-links">
+        <!-- Enlaces que se muestran solo si el usuario NO está autenticado -->
+        <ng-container *ngIf="!isLoggedIn()">
+          <a routerLink="/auth/login" routerLinkActive="active">Iniciar Sesión</a>
+          <a routerLink="/auth/register" routerLinkActive="active">Registrarse</a>
+        </ng-container>
+
+        <!-- Enlaces que se muestran solo si el usuario SÍ está autenticado -->
+        <ng-container *ngIf="isLoggedIn()">
+          <a routerLink="/admin/home" routerLinkActive="active">Dashboard</a>
+          <button class="logout-btn" (click)="logout()">Cerrar Sesión</button>
+        </ng-container>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Contenedor principal donde se cargarán los componentes según la ruta -->
+  <main class="app-content">
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- Opcional: Footer que se muestra en todas las páginas -->
+  <footer class="app-footer">
+    <p>&copy; 2025 Domonios Fantasy. Todos los derechos reservados.</p>
+  </footer>
+</div>
