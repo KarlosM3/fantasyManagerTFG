@@ -11,6 +11,7 @@ export class MarketComponent implements OnInit {
   jugadores: Player[] = [];
   jugadoresFiltrados: Player[] = [];
   filtroActual: string = 'Todos';
+  ordenActual: string = '';
   cargando: boolean = true;
   error: string | null = null;
 
@@ -27,9 +28,9 @@ export class MarketComponent implements OnInit {
     this.cargando = true;
     this.playerService.getPlayers().subscribe(
       (data) => {
-        console.log('Respuesta de la API:', data);
         if (data && Array.isArray(data)) {
-          this.jugadores = data;
+          // Filtrar jugadores que NO están fuera de liga
+          this.jugadores = data.filter(jugador => jugador.playerStatus !== 'out_of_league');
           this.jugadoresFiltrados = [...this.jugadores];
         } else {
           this.error = 'Error al cargar los datos. Formato incorrecto.';
@@ -46,22 +47,27 @@ export class MarketComponent implements OnInit {
 
   filtrarJugadores(filtro: string) {
     this.filtroActual = filtro;
+
     if (filtro === 'Todos') {
       this.jugadoresFiltrados = [...this.jugadores];
-      return;
+    } else {
+      // Mapeo de filtros a positionId
+      const positionMap: {[key: string]: string} = {
+        'Porteros': '1',
+        'Defensas': '2',
+        'Medios': '3',
+        'Delanteros': '4'
+      };
+
+      this.jugadoresFiltrados = this.jugadores.filter(jugador =>
+        jugador.positionId === positionMap[filtro]
+      );
     }
 
-    // Mapeo de filtros a positionId
-    const positionMap: {[key: string]: string} = {
-      'Porteros': '1',
-      'Defensas': '2',
-      'Medios': '3',
-      'Delanteros': '4'
-    };
-
-    this.jugadoresFiltrados = this.jugadores.filter(jugador =>
-      jugador.positionId === positionMap[filtro]
-    );
+    // Aplicar ordenación si existe
+    if (this.ordenActual) {
+      this.ordenarJugadores(this.ordenActual);
+    }
   }
 
   buscarJugador(evento: any) {
@@ -90,15 +96,29 @@ export class MarketComponent implements OnInit {
       jugador.nickname.toLowerCase().includes(termino) ||
       jugador.team.name.toLowerCase().includes(termino)
     );
+
+    // Aplicar ordenación si existe
+    if (this.ordenActual) {
+      this.ordenarJugadores(this.ordenActual);
+    }
   }
 
-  // Nuevo método para obtener la clase CSS según el estado del jugador
+  ordenarJugadores(orden: string) {
+    this.ordenActual = orden;
+
+    if (orden === 'puntosAsc') {
+      this.jugadoresFiltrados.sort((a, b) => a.points - b.points);
+    } else if (orden === 'puntosDesc') {
+      this.jugadoresFiltrados.sort((a, b) => b.points - a.points);
+    }
+  }
+
+  // Método para obtener la clase CSS según el estado del jugador
   getStatusClass(status: string): string {
     const statusMap: {[key: string]: string} = {
       'ok': 'disponible',
       'doubtful': 'duda',
-      'injured': 'lesionado',
-      'out_of_league': 'fuera-de-liga'
+      'injured': 'lesionado'
     };
     return statusMap[status] || '';
   }
@@ -107,8 +127,7 @@ export class MarketComponent implements OnInit {
     const statusMap: {[key: string]: string} = {
       'ok': 'Disponible',
       'doubtful': 'Duda',
-      'injured': 'Lesionado',
-      'out_of_league': 'Fuera de liga'
+      'injured': 'Lesionado'
     };
     return statusMap[status] || status;
   }

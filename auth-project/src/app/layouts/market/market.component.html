@@ -46,6 +46,21 @@
         </button>
       </div>
 
+      <div class="sorting-options">
+        <span class="sort-label">Ordenar por puntos:</span>
+        <button
+          [class.active]="ordenActual === 'puntosAsc'"
+          (click)="ordenarJugadores('puntosAsc')">
+          <i class="fas fa-arrow-up"></i> Menor a mayor
+        </button>
+        <button
+          [class.active]="ordenActual === 'puntosDesc'"
+          (click)="ordenarJugadores('puntosDesc')">
+          <i class="fas fa-arrow-down"></i> Mayor a menor
+        </button>
+      </div>
+
+
       <div class="players-grid">
         <div *ngFor="let jugador of jugadoresFiltrados" class="player-card">
           <div class="player-image">

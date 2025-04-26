@@ -97,6 +97,47 @@ $card-bg: #333333;
   }
 }
 
+// Opciones de ordenación
+.sorting-options {
+  display: flex;
+  align-items: center;
+  margin: 15px 0;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  .sort-label {
+    margin-right: 10px;
+    color: $text-secondary;
+    font-size: 14px;
+  }
+
+  button {
+    padding: 8px 15px;
+    background-color: $container-bg;
+    border: 1px solid $border-color;
+    border-radius: 5px;
+    color: $text-color;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+
+    i {
+      margin-right: 5px;
+    }
+
+    &:hover {
+      background-color: lighten($container-bg, 5%);
+    }
+
+    &.active {
+      background-color: $accent-color;
+      border-color: $accent-color;
+    }
+  }
+}
+
+
 // Cuadrícula de jugadores
 .players-grid {
   display: grid;
@@ -149,11 +190,6 @@ $card-bg: #333333;
 
       &.lesionado {
         background-color: #e74c3c;
-        color: white;
-      }
-
-      &.fuera-de-liga {
-        background-color: #7f8c8d;
         color: white;
       }
     }
