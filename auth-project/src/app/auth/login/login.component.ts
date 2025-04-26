@@ -42,7 +42,7 @@ export class LoginComponent {
           const emailParts = user.email.split('@');
           this.authService.setUserName(emailParts[0]);
         }
-        this.router.navigate(['/admin/home']);
+        this.router.navigate(['/layouts/home']);
       },
       error: (error) => {
         this.errorMessage = 'Error al iniciar sesión. Verifica tus credenciales.';

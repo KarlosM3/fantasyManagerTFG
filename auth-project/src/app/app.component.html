@@ -16,7 +16,7 @@
 
         <!-- Enlaces que se muestran solo si el usuario SÍ está autenticado -->
         <ng-container *ngIf="isLoggedIn()">
-          <a routerLink="/admin/home" routerLinkActive="active">Dashboard</a>
+          <a routerLink="/layouts/home" routerLinkActive="active">Dashboard</a>
           <button class="logout-btn" (click)="logout()">Cerrar Sesión</button>
         </ng-container>
       </div>

@@ -1,0 +1,89 @@
+<div class="market-container">
+
+  <div class="main-content">
+    <!-- Sidebar igual que en home -->
+    <div class="sidebar">
+      <div class="menu-item" routerLink="/layouts/home" routerLinkActive="active">Mis Ligas</div>
+      <div class="menu-item active" routerLink="/layouts/market" routerLinkActive="active">Mercado</div>
+      <div class="menu-item" routerLink="/layouts/classification" routerLinkActive="active">Clasificación</div>
+      <div class="menu-item" routerLink="/layouts/more" routerLinkActive="active">Más</div>
+    </div>
+
+    <!-- Contenido del mercado -->
+    <div class="market-content">
+      <div class="search-bar">
+        <input
+          type="text"
+          placeholder="Buscar jugador..."
+          (input)="buscarJugador($event)">
+      </div>
+
+      <div class="filters">
+        <button
+          [class.active]="filtroActual === 'Todos'"
+          (click)="filtrarJugadores('Todos')">
+          Todos
+        </button>
+        <button
+          [class.active]="filtroActual === 'Porteros'"
+          (click)="filtrarJugadores('Porteros')">
+          Porteros
+        </button>
+        <button
+          [class.active]="filtroActual === 'Defensas'"
+          (click)="filtrarJugadores('Defensas')">
+          Defensas
+        </button>
+        <button
+          [class.active]="filtroActual === 'Medios'"
+          (click)="filtrarJugadores('Medios')">
+          Medios
+        </button>
+        <button
+          [class.active]="filtroActual === 'Delanteros'"
+          (click)="filtrarJugadores('Delanteros')">
+          Delanteros
+        </button>
+      </div>
+
+      <div class="players-grid">
+        <div *ngFor="let jugador of jugadoresFiltrados" class="player-card">
+          <div class="player-image">
+            <img [src]="jugador.images.transparent['256x256']" alt="{{ jugador.nickname }}">
+            <div class="player-status" [ngClass]="getStatusClass(jugador.playerStatus)">
+              {{ getStatusText(jugador.playerStatus) }}
+            </div>
+          </div>
+          <div class="player-info">
+            <h3>{{ jugador.nickname }}</h3>
+            <div class="team-info">
+              <img [src]="jugador.team.badgeColor" alt="{{ jugador.team.name }}">
+              <span>{{ jugador.team.name }}</span>
+            </div>
+            <div class="player-stats">
+              <div class="stat-group">
+                <div class="label">Puntos:</div>
+                <div class="value">{{ jugador.points }}</div>
+              </div>
+              <div class="stat-group">
+                <div class="label">Media:</div>
+                <div class="value">{{ jugador.averagePoints | number:'1.2-2' }}</div>
+              </div>
+            </div>
+            <div class="recent-form">
+              <span *ngFor="let week of getLastFiveWeeks(jugador)"
+                    class="form-point"
+                    [ngClass]="getPointClass(week.points)">
+                {{ week.points }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="jugadoresFiltrados.length === 0" class="no-results">
+        No se encontraron jugadores con los criterios de búsqueda.
+      </div>
+    </div>
+  </div>
+</div>
