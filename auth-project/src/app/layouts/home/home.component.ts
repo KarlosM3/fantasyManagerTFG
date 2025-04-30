@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../auth/services/auth.service';
-import { LeagueService } from '../create-league-modal/services/create-league.service';
+import { LeagueService } from '../../modals/create-league-modal/services/create-league.service'; // <-- Importa el servicio
 
 @Component({
   selector: 'app-home',
