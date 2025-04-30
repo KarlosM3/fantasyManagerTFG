@@ -1,0 +1,59 @@
+<div class="modal-overlay" [class.active]="isOpen" (click)="closeModal()">
+  <div class="modal-content" (click)="stopPropagation($event)">
+    <div class="modal-header">
+      <h2>Crear Nueva Liga</h2>
+      <button type="button" class="close-btn" (click)="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="leagueForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="name">Nombre de la Liga*</label>
+          <input
+            type="text"
+            id="name"
+            formControlName="name"
+            placeholder="Ej: Liga de Amigos"
+          />
+          <div class="error-message" *ngIf="leagueForm.get('name')?.invalid && leagueForm.get('name')?.touched">
+            El nombre de la liga es obligatorio y debe tener al menos 3 caracteres.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="privacy">Tipo de Liga*</label>
+          <select id="privacy" formControlName="privacy">
+            <option value="private">Privada (solo por invitación)</option>
+            <option value="public">Pública (cualquiera puede unirse)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="maxParticipants">Número máximo de participantes</label>
+          <input
+            type="number"
+            id="maxParticipants"
+            formControlName="maxParticipants"
+            min="2"
+            max="20"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="initialBudget">Presupuesto inicial (€)</label>
+          <input
+            type="number"
+            id="initialBudget"
+            formControlName="initialBudget"
+            min="50000000"
+            max="200000000"
+          />
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="secondary-btn" (click)="closeModal()">Cancelar</button>
+          <button type="submit" class="primary-btn">Crear Liga</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

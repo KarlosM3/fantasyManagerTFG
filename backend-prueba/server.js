@@ -17,6 +17,8 @@ connectDB();
 // Rutas
 app.use('/api', require('./routes/auth.routes'));
 app.use('/api', require('./routes/players.routes'));
+app.use('/api/leagues', require('./routes/league.router'));
+
 
 // Ruta de prueba
 app.get('/', (req, res) => {

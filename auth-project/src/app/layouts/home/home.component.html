@@ -49,11 +49,42 @@
       </div>
 
       <!-- Sección de mis ligas -->
-      <div class="section">
-        <h2 class="section-title">MIS LIGAS</h2>
-
-        <div class="league-card">
+      <div class="mis-ligas-container">
+        <div class="section-header">
+          <h2>MIS LIGAS</h2>
+          <button class="primary-btn" (click)="openCreateLeagueModal()">
+            + Crear Liga
+          </button>
         </div>
+
+        <!-- Mostrar lista de ligas si existen -->
+        <div *ngIf="userLeagues.length > 0; else emptyState">
+          <div class="leagues-list">
+            <div class="league-card" *ngFor="let liga of userLeagues">
+              <div class="league-name">{{ liga.name }}</div>
+              <!-- Puedes añadir más detalles aquí -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Estado vacío si no hay ligas -->
+        <ng-template #emptyState>
+          <div class="empty-state">
+            <div class="empty-state-content">
+              <img src="/assets/images/empty-leagues.png" alt="No hay ligas" class="mini-cara" />
+              <h3>¡Aún no tienes ligas!</h3>
+              <p>Crea tu propia liga o únete a una existente para comenzar a competir</p>
+              <button class="primary-btn" (click)="openCreateLeagueModal()">Crear mi primera liga</button>
+            </div>
+          </div>
+        </ng-template>
+
+        <!-- Modal para crear liga -->
+        <app-create-league-modal
+          [isOpen]="isCreateLeagueModalOpen"
+          (close)="closeCreateLeagueModal()"
+          (createLeague)="onCreateLeague($event)">
+        </app-create-league-modal>
       </div>
 
       <!-- Sección de noticias -->

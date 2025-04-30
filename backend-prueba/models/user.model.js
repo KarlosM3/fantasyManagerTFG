@@ -21,6 +21,15 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user'
   },
+
+  // NUEVO: Referencia a las ligas
+  leagues: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'League'
+    }
+  ],
+
   createdAt: {
     type: Date,
     default: Date.now
