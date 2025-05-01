@@ -1,0 +1,131 @@
+$background-color: #1a1a1a;
+$container-bg: #222222;
+$accent-color: #ff3a3a;
+$text-color: #ffffff;
+$text-secondary: #aaaaaa;
+$border-color: #444444;
+$sidebar-bg: #222222;
+$sidebar-active: #333333;
+$card-bg: #333333;
+
+// Fondo principal
+body, .main-content {
+  background: #191919;
+}
+
+// Sidebar
+.sidebar {
+  width: 250px;
+  background-color: $sidebar-bg;
+  min-height: calc(100vh - 60px);
+  .menu-item {
+    padding: 15px 20px;
+    cursor: pointer;
+    color:$text-color;
+    transition: background-color 0.3s;
+    &:hover {
+      background-color: lighten($sidebar-bg, 5%);
+    }
+    &.active {
+      background-color: $sidebar-active;
+      border-left: 3px solid $accent-color;
+      color: $accent-color;
+    }
+  }
+}
+
+// Ajuste para la disposición general
+.main-content {
+  display: flex;
+  min-height: calc(100vh - 60px);
+  background: #191919;
+  gap: 40px; // Separación entre sidebar y contenido
+}
+
+// Contenedor de clasificación
+.clasificacion-container {
+  background: $container-bg;
+  border-radius: 16px;
+  padding: 40px 40px 32px 40px;
+  margin: 40px 40px 0 0;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  flex: 1 1 0%; // Hace que ocupe todo el espacio disponible
+  min-width: 0; // Para que el contenido no desborde
+  max-width: 1000px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+// Header de clasificación
+.clasificacion-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 32px;
+  gap: 16px;
+  .league-title {
+    font-size: 2rem;
+    color: $text-color;
+    font-weight: bold;
+    margin-right: auto;
+  }
+  .invite-btn {
+    background: $accent-color;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 22px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 1.05rem;
+    &:hover { background: darken($accent-color, 7%); }
+  }
+}
+
+// Tabla de clasificación
+.clasificacion-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 12px;
+  th, td {
+    color: $text-color;
+    padding: 14px 18px;
+    text-align: left;
+  }
+  th {
+    background: transparent;
+    color: $text-secondary;
+    font-weight: 700;
+    font-size: 1.08rem;
+    border-bottom: 2px solid $border-color;
+  }
+  tr {
+    background: $card-bg;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    &:hover {
+      background: lighten($card-bg, 5%);
+    }
+  }
+}
+
+// Responsive para pantallas pequeñas
+@media (max-width: 1100px) {
+  .main-content {
+    flex-direction: column;
+    gap: 0;
+  }
+  .sidebar {
+    width: 100%;
+    min-height: unset;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+  }
+  .clasificacion-container {
+    margin: 24px 8px 0 8px;
+    padding: 20px 8px;
+    max-width: 100%;
+  }
+}

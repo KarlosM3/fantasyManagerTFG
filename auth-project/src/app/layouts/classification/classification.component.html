@@ -1,0 +1,40 @@
+<div class="main-content">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="menu-item" routerLink="/layouts/home" routerLinkActive="active">Mis Ligas</div>
+    <div class="menu-item" routerLink="/layouts/market" routerLinkActive="active">Mercado</div>
+    <div class="menu-item active" routerLink="/layouts/classification" routerLinkActive="active">Clasificación</div>
+    <div class="menu-item">Más</div>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="clasificacion-container">
+    <div class="clasificacion-header">
+      <span class="league-title">Clasificación</span>
+      <button class="invite-btn">+ Invitar usuarios</button>
+    </div>
+    <!-- Tabla de clasificación -->
+    <table class="clasificacion-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Usuario</th>
+          <th>Puntos</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Ejemplo de filas, reemplaza con *ngFor -->
+        <tr>
+          <td>1</td>
+          <td>Usuario1</td>
+          <td>120</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>Usuario2</td>
+          <td>110</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
