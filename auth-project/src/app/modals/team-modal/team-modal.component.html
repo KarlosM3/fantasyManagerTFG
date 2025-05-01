@@ -1,1 +1,95 @@
-<p>team-modal works!</p>
+<div class="modal-overlay" [class.active]="isOpen" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>¡Tu equipo ha sido creado!</h2>
+      <button type="button" class="close-btn" (click)="closeModal()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="team-info">
+        <div class="team-value">
+          <span class="label">Valor total:</span>
+          <span class="value">{{ totalTeamValue | number }} €</span>
+        </div>
+      </div>
+
+      <div class="players-section">
+        <h3>Porteros</h3>
+        <div class="players-list">
+          <div class="player-card" *ngFor="let player of getPlayersByPosition('1')">
+            <img class="player-img" [src]="player.images?.transparent?.['256x256']" [alt]="player.nickname" />
+            <div class="player-info">
+              <div class="player-name">{{ player.nickname }}</div>
+              <div class="player-team">
+                <img class="team-badge" [src]="player.team?.badgeColor" [alt]="player.team?.name" />
+                {{ player.team?.name }}
+              </div>
+              <div class="player-status" [ngClass]="getPlayerStatusClass(player.playerStatus)">
+                {{ getPlayerStatusText(player.playerStatus) }}
+              </div>
+            </div>
+            <div class="player-value">{{ player.marketValue | number }} €</div>
+          </div>
+        </div>
+
+        <h3>Defensas</h3>
+        <div class="players-list">
+          <div class="player-card" *ngFor="let player of getPlayersByPosition('2')">
+            <img class="player-img" [src]="player.images?.transparent?.['256x256']" [alt]="player.nickname" />
+            <div class="player-info">
+              <div class="player-name">{{ player.nickname }}</div>
+              <div class="player-team">
+                <img class="team-badge" [src]="player.team?.badgeColor" [alt]="player.team?.name" />
+                {{ player.team?.name }}
+              </div>
+              <div class="player-status" [ngClass]="getPlayerStatusClass(player.playerStatus)">
+                {{ getPlayerStatusText(player.playerStatus) }}
+              </div>
+            </div>
+            <div class="player-value">{{ player.marketValue | number }} €</div>
+          </div>
+        </div>
+
+        <h3>Centrocampistas</h3>
+        <div class="players-list">
+          <div class="player-card" *ngFor="let player of getPlayersByPosition('3')">
+            <img class="player-img" [src]="player.images?.transparent?.['256x256']" [alt]="player.nickname" />
+            <div class="player-info">
+              <div class="player-name">{{ player.nickname }}</div>
+              <div class="player-team">
+                <img class="team-badge" [src]="player.team?.badgeColor" [alt]="player.team?.name" />
+                {{ player.team?.name }}
+              </div>
+              <div class="player-status" [ngClass]="getPlayerStatusClass(player.playerStatus)">
+                {{ getPlayerStatusText(player.playerStatus) }}
+              </div>
+            </div>
+            <div class="player-value">{{ player.marketValue | number }} €</div>
+          </div>
+        </div>
+
+        <h3>Delanteros</h3>
+        <div class="players-list">
+          <div class="player-card" *ngFor="let player of getPlayersByPosition('4')">
+            <img class="player-img" [src]="player.images?.transparent?.['256x256']" [alt]="player.nickname" />
+            <div class="player-info">
+              <div class="player-name">{{ player.nickname }}</div>
+              <div class="player-team">
+                <img class="team-badge" [src]="player.team?.badgeColor" [alt]="player.team?.name" />
+                {{ player.team?.name }}
+              </div>
+              <div class="player-status" [ngClass]="getPlayerStatusClass(player.playerStatus)">
+                {{ getPlayerStatusText(player.playerStatus) }}
+              </div>
+            </div>
+            <div class="player-value">{{ player.marketValue | number }} €</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="primary-btn" (click)="closeModal()">¡Entendido!</button>
+    </div>
+  </div>
+</div>

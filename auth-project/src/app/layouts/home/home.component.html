@@ -60,18 +60,23 @@
         <!-- Mostrar lista de ligas si existen -->
         <div *ngIf="userLeagues.length > 0; else emptyState">
           <div class="leagues-list">
-            <div class="league-card" *ngFor="let liga of userLeagues">
+            <div class="league-card" *ngFor="let liga of userLeagues" (click)="onSelectLeague(liga)">
               <div class="league-avatar">
                 {{ liga.name.charAt(0) | uppercase }}
               </div>
               <div class="league-info">
                 <div class="league-name">{{ liga.name }}</div>
-                <!-- Aquí puedes añadir más detalles, como número de miembros -->
               </div>
-              <!-- <button class="league-details-btn">Ver</button> -->
             </div>
           </div>
         </div>
+
+        <!-- Modal del equipo -->
+        <app-team-modal
+          [isOpen]="isTeamModalOpen"
+          [team]="randomTeam"
+          (close)="closeTeamModal()">
+        </app-team-modal>
 
 
         <!-- Estado vacío si no hay ligas -->

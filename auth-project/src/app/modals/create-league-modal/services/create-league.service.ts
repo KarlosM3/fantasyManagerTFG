@@ -21,4 +21,9 @@ export class LeagueService {
   joinLeague(leagueId: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/${leagueId}/join`, {});
   }
+
+  assignRandomTeam(leagueId: string): Observable<any[]> {
+    return this.http.post<any[]>(`${this.apiUrl}/${leagueId}/assign-random-team`, {});
+  }
+
 }

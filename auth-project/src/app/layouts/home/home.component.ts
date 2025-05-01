@@ -1,27 +1,29 @@
 import { Component, OnInit } from '@angular/core';
+import { LeagueService } from '../../modals/create-league-modal/services/create-league.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../../auth/services/auth.service';
-import { LeagueService } from '../../modals/create-league-modal/services/create-league.service'; // <-- Importa el servicio
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
-  styleUrl: './home.component.scss'
+  styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
   userName: string = '';
+  userLeagues: any[] = [];
   isCreateLeagueModalOpen = false;
-  userLeagues: any[] = []; // <-- Añade este array
+  isTeamModalOpen = false;
+  randomTeam: any[] = [];
 
   constructor(
     private authService: AuthService,
     private router: Router,
-    private leagueService: LeagueService // <-- Inyecta el servicio
+    private leagueService: LeagueService
   ) {}
 
   ngOnInit(): void {
     this.userName = this.authService.getUserName();
-    this.loadUserLeagues(); // <-- Carga las ligas al iniciar
+    this.loadUserLeagues();
   }
 
   loadUserLeagues(): void {
@@ -42,13 +44,28 @@ export class HomeComponent implements OnInit {
     this.leagueService.createLeague(leagueData).subscribe({
       next: (res) => {
         this.closeCreateLeagueModal();
-        this.loadUserLeagues(); // Esto refresca la lista en "MIS LIGAS"
-        this.router.navigate(['/layouts/home']); // Redirige al home
+        this.loadUserLeagues();
       },
       error: (err) => {
-        // Manejo de errores
+        console.error('Error al crear la liga:', err);
       }
     });
+  }
+
+  onSelectLeague(liga: any) {
+    this.leagueService.assignRandomTeam(liga._id).subscribe({
+      next: (team) => {
+        this.randomTeam = team;
+        this.isTeamModalOpen = true;
+      },
+      error: (err) => {
+        console.error('Error al asignar equipo aleatorio:', err);
+      }
+    });
+  }
+
+  closeTeamModal() {
+    this.isTeamModalOpen = false;
   }
 
   navegarA(ruta: string) {

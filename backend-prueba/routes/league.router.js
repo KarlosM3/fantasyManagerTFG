@@ -12,4 +12,7 @@ router.post('/', leagueController.createLeague);
 // Obtener ligas del usuario autenticado
 router.get('/mine', leagueController.getUserLeagues);
 
+// Obtener equipo random
+router.post('/:leagueId/assign-random-team', leagueController.assignRandomTeam);
+
 module.exports = router;

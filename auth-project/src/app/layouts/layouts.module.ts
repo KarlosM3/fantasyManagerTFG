@@ -6,13 +6,14 @@ import { HomeComponent } from './home/home.component';
 import { MarketComponent } from './market/market.component';
 import { CreateLeagueModalComponent } from '../modals/create-league-modal/create-league-modal.component';
 import { ReactiveFormsModule } from '@angular/forms';
-
+import { TeamModalComponent } from '../modals/team-modal/team-modal.component';
 
 @NgModule({
   declarations: [
     HomeComponent,
     MarketComponent,
-    CreateLeagueModalComponent
+    CreateLeagueModalComponent,
+    TeamModalComponent
   ],
   imports: [
     CommonModule,
