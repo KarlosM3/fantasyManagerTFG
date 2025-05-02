@@ -284,12 +284,7 @@ $card-bg: #333333;
 }
 
 .league-card {
-  display: flex;
-  align-items: center;
-  background: #232323;
-  border-radius: 8px;
-  padding: 16px 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  cursor: pointer;
   transition: box-shadow 0.2s;
   &:hover {
     box-shadow: 0 4px 16px rgba(255,77,77,0.10);

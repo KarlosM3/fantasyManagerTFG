@@ -49,15 +49,14 @@ body, .main-content {
   padding: 40px 40px 32px 40px;
   margin: 40px 40px 0 0;
   box-shadow: 0 4px 24px rgba(0,0,0,0.12);
-  flex: 1 1 0%; // Hace que ocupe todo el espacio disponible
-  min-width: 0; // Para que el contenido no desborde
+  flex: 1 1 0%;
+  min-width: 0;
   max-width: 1000px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
 }
 
-// Header de clasificación
 .clasificacion-header {
   display: flex;
   align-items: center;
@@ -83,31 +82,63 @@ body, .main-content {
   }
 }
 
-// Tabla de clasificación
-.clasificacion-table {
+.ranking-table {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 12px;
-  th, td {
-    color: $text-color;
-    padding: 14px 18px;
-    text-align: left;
-  }
-  th {
-    background: transparent;
+  background: $card-bg;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.ranking-row {
+  display: flex;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid $border-color;
+  &:last-child { border-bottom: none; }
+  &.ranking-header {
+    background: #222;
+    font-weight: bold;
     color: $text-secondary;
-    font-weight: 700;
-    font-size: 1.08rem;
-    border-bottom: 2px solid $border-color;
   }
-  tr {
-    background: $card-bg;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
-    &:hover {
-      background: lighten($card-bg, 5%);
-    }
+}
+
+.ranking-pos {
+  width: 40px;
+  text-align: center;
+  color: $accent-color;
+  font-weight: bold;
+}
+
+.ranking-user {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  .user-avatar-placeholder {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #444;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 12px;
+    font-size: 1.1rem;
   }
+  .user-name {
+    color: $text-color;
+    font-weight: 500;
+  }
+}
+
+.ranking-points {
+  width: 80px;
+  text-align: right;
+  color: $text-color;
+  font-weight: bold;
+  font-size: 1.1rem;
 }
 
 // Responsive para pantallas pequeñas

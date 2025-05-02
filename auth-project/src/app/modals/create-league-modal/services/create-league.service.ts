@@ -26,4 +26,9 @@ export class LeagueService {
     return this.http.post<any[]>(`${this.apiUrl}/${leagueId}/assign-random-team`, {});
   }
 
+  getLeagueClassification(leagueId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${leagueId}/classification`);
+  }
+
+
 }

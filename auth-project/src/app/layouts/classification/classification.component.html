@@ -10,31 +10,33 @@
   <!-- Contenido principal -->
   <div class="clasificacion-container">
     <div class="clasificacion-header">
-      <span class="league-title">Clasificación</span>
-      <button class="invite-btn">+ Invitar usuarios</button>
+      <h2>Clasificación</h2>
+      <button class="invite-btn" (click)="openInviteModal()">+ Invitar usuarios</button>
     </div>
-    <!-- Tabla de clasificación -->
-    <table class="clasificacion-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Usuario</th>
-          <th>Puntos</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Ejemplo de filas, reemplaza con *ngFor -->
-        <tr>
-          <td>1</td>
-          <td>Usuario1</td>
-          <td>120</td>
-        </tr>
-        <tr>
-          <td>2</td>
-          <td>Usuario2</td>
-          <td>110</td>
-        </tr>
-      </tbody>
-    </table>
+
+    <div class="ranking-table">
+      <div class="ranking-row ranking-header">
+        <div class="ranking-pos">#</div>
+        <div class="ranking-user">Usuario</div>
+        <div class="ranking-points">Puntos</div>
+      </div>
+      <div class="ranking-row" *ngFor="let user of leagueUsers; let i = index">
+        <div class="ranking-pos">{{ i + 1 }}</div>
+        <div class="ranking-user">
+          <span class="user-avatar-placeholder">{{ user.name?.charAt(0) | uppercase }}</span>
+          <span class="user-name">{{ user.name }}</span>
+        </div>
+        <div class="ranking-points">{{ user.points }}</div>
+      </div>
+    </div>
   </div>
+
+
+  <!-- Modal de invitación (opcional)
+  <app-invite-modal
+    [isOpen]="isInviteModalOpen"
+    [leagueId]="leagueId"
+    (close)="closeInviteModal()">
+  </app-invite-modal>-->
+
 </div>

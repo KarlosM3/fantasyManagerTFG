@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-team-modal',
@@ -8,12 +9,24 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 export class TeamModalComponent {
   @Input() isOpen = false;
   @Input() team: any[] = [];
-  @Output() close = new EventEmitter<void>();
+  @Input() leagueId!: string;
+  @Output() close = new EventEmitter();
+
+  constructor(private router: Router) {}
 
   // Calcula el valor total del equipo
   get totalTeamValue(): number {
     return this.team?.reduce((acc, p) => acc + (p.marketValue ? +p.marketValue : 0), 0) || 0;
   }
+
+  onNext() {
+    // Navegar directamente desde el modal
+    if (this.leagueId) {
+      this.router.navigate(['/layouts/classification', this.leagueId]);
+    }
+    this.close.emit();
+  }
+
 
   // Devuelve la clase CSS según el estado del jugador
   getPlayerStatusClass(status: string): string {
@@ -35,6 +48,16 @@ export class TeamModalComponent {
   getPlayersByPosition(positionId: string): any[] {
     return this.team?.filter(p => p.positionId === positionId) || [];
   }
+
+
+  /*goToClassification() {
+    this.closeModal();
+    if (this.leagueId) {
+      this.router.navigate(['/layouts/classification', this.leagueId]);
+    } else {
+      console.error('No se ha proporcionado un ID de liga válido');
+    }
+  }*/
 
   closeModal(): void {
     this.close.emit();

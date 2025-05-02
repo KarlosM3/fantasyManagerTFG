@@ -17,10 +17,11 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
-    path: 'classification',
+    path: 'classification/:leagueId',
     component: ClassificationComponent,
     canActivate: [AuthGuard]
   }
+
 ];
 
 @NgModule({

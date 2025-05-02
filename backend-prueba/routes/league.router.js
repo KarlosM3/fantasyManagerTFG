@@ -15,4 +15,7 @@ router.get('/mine', leagueController.getUserLeagues);
 // Obtener equipo random
 router.post('/:leagueId/assign-random-team', leagueController.assignRandomTeam);
 
+// Obtener jugadores de una liga
+router.get('/:leagueId/classification', leagueController.getLeagueClassification);
+
 module.exports = router;

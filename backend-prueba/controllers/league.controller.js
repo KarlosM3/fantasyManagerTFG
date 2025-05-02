@@ -133,3 +133,34 @@ exports.assignRandomTeam = async (req, res) => {
   }
 };
 
+// Obtener clasificación de una liga
+exports.getLeagueClassification = async (req, res) => {
+  try {
+    const { leagueId } = req.params;
+
+    // Obtén todos los equipos de la liga
+    const teams = await Team.find({ league: leagueId }).populate('user');
+
+    // Para cada equipo, calcula los puntos sumando los puntos de cada jugador (ejemplo: lastSeasonPoints)
+    // Si tienes lógica propia para calcular puntos, usa esa.
+    const classification = teams.map(team => {
+      const totalPoints = (team.playersData || []).reduce((sum, player) => {
+        // Usa el campo correcto para puntos, por ejemplo player.points o player.lastSeasonPoints
+        return sum + (Number(player.points) || 0);
+      }, 0);
+      return {
+        userId: team.user._id,
+        name: team.user.name,
+        points: totalPoints
+      };
+    });
+
+    // Ordena por puntos descendente
+    classification.sort((a, b) => b.points - a.points);
+
+    res.json(classification);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener clasificación', error: error.message });
+  }
+};
+

@@ -16,9 +16,14 @@
     <div class="sidebar">
       <div class="menu-item active" routerLink="/layouts/home" routerLinkActive="active">Mis Ligas</div>
       <div class="menu-item" routerLink="/layouts/market" routerLinkActive="active">Mercado</div>
-      <div class="menu-item" routerLink="/layouts/classification" routerLinkActive="active">Clasificación</div>
+      <div
+        class="menu-item"
+        [routerLink]="ligaActivaId ? ['/layouts/classification', ligaActivaId] : null"
+        routerLinkActive="active" [class.disabled]="!ligaActivaId">Clasificación
+      </div>
       <div class="menu-item">Más</div>
     </div>
+
 
     <!-- Contenido central -->
     <div class="content">
@@ -52,21 +57,23 @@
       <div class="mis-ligas-container">
         <div class="section-header">
           <h2>MIS LIGAS</h2>
-          <button class="primary-btn" (click)="openCreateLeagueModal()">
-            + Crear Liga
+          <button class="create-league-btn" (click)="openCreateLeagueModal()">
+            <span class="plus-icon">+</span> Crear Liga
           </button>
         </div>
 
         <!-- Mostrar lista de ligas si existen -->
-        <div *ngIf="userLeagues.length > 0; else emptyState">
-          <div class="leagues-list">
-            <div class="league-card" *ngFor="let liga of userLeagues" (click)="onSelectLeague(liga)">
-              <div class="league-avatar">
-                {{ liga.name.charAt(0) | uppercase }}
-              </div>
-              <div class="league-info">
-                <div class="league-name">{{ liga.name }}</div>
-              </div>
+        <div *ngIf="userLeagues.length > 0; else emptyState" class="leagues-list">
+          <div
+            class="league-card"
+            *ngFor="let liga of userLeagues"
+            (click)="navegarAClasificacion(liga._id)"
+          >
+            <div class="league-avatar">
+              {{ liga.name.charAt(0) | uppercase }}
+            </div>
+            <div class="league-info">
+              <div class="league-name">{{ liga.name }}</div>
             </div>
           </div>
         </div>
@@ -75,7 +82,7 @@
         <app-team-modal
           [isOpen]="isTeamModalOpen"
           [team]="randomTeam"
-          (close)="closeTeamModal()">
+          (close)="closeTeamModalAndGoToClassification()">
         </app-team-modal>
 
 
@@ -83,10 +90,9 @@
         <ng-template #emptyState>
           <div class="empty-state">
             <div class="empty-state-content">
-              <img src="/assets/images/empty-leagues.png" alt="No hay ligas" class="mini-cara" />
               <h3>¡Aún no tienes ligas!</h3>
               <p>Crea tu propia liga o únete a una existente para comenzar a competir</p>
-              <button class="primary-btn" (click)="openCreateLeagueModal()">Crear mi primera liga</button>
+              <button class="primary-btn" (click)="openCreateLeagueModal()">Crear Liga</button>
             </div>
           </div>
         </ng-template>

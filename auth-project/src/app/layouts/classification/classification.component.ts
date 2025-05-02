@@ -19,21 +19,23 @@ export class ClassificationComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Suponiendo que la ruta es /clasificacion/:leagueId
     this.leagueId = this.route.snapshot.paramMap.get('leagueId') || '';
-    this.loadLeagueData();
+    console.log('League ID:', this.leagueId); // Para depurar
+    if (this.leagueId) {
+      this.loadClassification();
+    } else {
+      console.error('No se ha proporcionado un ID de liga válido');
+    }
   }
 
-  loadLeagueData(): void {
-    // Obtiene info de la liga y sus usuarios (ajusta según tu API)
-    this.leagueService.getUserLeagues().subscribe((league) => {
-      this.league = league;
-      // Si la API ya devuelve los usuarios ordenados por puntos:
-      this.leagueUsers = league.members;
-      // Si no, puedes ordenar aquí:
-      // this.leagueUsers = league.members.sort((a, b) => b.points - a.points);
+
+  loadClassification(): void {
+    this.leagueService.getLeagueClassification(this.leagueId).subscribe((users) => {
+      this.leagueUsers = users;
     });
+
   }
+
 
   openInviteModal() {
     this.isInviteModalOpen = true;
