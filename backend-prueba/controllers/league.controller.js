@@ -175,14 +175,14 @@ exports.generateInviteLink = async (req, res) => {
     
     // Genera un código único para la liga si no existe
     if (!league.inviteCode) {
-      league.inviteCode = generateRandomCode(8); // Función para generar código aleatorio
+      league.inviteCode = generateRandomCode(8);
       await league.save();
     }
     
-    // Construye el enlace de invitación (ajusta la URL base según tu dominio)
+    // Construye el enlace de invitación
     const inviteLink = `http://localhost:4200/join-league/${league.inviteCode}`;
     
-    res.json({ 
+    res.json({
       inviteLink,
       inviteCode: league.inviteCode
     });
@@ -190,6 +190,7 @@ exports.generateInviteLink = async (req, res) => {
     res.status(500).json({ message: 'Error al generar enlace de invitación', error: error.message });
   }
 };
+
 
 // Función auxiliar para generar un código aleatorio
 function generateRandomCode(length) {
@@ -204,7 +205,7 @@ function generateRandomCode(length) {
 exports.joinLeagueByCode = async (req, res) => {
   try {
     const { inviteCode } = req.body;
-    const userId = req.user.id;
+    const userId = req.user.id || req.user._id;
     
     const league = await League.findOne({ inviteCode });
     
@@ -230,16 +231,87 @@ exports.joinLeagueByCode = async (req, res) => {
     
     await league.save();
     
-    // Asignar equipo aleatorio al nuevo miembro
-    await assignRandomTeam(league._id, userId);
+    // IMPORTANTE: Añadir la liga al usuario también
+    await User.findByIdAndUpdate(
+      userId,
+      { $push: { leagues: league._id } },
+      { new: true }
+    );
     
-    res.status(200).json({ 
-      success: true, 
-      message: 'Te has unido a la liga correctamente',
-      leagueId: league._id
-    });
+    // Crear equipo aleatorio para el nuevo miembro
+    try {
+      // Estructura y presupuesto
+      const teamStructure = { GK: 2, DEF: 5, MID: 5, FWD: 3 };
+      const maxPlayersPerTeam = 3;
+      const budget = 100000000;
+
+      // Obtener todos los jugadores de la API externa
+      const response = await axios.get('https://api-fantasy.llt-services.com/api/v3/players');
+      const allPlayers = response.data;
+
+      // Selección aleatoria
+      let selectedPlayers = [];
+      let totalSpent = 0;
+      let teamCounts = {};
+
+      // Mapear posiciones de la API a tus posiciones
+      const positionMap = {
+        "1": "GK",
+        "2": "DEF",
+        "3": "MID",
+        "4": "FWD"
+      };
+
+      for (const positionKey of Object.keys(teamStructure)) {
+        let needed = teamStructure[positionKey];
+        let pool = allPlayers.filter(p => positionMap[p.positionId] === positionKey);
+
+        while (needed > 0 && pool.length > 0) {
+          const idx = Math.floor(Math.random() * pool.length);
+          const player = pool[idx];
+
+          if (
+            !selectedPlayers.find(p => p.id === player.id) &&
+            (teamCounts[player.team?.name] || 0) < maxPlayersPerTeam &&
+            totalSpent + Number(player.marketValue) <= budget
+          ) {
+            selectedPlayers.push(player);
+            totalSpent += Number(player.marketValue);
+            teamCounts[player.team?.name] = (teamCounts[player.team?.name] || 0) + 1;
+            needed--;
+          } else {
+            pool.splice(idx, 1);
+          }
+        }
+      }
+
+      // Crear el equipo con los jugadores seleccionados
+      await Team.create({
+        league: league._id,
+        user: userId,
+        players: [],
+        budget: budget - totalSpent,
+        playersData: selectedPlayers
+      });
+      
+      // Solo envía una respuesta al final
+      return res.status(200).json({
+        success: true,
+        message: 'Te has unido a la liga correctamente',
+        leagueId: league._id
+      });
+    } catch (teamError) {
+      console.error('Error asignando equipo aleatorio:', teamError);
+      return res.status(500).json({ 
+        message: 'Error asignando equipo aleatorio', 
+        error: teamError.message 
+      });
+    }
   } catch (error) {
-    res.status(500).json({ message: 'Error al unirse a la liga', error: error.message });
+    console.error('Error al unirse a la liga:', error);
+    return res.status(500).json({ 
+      message: 'Error al unirse a la liga', 
+      error: error.message 
+    });
   }
 };
-

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { LeagueService } from '../../modals/create-league-modal/services/create-league.service';
 
@@ -12,6 +12,7 @@ export class ClassificationComponent implements OnInit {
   league: any;
   leagueUsers: any[] = [];
   isInviteModalOpen = false;
+  refreshInterval: any;
 
   constructor(
     private route: ActivatedRoute,
@@ -20,14 +21,25 @@ export class ClassificationComponent implements OnInit {
 
   ngOnInit(): void {
     this.leagueId = this.route.snapshot.paramMap.get('leagueId') || '';
-    console.log('League ID:', this.leagueId); // Para depurar
+    console.log('League ID:', this.leagueId);
+
     if (this.leagueId) {
       this.loadClassification();
+
+      // Actualizar cada 30 segundos
+      this.refreshInterval = setInterval(() => {
+        this.loadClassification();
+      }, 30000);
     } else {
       console.error('No se ha proporcionado un ID de liga válido');
     }
   }
 
+  ngOnDestroy(): void {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
+  }
 
   loadClassification(): void {
     this.leagueService.getLeagueClassification(this.leagueId).subscribe((users) => {

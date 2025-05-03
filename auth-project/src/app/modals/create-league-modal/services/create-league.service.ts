@@ -22,12 +22,12 @@ export class LeagueService {
     return this.http.post(`${this.apiUrl}/${leagueId}/join`, {});
   }
 
-  assignRandomTeam(leagueId: string): Observable<any[]> {
-    return this.http.post<any[]>(`${this.apiUrl}/${leagueId}/assign-random-team`, {});
+  assignRandomTeam(leagueId: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${leagueId}/assign-random-team`, {});
   }
 
-  getLeagueClassification(leagueId: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/${leagueId}/classification`);
+  getLeagueClassification(leagueId: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${leagueId}/classification`);
   }
 
   getInviteLink(leagueId: string): Observable<any> {
@@ -37,5 +37,4 @@ export class LeagueService {
   joinLeagueByCode(inviteCode: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/join`, { inviteCode });
   }
-
 }

@@ -38,11 +38,19 @@ export class LoginComponent {
       next: (data: any) => {
         // Guardar explícitamente el nombre del usuario si no viene en la respuesta
         if (!data.user || !data.user.name) {
-          // Usar el email como nombre de usuario si no hay nombre
           const emailParts = user.email.split('@');
           this.authService.setUserName(emailParts[0]);
         }
-        this.router.navigate(['/layouts/home']);
+
+        // Verificar si hay un código de invitación pendiente
+        const pendingCode = this.authService.getPendingInviteCode();
+        if (pendingCode) {
+          // Navegar a la página de unirse con el código
+          this.router.navigate(['/join-league', pendingCode]);
+        } else {
+          // Navegar a la página de inicio normal
+          this.router.navigate(['/layouts/home']);
+        }
       },
       error: (error) => {
         this.errorMessage = 'Error al iniciar sesión. Verifica tus credenciales.';
@@ -50,4 +58,5 @@ export class LoginComponent {
       }
     });
   }
+
 }

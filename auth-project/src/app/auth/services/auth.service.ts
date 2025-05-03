@@ -82,4 +82,45 @@ export class AuthService {
       localStorage.removeItem('token');
     }
   }
+
+  setRedirectUrl(url: string): void {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem('redirectUrl', url);
+    }
+  }
+
+  // Método para obtener la URL de redirección
+  getRedirectUrl(): string | null {
+    if (isPlatformBrowser(this.platformId)) {
+      return localStorage.getItem('redirectUrl');
+    }
+    return null;
+  }
+
+  // Método para limpiar la URL de redirección
+  clearRedirectUrl(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem('redirectUrl');
+    }
+  }
+
+  // Método para verificar y procesar invitaciones pendientes
+  processPendingInvite(): boolean {
+    if (isPlatformBrowser(this.platformId)) {
+      const pendingCode = localStorage.getItem('pendingInviteCode');
+      if (pendingCode) {
+        localStorage.removeItem('pendingInviteCode');
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Método para guardar el código de invitación pendiente
+  getPendingInviteCode(): string | null {
+    if (isPlatformBrowser(this.platformId)) {
+      return localStorage.getItem('pendingInviteCode');
+    }
+    return null;
+  }
 }

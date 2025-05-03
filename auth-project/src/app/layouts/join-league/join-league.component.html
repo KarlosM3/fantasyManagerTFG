@@ -1,1 +1,35 @@
-<p>join-league works!</p>
+<div class="join-league-container">
+  <div class="join-league-card">
+    <div class="card-header">
+      <h2>Unirse a la Liga</h2>
+      <div class="league-code">Código: <span>{{ inviteCode }}</span></div>
+    </div>
+
+    <div class="card-content">
+      <div *ngIf="isLoading" class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Procesando tu solicitud...</p>
+      </div>
+
+      <div *ngIf="!isLoading && !errorMessage" class="join-info">
+        <p>Has sido invitado a unirte a una liga en Domonios Fantasy.</p>
+        <p>Al unirte, recibirás un equipo aleatorio y podrás competir con otros jugadores.</p>
+
+        <button class="join-button" (click)="joinLeague()">
+          Unirme a la Liga
+        </button>
+      </div>
+
+      <div *ngIf="errorMessage" class="error-message">
+        <p>{{ errorMessage }}</p>
+        <button class="retry-button" (click)="joinLeague()">
+          Intentar de nuevo
+        </button>
+      </div>
+    </div>
+
+    <div class="card-footer">
+      <a routerLink="/layouts/home" class="back-link">Volver al inicio</a>
+    </div>
+  </div>
+</div>
