@@ -44,4 +44,31 @@ export class ClassificationComponent implements OnInit {
   closeInviteModal() {
     this.isInviteModalOpen = false;
   }
+
+  // classification.component.ts
+inviteLink: string | null = null;
+
+generateInviteLink() {
+  this.leagueService.getInviteLink(this.leagueId).subscribe({
+    next: (res: any) => {
+      this.inviteLink = res.inviteLink;
+    },
+    error: (err) => {
+      console.error('Error al generar enlace de invitación:', err);
+    }
+  });
+}
+
+copyInviteLink(inputElement: HTMLInputElement) {
+  inputElement.select();
+  document.execCommand('copy');
+  // Mostrar notificación de copiado
+  this.showNotification('Enlace copiado al portapapeles');
+}
+
+showNotification(message: string) {
+  // Implementa tu sistema de notificaciones
+  // Puede ser un toast, un snackbar, etc.
+}
+
 }

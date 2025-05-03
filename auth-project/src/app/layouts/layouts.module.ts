@@ -16,7 +16,7 @@ import { ClassificationComponent } from './classification/classification.compone
     CreateLeagueModalComponent,
     TeamModalComponent,
     ClassificationComponent
-  ],
+    ],
   imports: [
     CommonModule,
     HttpClientModule,

@@ -30,5 +30,12 @@ export class LeagueService {
     return this.http.get<any[]>(`${this.apiUrl}/${leagueId}/classification`);
   }
 
+  getInviteLink(leagueId: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${leagueId}/invite-link`);
+  }
+
+  joinLeagueByCode(inviteCode: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/join`, { inviteCode });
+  }
 
 }

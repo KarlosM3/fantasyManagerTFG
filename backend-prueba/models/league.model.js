@@ -11,6 +11,11 @@ const leagueSchema = new mongoose.Schema({
     enum: ['public', 'private'],
     default: 'private'
   },
+  inviteCode: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
   maxParticipants: {
     type: Number,
     default: 10,

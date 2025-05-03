@@ -164,3 +164,82 @@ exports.getLeagueClassification = async (req, res) => {
   }
 };
 
+exports.generateInviteLink = async (req, res) => {
+  try {
+    const { leagueId } = req.params;
+    const league = await League.findById(leagueId);
+    
+    if (!league) {
+      return res.status(404).json({ message: 'Liga no encontrada' });
+    }
+    
+    // Genera un código único para la liga si no existe
+    if (!league.inviteCode) {
+      league.inviteCode = generateRandomCode(8); // Función para generar código aleatorio
+      await league.save();
+    }
+    
+    // Construye el enlace de invitación (ajusta la URL base según tu dominio)
+    const inviteLink = `http://localhost:4200/join-league/${league.inviteCode}`;
+    
+    res.json({ 
+      inviteLink,
+      inviteCode: league.inviteCode
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error al generar enlace de invitación', error: error.message });
+  }
+};
+
+// Función auxiliar para generar un código aleatorio
+function generateRandomCode(length) {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return result;
+}
+
+exports.joinLeagueByCode = async (req, res) => {
+  try {
+    const { inviteCode } = req.body;
+    const userId = req.user.id;
+    
+    const league = await League.findOne({ inviteCode });
+    
+    if (!league) {
+      return res.status(404).json({ message: 'Liga no encontrada' });
+    }
+    
+    // Verificar si el usuario ya es miembro
+    const isMember = league.members.some(member => 
+      member.userId.toString() === userId.toString()
+    );
+    
+    if (isMember) {
+      return res.status(400).json({ message: 'Ya eres miembro de esta liga' });
+    }
+    
+    // Añadir usuario a la liga
+    league.members.push({
+      userId,
+      role: 'manager',
+      joinedAt: new Date()
+    });
+    
+    await league.save();
+    
+    // Asignar equipo aleatorio al nuevo miembro
+    await assignRandomTeam(league._id, userId);
+    
+    res.status(200).json({ 
+      success: true, 
+      message: 'Te has unido a la liga correctamente',
+      leagueId: league._id
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error al unirse a la liga', error: error.message });
+  }
+};
+

@@ -11,7 +11,19 @@
   <div class="clasificacion-container">
     <div class="clasificacion-header">
       <h2>Clasificación</h2>
-      <button class="invite-btn" (click)="openInviteModal()">+ Invitar usuarios</button>
+      <!-- classification.component.html -->
+<div class="invite-section">
+  <button (click)="generateInviteLink()" class="invite-btn">
+    <i class="fas fa-user-plus"></i> Invitar usuarios
+  </button>
+
+  <div *ngIf="inviteLink" class="invite-link-container">
+    <input type="text" [value]="inviteLink" readonly #inviteLinkInput>
+    <button (click)="copyInviteLink(inviteLinkInput)" class="copy-btn">
+      <i class="fas fa-copy"></i> Copiar
+    </button>
+  </div>
+</div>
     </div>
 
     <div class="ranking-table">
