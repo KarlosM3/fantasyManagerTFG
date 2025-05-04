@@ -35,6 +35,7 @@ export class ClassificationComponent implements OnInit {
     }
   }
 
+  // Limpiar el intervalo al destruir el componente
   ngOnDestroy(): void {
     if (this.refreshInterval) {
       clearInterval(this.refreshInterval);

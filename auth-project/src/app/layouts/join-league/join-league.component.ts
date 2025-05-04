@@ -13,8 +13,10 @@ export class JoinLeagueComponent implements OnInit {
   inviteCode: string | null = null;
   isLoading = false;
   errorMessage: string | null = null;
-  leagueName: string = '';
-  isAuthenticated = false;
+  randomTeam: any[] = [];
+  isTeamModalOpen = false;
+  leagueId: string = ''; // Añade esta propiedad
+  isAuthenticated = false; // Propiedad para verificar si el usuario está autenticado
 
   constructor(
     private route: ActivatedRoute,
@@ -52,14 +54,23 @@ export class JoinLeagueComponent implements OnInit {
     this.leagueService.joinLeagueByCode(this.inviteCode).subscribe({
       next: (res: any) => {
         this.isLoading = false;
-        // Navegar a la clasificación de la liga
-        this.router.navigate(['/layouts/classification', res.leagueId]);
+        // Guardar el equipo y mostrar modal
+        this.randomTeam = res.team;
+        this.isTeamModalOpen = true;
+        this.leagueId = res.leagueId;
+        // No navegamos inmediatamente a clasificación
       },
       error: (err) => {
         this.isLoading = false;
         this.errorMessage = err.error?.message || 'Error al unirse a la liga';
       }
     });
+  }
+
+  // Método para cerrar el modal y navegar a clasificación
+  closeTeamModalAndGoToClassification(leagueId: string) {
+    this.isTeamModalOpen = false;
+    this.router.navigate(['/layouts/classification', leagueId]);
   }
 
   goToLogin() {

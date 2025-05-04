@@ -6,22 +6,22 @@ import { HomeComponent } from './home/home.component';
 import { MarketComponent } from './market/market.component';
 import { CreateLeagueModalComponent } from '../modals/create-league-modal/create-league-modal.component';
 import { ReactiveFormsModule } from '@angular/forms';
-import { TeamModalComponent } from '../modals/team-modal/team-modal.component';
 import { ClassificationComponent } from './classification/classification.component';
+import { SharedModule } from '../shared/shared.module';
 
 @NgModule({
   declarations: [
     HomeComponent,
     MarketComponent,
     CreateLeagueModalComponent,
-    TeamModalComponent,
     ClassificationComponent
     ],
   imports: [
     CommonModule,
     HttpClientModule,
     LayoutsRoutingModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    SharedModule
   ]
 })
 export class LayoutsModule { }

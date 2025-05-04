@@ -49,16 +49,6 @@ export class TeamModalComponent {
     return this.team?.filter(p => p.positionId === positionId) || [];
   }
 
-
-  /*goToClassification() {
-    this.closeModal();
-    if (this.leagueId) {
-      this.router.navigate(['/layouts/classification', this.leagueId]);
-    } else {
-      console.error('No se ha proporcionado un ID de liga válido');
-    }
-  }*/
-
   closeModal(): void {
     this.close.emit();
   }

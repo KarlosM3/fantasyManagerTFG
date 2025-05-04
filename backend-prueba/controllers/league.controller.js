@@ -298,7 +298,8 @@ exports.joinLeagueByCode = async (req, res) => {
       return res.status(200).json({
         success: true,
         message: 'Te has unido a la liga correctamente',
-        leagueId: league._id
+        leagueId: league._id,
+        team: selectedPlayers // Añadir el equipo aleatorio en la respuesta
       });
     } catch (teamError) {
       console.error('Error asignando equipo aleatorio:', teamError);

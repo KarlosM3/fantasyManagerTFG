@@ -32,4 +32,12 @@
       <a routerLink="/layouts/home" class="back-link">Volver al inicio</a>
     </div>
   </div>
+
+  <!-- Modal de equipo aleatorio -->
+  <app-team-modal
+  [isOpen]="isTeamModalOpen"
+  [team]="randomTeam"
+  [leagueId]="leagueId"
+  (close)="closeTeamModalAndGoToClassification(leagueId)">
+</app-team-modal>
 </div>
