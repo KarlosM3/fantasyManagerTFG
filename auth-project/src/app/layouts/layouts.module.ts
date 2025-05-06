@@ -8,13 +8,15 @@ import { CreateLeagueModalComponent } from '../modals/create-league-modal/create
 import { ReactiveFormsModule } from '@angular/forms';
 import { ClassificationComponent } from './classification/classification.component';
 import { SharedModule } from '../shared/shared.module';
+import { MyTeamComponent } from './my-team/my-team.component';
 
 @NgModule({
   declarations: [
     HomeComponent,
     MarketComponent,
     CreateLeagueModalComponent,
-    ClassificationComponent
+    ClassificationComponent,
+    MyTeamComponent
     ],
   imports: [
     CommonModule,

@@ -21,8 +21,14 @@
         [routerLink]="ligaActivaId ? ['/layouts/classification', ligaActivaId] : null"
         routerLinkActive="active" [class.disabled]="!ligaActivaId">Clasificación
       </div>
+      <div
+        class="menu-item"
+        [routerLink]="ligaActivaId ? ['/layouts/my-team', ligaActivaId] : null"
+        routerLinkActive="active" [class.disabled]="!ligaActivaId">Mi Equipo
+      </div>
       <div class="menu-item">Más</div>
     </div>
+
 
 
     <!-- Contenido central -->

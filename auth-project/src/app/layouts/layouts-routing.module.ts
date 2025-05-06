@@ -4,6 +4,7 @@ import { HomeComponent } from './home/home.component';
 import { MarketComponent } from './market/market.component';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { ClassificationComponent } from './classification/classification.component';
+import { MyTeamComponent } from './my-team/my-team.component';
 
 const routes: Routes = [
   {
@@ -19,6 +20,10 @@ const routes: Routes = [
   {
     path: 'classification/:leagueId',
     component: ClassificationComponent,
+    canActivate: [AuthGuard]
+  },
+  { path: 'my-team/:leagueId',
+    component: MyTeamComponent,
     canActivate: [AuthGuard]
   }
 

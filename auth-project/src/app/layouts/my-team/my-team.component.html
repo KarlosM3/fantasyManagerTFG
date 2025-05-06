@@ -1,0 +1,230 @@
+<div class="team-container">
+  <div class="team-header">
+    <h2>Mi Equipo</h2>
+    <div class="team-actions">
+      <button class="primary-btn" (click)="openFormationModal()">
+        Cambiar Formación
+      </button>
+      <button class="secondary-btn" (click)="openTransfersModal()">
+        Transferencias
+      </button>
+      <button class="toggle-btn" (click)="toggleBench()">
+        {{ showBench ? 'Ocultar Banquillo' : 'Mostrar Banquillo' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="formation-view" style="height: 700px">
+    <div class="formation-label">Formación: {{currentFormation}}</div>
+
+    <!-- Elementos del campo -->
+    <div class="goal-area top"></div>
+    <div class="goal-area bottom"></div>
+    <div class="center-circle"></div>
+
+    <!-- Campo de juego -->
+    <div class="pitch" [class.exchange-mode]="exchangeMode">
+      <!-- Porteros -->
+      <div class="position-row goalkeepers">
+        <div *ngFor="let player of startingGoalkeeper"
+             class="player-card"
+             [class.captain]="player.isCaptain"
+             [class.vice-captain]="player.isViceCaptain"
+             [class.selected]="selectedPlayer === player"
+             (click)="selectPlayer(player)">
+          <div class="player-image-container">
+            <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.name}}">
+            <span class="player-position-badge">POR</span>
+          </div>
+          <div class="player-name">{{player.name}}</div>
+          <div class="player-team">{{player.team?.name}}</div>
+          <div class="player-points">{{player.points || 0}} pts</div>
+          <div class="player-actions">
+            <button class="icon-btn captain-btn" (click)="setCaptain(player); $event.stopPropagation();" title="Nombrar Capitán">C</button>
+            <button class="icon-btn vice-captain-btn" (click)="setViceCaptain(player); $event.stopPropagation();" title="Nombrar Vice-Capitán">VC</button>
+            <button class="icon-btn change-btn" (click)="initiateExchange(player); $event.stopPropagation();" title="Cambiar">
+              <i class="fas fa-exchange-alt"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Defensas -->
+      <div class="position-row defenders">
+        <div *ngFor="let player of startingDefenders"
+             class="player-card"
+             [class.captain]="player.isCaptain"
+             [class.vice-captain]="player.isViceCaptain"
+             [class.selected]="selectedPlayer === player"
+             (click)="selectPlayer(player)">
+          <div class="player-image-container">
+            <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.name}}">
+            <span class="player-position-badge">DEF</span>
+          </div>
+          <div class="player-name">{{player.name}}</div>
+          <div class="player-team">{{player.team?.name}}</div>
+          <div class="player-points">{{player.points || 0}} pts</div>
+          <div class="player-actions">
+            <button class="icon-btn captain-btn" (click)="setCaptain(player); $event.stopPropagation();" title="Nombrar Capitán">C</button>
+            <button class="icon-btn vice-captain-btn" (click)="setViceCaptain(player); $event.stopPropagation();" title="Nombrar Vice-Capitán">VC</button>
+            <button class="icon-btn change-btn" (click)="initiateExchange(player); $event.stopPropagation();" title="Cambiar">
+              <i class="fas fa-exchange-alt"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Centrocampistas -->
+      <div class="position-row midfielders">
+        <div *ngFor="let player of startingMidfielders"
+             class="player-card"
+             [class.captain]="player.isCaptain"
+             [class.vice-captain]="player.isViceCaptain"
+             [class.selected]="selectedPlayer === player"
+             (click)="selectPlayer(player)">
+          <div class="player-image-container">
+            <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.name}}">
+            <span class="player-position-badge">MED</span>
+          </div>
+          <div class="player-name">{{player.name}}</div>
+          <div class="player-team">{{player.team?.name}}</div>
+          <div class="player-points">{{player.points || 0}} pts</div>
+          <div class="player-actions">
+            <button class="icon-btn captain-btn" (click)="setCaptain(player); $event.stopPropagation();" title="Nombrar Capitán">C</button>
+            <button class="icon-btn vice-captain-btn" (click)="setViceCaptain(player); $event.stopPropagation();" title="Nombrar Vice-Capitán">VC</button>
+            <button class="icon-btn change-btn" (click)="initiateExchange(player); $event.stopPropagation();" title="Cambiar">
+              <i class="fas fa-exchange-alt"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delanteros -->
+      <div class="position-row forwards">
+        <div *ngFor="let player of startingForwards"
+             class="player-card"
+             [class.captain]="player.isCaptain"
+             [class.vice-captain]="player.isViceCaptain"
+             [class.selected]="selectedPlayer === player"
+             (click)="selectPlayer(player)">
+          <div class="player-image-container">
+            <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.name}}">
+            <span class="player-position-badge">DEL</span>
+          </div>
+          <div class="player-name">{{player.name}}</div>
+          <div class="player-team">{{player.team?.name}}</div>
+          <div class="player-points">{{player.points || 0}} pts</div>
+          <div class="player-actions">
+            <button class="icon-btn captain-btn" (click)="setCaptain(player); $event.stopPropagation();" title="Nombrar Capitán">C</button>
+            <button class="icon-btn vice-captain-btn" (click)="setViceCaptain(player); $event.stopPropagation();" title="Nombrar Vice-Capitán">VC</button>
+            <button class="icon-btn change-btn" (click)="initiateExchange(player); $event.stopPropagation();" title="Cambiar">
+              <i class="fas fa-exchange-alt"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="team-stats">
+    <div class="stat-item">
+      <span class="stat-label">Puntos Totales:</span>
+      <span class="stat-value">{{totalPoints}}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Valor del Equipo:</span>
+      <span class="stat-value">{{formatCurrency(teamValue)}}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Presupuesto Disponible:</span>
+      <span class="stat-value">{{formatCurrency(availableBudget)}}</span>
+    </div>
+  </div>
+
+  <!-- Banquillo Colapsable -->
+  <div class="bench-container" [class.collapsed]="!showBench">
+    <div class="bench-header" (click)="toggleBench()">
+      <h3>Banquillo</h3>
+      <span class="bench-toggle">{{ showBench ? '▼' : '▲' }}</span>
+    </div>
+
+    <div class="bench-content" *ngIf="showBench">
+      <div class="bench-players">
+        <div *ngFor="let player of benchPlayers"
+             class="bench-player-card"
+             [class.selected]="selectedPlayer === player"
+             [class.compatible]="isCompatibleExchange(player)"
+             [class.incompatible]="exchangeMode && !isCompatibleExchange(player)"
+             (click)="selectPlayer(player)">
+          <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.name}}">
+          <div class="player-info">
+            <div class="player-name">{{player.name}}</div>
+            <div class="player-team">{{player.team?.name}}</div>
+            <div class="player-position">{{getPositionLabel(player.positionId)}}</div>
+          </div>
+          <div class="player-points">{{player.points || 0}} pts</div>
+          <button *ngIf="exchangeMode && isCompatibleExchange(player)"
+                  class="exchange-btn"
+                  (click)="completeExchange(player); $event.stopPropagation();">
+            Cambiar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barra de notificación de intercambio -->
+  <div class="exchange-notification" *ngIf="exchangeMode">
+    <div class="exchange-message">
+      <strong>Modo de Cambio:</strong> {{exchangeModeMessage}}
+    </div>
+    <button class="cancel-btn" (click)="cancelExchange()">Cancelar</button>
+  </div>
+
+  <!-- Modal de Formación -->
+  <div class="modal-overlay" *ngIf="showFormationModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Cambiar Formación</h3>
+        <button class="close-btn" (click)="closeFormationModal()">&times;</button>
+      </div>
+      <div class="formation-options">
+        <div *ngFor="let formation of validFormations"
+             class="formation-option"
+             [class.active]="formation === currentFormation"
+             (click)="changeFormation(formation)">
+          <div class="formation-name">{{formation}}</div>
+          <div class="formation-diagram">
+            <ng-container *ngFor="let part of formation.split('-'); let i = index">
+              <div class="formation-part">
+                <div class="formation-number">{{part}}</div>
+                <div class="formation-dots">
+                  <div class="dot" *ngFor="let dot of [].constructor(+part)"></div>
+                </div>
+              </div>
+              <span *ngIf="i < formation.split('-').length - 1">-</span>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="primary-btn" (click)="closeFormationModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Transferencias -->
+  <div class="modal-overlay" *ngIf="showTransfersModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Transferencias</h3>
+        <button class="close-btn" (click)="closeTransfersModal()">&times;</button>
+      </div>
+      <p>Funcionalidad de transferencias en desarrollo.</p>
+      <div class="modal-actions">
+        <button class="primary-btn" (click)="closeTransfersModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>

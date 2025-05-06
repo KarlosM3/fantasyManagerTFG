@@ -37,4 +37,21 @@ export class LeagueService {
   joinLeagueByCode(inviteCode: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/join`, { inviteCode });
   }
+
+  getLeagueByInviteCode(inviteCode: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/by-invite-code/${inviteCode}`);
+  }
+
+  getMyTeam(leagueId: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${leagueId}/my-team`);
+  }
+
+  updateTeamCaptain(leagueId: string, playerId: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${leagueId}/my-team/captain`, { playerId });
+  }
+
+  updateTeamFormation(leagueId: string, formation: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${leagueId}/my-team/formation`, { formation });
+  }
+
 }

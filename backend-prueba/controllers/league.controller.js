@@ -316,3 +316,94 @@ exports.joinLeagueByCode = async (req, res) => {
     });
   }
 };
+
+// Obtener liga por código de invitación
+exports.getLeagueByInviteCode = async (req, res) => {
+  try {
+    const { inviteCode } = req.params;
+    const league = await League.findOne({ inviteCode });
+    
+    if (!league) {
+      return res.status(404).json({ message: 'Liga no encontrada' });
+    }
+    
+    res.json({
+      leagueId: league._id,
+      name: league.name,
+      privacy: league.privacy,
+      createdBy: league.createdBy
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener información de la liga', error: error.message });
+  }
+};
+
+// Obtener el equipo del usuario en una liga específica
+exports.getMyTeam = async (req, res) => {
+  try {
+    const { leagueId } = req.params;
+    const userId = req.user.id || req.user._id;
+    
+    // Buscar el equipo del usuario en esta liga
+    const team = await Team.findOne({ league: leagueId, user: userId });
+    
+    if (!team) {
+      return res.status(404).json({ message: 'No tienes un equipo en esta liga' });
+    }
+    
+    // Calcular el valor total del equipo
+    const teamValue = (team.playersData || []).reduce((sum, player) => {
+      return sum + (Number(player.marketValue) || 0);
+    }, 0);
+    
+    res.json({
+      teamValue,
+      budget: team.budget,
+      playersData: team.playersData
+    });
+  } catch (error) {
+    console.error('Error al obtener equipo:', error);
+    res.status(500).json({ message: 'Error al obtener tu equipo', error: error.message });
+  }
+};
+
+exports.updateTeamCaptain = async (req, res) => {
+  try {
+    const { leagueId } = req.params;
+    const { playerId } = req.body;
+    const userId = req.user.id || req.user._id;
+    
+    // Actualizar el capitán en la base de datos
+    const team = await Team.findOneAndUpdate(
+      { league: leagueId, user: userId },
+      { captain: playerId },
+      { new: true }
+    );
+    
+    res.status(200).json(team);
+  } catch (error) {
+    console.error('Error updating team captain:', error.message);
+    res.status(500).json({ message: 'Error updating team captain', error: error.message });
+  }
+};
+
+exports.updateTeamFormation = async (req, res) => {
+  try {
+    const { leagueId } = req.params;
+    const { formation } = req.body;
+    const userId = req.user.id || req.user._id;
+    
+    const team = await Team.findOneAndUpdate(
+      { league: leagueId, user: userId },
+      { formation },
+      { new: true }
+    );
+    
+    res.status(200).json(team);
+  } catch (error) {
+    console.error('Error updating team formation:', error.message);
+    res.status(500).json({ message: 'Error updating team formation', error: error.message });
+  }
+};
+
+

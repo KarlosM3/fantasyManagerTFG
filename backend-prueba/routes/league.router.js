@@ -24,4 +24,19 @@ router.get('/:leagueId/invite-link', leagueController.generateInviteLink);
 // Unirse a una liga
 router.post('/join', leagueController.joinLeagueByCode);
 
+// Obtener codigo de invitación de una liga
+router.get('/by-invite-code/:inviteCode', leagueController.getLeagueByInviteCode);
+
+// Obtener mi equipo en una liga específica
+router.get('/:leagueId/my-team', leagueController.getMyTeam);
+
+//Obtener mi equipo
+router.get('/:leagueId/my-team', leagueController.getMyTeam);
+
+//Insertar el capitan del equipo
+router.put('/:leagueId/my-team/captain', leagueController.updateTeamCaptain);
+
+//Insertar la formacion del equipo
+router.put('/:leagueId/my-team/formation', leagueController.updateTeamFormation);
+
 module.exports = router;

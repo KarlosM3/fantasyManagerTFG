@@ -85,4 +85,37 @@ export class JoinLeagueComponent implements OnInit {
 
     this.router.navigate(['/auth/login']);
   }
+
+  goToClassification() {
+    if (!this.inviteCode) return;
+
+    this.isLoading = true;
+    this.leagueService.getLeagueByInviteCode(this.inviteCode).subscribe({
+      next: (res: any) => {
+        this.isLoading = false;
+        this.router.navigate(['/layouts/classification', res.leagueId]);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.errorMessage = 'Error al obtener información de la liga';
+      }
+    });
+  }
+
+  goToMyTeam() {
+    if (!this.inviteCode) return;
+
+    this.isLoading = true;
+    this.leagueService.getLeagueByInviteCode(this.inviteCode).subscribe({
+      next: (res: any) => {
+        this.isLoading = false;
+        // Aquí puedes navegar a la vista de tu equipo cuando la implementes
+        this.router.navigate(['/layouts/my-team', res.leagueId]);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.errorMessage = 'Error al obtener información de la liga';
+      }
+    });
+  }
 }
