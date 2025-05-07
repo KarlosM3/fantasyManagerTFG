@@ -31,14 +31,19 @@
              [class.captain]="player.isCaptain"
              [class.vice-captain]="player.isViceCaptain"
              [class.selected]="selectedPlayer === player"
+             [class.placeholder-card]="isPlaceholderPlayer(player)"
              (click)="selectPlayer(player)">
+          <div class="team-badge" *ngIf="player.team?.badgeColor">
+            <img [src]="player.team?.badgeColor" alt="{{player.team?.name}} badge">
+          </div>
           <div class="player-image-container">
-            <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.name}}">
+            <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.nickname}}">
             <span class="player-position-badge">POR</span>
           </div>
-          <div class="player-name">{{player.name}}</div>
-          <div class="player-team">{{player.team?.name}}</div>
-          <div class="player-points">{{player.points || 0}} pts</div>
+          <div class="player-info-container">
+            <div class="player-name">{{player.nickname}}</div>
+            <div class="player-points">{{player.points || 0}} pts</div>
+          </div>
           <div class="player-actions">
             <button class="icon-btn captain-btn" (click)="setCaptain(player); $event.stopPropagation();" title="Nombrar Capitán">C</button>
             <button class="icon-btn vice-captain-btn" (click)="setViceCaptain(player); $event.stopPropagation();" title="Nombrar Vice-Capitán">VC</button>
@@ -56,14 +61,19 @@
              [class.captain]="player.isCaptain"
              [class.vice-captain]="player.isViceCaptain"
              [class.selected]="selectedPlayer === player"
+             [class.placeholder-card]="isPlaceholderPlayer(player)"
              (click)="selectPlayer(player)">
+          <div class="team-badge" *ngIf="player.team?.badgeColor">
+            <img [src]="player.team?.badgeColor" alt="{{player.team?.name}} badge">
+          </div>
           <div class="player-image-container">
-            <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.name}}">
+            <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.nickname}}">
             <span class="player-position-badge">DEF</span>
           </div>
-          <div class="player-name">{{player.name}}</div>
-          <div class="player-team">{{player.team?.name}}</div>
-          <div class="player-points">{{player.points || 0}} pts</div>
+          <div class="player-info-container">
+            <div class="player-name">{{player.nickname}}</div>
+            <div class="player-points">{{player.points || 0}} pts</div>
+          </div>
           <div class="player-actions">
             <button class="icon-btn captain-btn" (click)="setCaptain(player); $event.stopPropagation();" title="Nombrar Capitán">C</button>
             <button class="icon-btn vice-captain-btn" (click)="setViceCaptain(player); $event.stopPropagation();" title="Nombrar Vice-Capitán">VC</button>
@@ -81,14 +91,19 @@
              [class.captain]="player.isCaptain"
              [class.vice-captain]="player.isViceCaptain"
              [class.selected]="selectedPlayer === player"
+             [class.placeholder-card]="isPlaceholderPlayer(player)"
              (click)="selectPlayer(player)">
+          <div class="team-badge" *ngIf="player.team?.badgeColor">
+            <img [src]="player.team?.badgeColor" alt="{{player.team?.name}} badge">
+          </div>
           <div class="player-image-container">
-            <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.name}}">
+            <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.nickname}}">
             <span class="player-position-badge">MED</span>
           </div>
-          <div class="player-name">{{player.name}}</div>
-          <div class="player-team">{{player.team?.name}}</div>
-          <div class="player-points">{{player.points || 0}} pts</div>
+          <div class="player-info-container">
+            <div class="player-name">{{player.nickname}}</div>
+            <div class="player-points">{{player.points || 0}} pts</div>
+          </div>
           <div class="player-actions">
             <button class="icon-btn captain-btn" (click)="setCaptain(player); $event.stopPropagation();" title="Nombrar Capitán">C</button>
             <button class="icon-btn vice-captain-btn" (click)="setViceCaptain(player); $event.stopPropagation();" title="Nombrar Vice-Capitán">VC</button>
@@ -106,14 +121,19 @@
              [class.captain]="player.isCaptain"
              [class.vice-captain]="player.isViceCaptain"
              [class.selected]="selectedPlayer === player"
+             [class.placeholder-card]="isPlaceholderPlayer(player)"
              (click)="selectPlayer(player)">
+          <div class="team-badge" *ngIf="player.team?.badgeColor">
+            <img [src]="player.team?.badgeColor" alt="{{player.team?.name}} badge">
+          </div>
           <div class="player-image-container">
-            <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.name}}">
+            <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.nickname}}">
             <span class="player-position-badge">DEL</span>
           </div>
-          <div class="player-name">{{player.name}}</div>
-          <div class="player-team">{{player.team?.name}}</div>
-          <div class="player-points">{{player.points || 0}} pts</div>
+          <div class="player-info-container">
+            <div class="player-name">{{player.nickname}}</div>
+            <div class="player-points">{{player.points || 0}} pts</div>
+          </div>
           <div class="player-actions">
             <button class="icon-btn captain-btn" (click)="setCaptain(player); $event.stopPropagation();" title="Nombrar Capitán">C</button>
             <button class="icon-btn vice-captain-btn" (click)="setViceCaptain(player); $event.stopPropagation();" title="Nombrar Vice-Capitán">VC</button>
@@ -157,10 +177,9 @@
              [class.compatible]="isCompatibleExchange(player)"
              [class.incompatible]="exchangeMode && !isCompatibleExchange(player)"
              (click)="selectPlayer(player)">
-          <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.name}}">
+          <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.nickname}}">
           <div class="player-info">
-            <div class="player-name">{{player.name}}</div>
-            <div class="player-team">{{player.team?.name}}</div>
+            <div class="player-name">{{player.nickname}}</div>
             <div class="player-position">{{getPositionLabel(player.positionId)}}</div>
           </div>
           <div class="player-points">{{player.points || 0}} pts</div>
@@ -184,33 +203,74 @@
 
   <!-- Modal de Formación -->
   <div class="modal-overlay" *ngIf="showFormationModal">
-    <div class="modal-content">
+    <div class="modal-content formation-modal">
       <div class="modal-header">
         <h3>Cambiar Formación</h3>
         <button class="close-btn" (click)="closeFormationModal()">&times;</button>
       </div>
-      <div class="formation-options">
+
+      <div class="formations-grid">
         <div *ngFor="let formation of validFormations"
-             class="formation-option"
+             class="formation-card"
              [class.active]="formation === currentFormation"
              (click)="changeFormation(formation)">
           <div class="formation-name">{{formation}}</div>
-          <div class="formation-diagram">
-            <ng-container *ngFor="let part of formation.split('-'); let i = index">
-              <div class="formation-part">
-                <div class="formation-number">{{part}}</div>
-                <div class="formation-dots">
-                  <div class="dot" *ngFor="let dot of [].constructor(+part)"></div>
-                </div>
-              </div>
-              <span *ngIf="i < formation.split('-').length - 1">-</span>
-            </ng-container>
+
+          <div class="mini-pitch">
+
+            <!-- Defensas -->
+            <div class="mini-row def-row">
+              <div class="mini-player def"
+                   *ngFor="let i of [].constructor(+formation.split('-')[0])"></div>
+            </div>
+
+            <!-- Mediocampistas -->
+            <div class="mini-row mid-row">
+              <div class="mini-player mid"
+                   *ngFor="let i of [].constructor(+formation.split('-')[1])"></div>
+            </div>
+
+            <!-- Delanteros -->
+            <div class="mini-row fwd-row">
+              <div class="mini-player fwd"
+                   *ngFor="let i of [].constructor(+formation.split('-')[2])"></div>
+            </div>
+          </div>
+
+          <div class="formation-stats">
+            <div class="stat">
+              <span class="label">DEF</span>
+              <span class="value">{{formation.split('-')[0]}}</span>
+            </div>
+            <div class="stat">
+              <span class="label">MED</span>
+              <span class="value">{{formation.split('-')[1]}}</span>
+            </div>
+            <div class="stat">
+              <span class="label">DEL</span>
+              <span class="value">{{formation.split('-')[2]}}</span>
+            </div>
           </div>
         </div>
       </div>
+
+      <div class="placeholder-info">
+        <p>Si no tienes suficientes jugadores para una formación, se usarán posiciones vacantes que puedes completar después con transferencias.</p>
+      </div>
+
       <div class="modal-actions">
         <button class="primary-btn" (click)="closeFormationModal()">Cerrar</button>
       </div>
+    </div>
+
+    <!-- Mensaje de error/advertencia -->
+    <div *ngIf="showFormationErrorMessage" class="formation-error">
+      <p>{{ formationErrorMessage }}</p>
+      <button *ngIf="formationErrorMessage.includes('Faltan')"
+              class="quick-transfer-btn"
+              (click)="openTransfersModal(); closeFormationModal()">
+        Buscar jugadores
+      </button>
     </div>
   </div>
 

@@ -1,12 +1,13 @@
 export interface Player {
   id: string;
-  name: string;
+  nickname?: string;
   positionId: string;
   position?: string; // Derivado de positionId
-  marketValue: number;
+  marketValue?: number;
   team?: {
     name: string;
     shortName?: string;
+    badgeColor?: string;
   };
   points?: number;
   image?: string;

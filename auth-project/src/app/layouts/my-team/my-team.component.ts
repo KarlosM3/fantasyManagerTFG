@@ -4,6 +4,7 @@ import { LeagueService } from "../../modals/create-league-modal/services/create-
 import { Player } from "../../player.interface"
 import { FormationService } from "../../services/formation.service"
 import { PlayerBadgeService } from "../../services/player-badge.service"
+import { PlaceholderPlayerService } from "../../services/placeholder-player.service"
 
 @Component({
   selector: "app-my-team",
@@ -60,6 +61,7 @@ export class MyTeamComponent implements OnInit {
     private leagueService: LeagueService,
     private formationService: FormationService,
     private playerBadgeService: PlayerBadgeService,
+    private placeholderService: PlaceholderPlayerService, // Añadir este servicio
   ) {}
 
   ngOnInit(): void {
@@ -78,6 +80,12 @@ export class MyTeamComponent implements OnInit {
         this.players = data.map((player: any) => ({
           ...player,
           position: this.positionMap[player.positionId as keyof typeof this.positionMap],
+          image: player.images?.transparent?.["256x256"] || null,
+          // Asegurarse de que el escudo del equipo esté disponible
+          team: {
+            ...player.team,
+            badgeColor: player.team?.badgeColor || null,
+          },
         }))
 
         this.filterPlayersByPosition()
@@ -136,31 +144,7 @@ export class MyTeamComponent implements OnInit {
 
   // Función para seleccionar los 11 titulares según la formación
   selectStartingEleven(): void {
-    // Extraer números de la formación (ej: "4-4-2" -> [4,4,2])
-    const formationParts = this.currentFormation.split("-").map((part) => Number.parseInt(part))
-
-    // Seleccionar 1 portero (siempre 1 en fútbol)
-    this.startingGoalkeeper = this.goalkeepers.length > 0 ? [this.goalkeepers[0]] : []
-
-    // Seleccionar defensas según el primer número de la formación
-    const defCount = formationParts[0]
-    this.startingDefenders = this.defenders.slice(0, defCount)
-
-    // Seleccionar mediocampistas según el segundo número
-    const midCount = formationParts[1]
-    this.startingMidfielders = this.midfielders.slice(0, midCount)
-
-    // Seleccionar delanteros según el tercer número
-    const fwdCount = formationParts[2]
-    this.startingForwards = this.forwards.slice(0, fwdCount)
-
-    // Calcular jugadores del banquillo (todos los que no son titulares)
-    this.benchPlayers = [
-      ...this.goalkeepers.slice(1),
-      ...this.defenders.slice(defCount),
-      ...this.midfielders.slice(midCount),
-      ...this.forwards.slice(fwdCount),
-    ]
+    this.applyFormationWithPlaceholders()
   }
 
   // Función para obtener etiqueta legible de posición
@@ -223,21 +207,141 @@ export class MyTeamComponent implements OnInit {
     this.showFormationModal = false
   }
 
-  changeFormation(formation: string): void {
-    if (this.validFormations.includes(formation)) {
-      this.currentFormation = formation
-      this.selectStartingEleven()
+  // Propiedades para mensajes de error
+  formationErrorMessage = ""
+  showFormationErrorMessage = false
 
-      // Actualizar en el servidor
-      this.leagueService.updateTeamFormation(this.leagueId, formation).subscribe({
-        next: () => {
-          console.log("Formación actualizada con éxito")
-          this.closeFormationModal()
-        },
-        error: (error) => {
-          console.error("Error al actualizar formación:", error)
-        },
-      })
+  changeFormation(formation: string): void {
+    if (!this.validFormations.includes(formation)) {
+      this.showFormationError("Formación no válida")
+      return
+    }
+
+    // Verificar si tenemos suficientes jugadores para esta formación
+    const parts = formation.split("-").map((p) => Number.parseInt(p))
+    const [defNeeded, midNeeded, fwdNeeded] = parts
+
+    const defAvailable = this.defenders.length
+    const midAvailable = this.midfielders.length
+    const fwdAvailable = this.forwards.length
+
+    // Mostrar advertencias pero permitir el cambio con placeholders
+    let warningMessage = ""
+
+    if (defAvailable < defNeeded) {
+      warningMessage += `Faltan ${defNeeded - defAvailable} defensas. `
+    }
+
+    if (midAvailable < midNeeded) {
+      warningMessage += `Faltan ${midNeeded - midAvailable} centrocampistas. `
+    }
+
+    if (fwdAvailable < fwdNeeded) {
+      warningMessage += `Faltan ${fwdNeeded - fwdAvailable} delanteros. `
+    }
+
+    // Si hay advertencias, mostrarlas pero continuar
+    if (warningMessage) {
+      this.showFormationWarning(warningMessage + "Se usarán posiciones vacantes.")
+    }
+
+    // Aplicar la formación de todos modos
+    this.currentFormation = formation
+    this.applyFormationWithPlaceholders()
+
+    // Actualizar en el servidor
+    this.leagueService.updateTeamFormation(this.leagueId, formation).subscribe({
+      next: () => {
+        console.log("Formación actualizada con éxito")
+        this.closeFormationModal()
+      },
+      error: (error) => {
+        console.error("Error al actualizar formación:", error)
+      },
+    })
+  }
+
+  // Añadir este nuevo método para aplicar formación con placeholders
+  applyFormationWithPlaceholders(): void {
+    // Extraer números de la formación (ej: "4-4-2" -> [4,4,2])
+    const formationParts = this.currentFormation.split("-").map((part) => Number.parseInt(part))
+
+    // Seleccionar 1 portero (siempre 1 en fútbol)
+    this.startingGoalkeeper =
+      this.goalkeepers.length > 0 ? [this.goalkeepers[0]] : [this.placeholderService.getPlaceholder("GK", 0)]
+
+    // Seleccionar defensas según el primer número de la formación
+    const defCount = formationParts[0]
+    this.startingDefenders = [...this.defenders.slice(0, defCount)]
+
+    // Añadir placeholders si faltan defensas
+    if (this.startingDefenders.length < defCount) {
+      for (let i = this.startingDefenders.length; i < defCount; i++) {
+        this.startingDefenders.push(this.placeholderService.getPlaceholder("DEF", i))
+      }
+    }
+
+    // Seleccionar mediocampistas según el segundo número
+    const midCount = formationParts[1]
+    this.startingMidfielders = [...this.midfielders.slice(0, midCount)]
+
+    // Añadir placeholders si faltan mediocampistas
+    if (this.startingMidfielders.length < midCount) {
+      for (let i = this.startingMidfielders.length; i < midCount; i++) {
+        this.startingMidfielders.push(this.placeholderService.getPlaceholder("MID", i))
+      }
+    }
+
+    // Seleccionar delanteros según el tercer número
+    const fwdCount = formationParts[2]
+    this.startingForwards = [...this.forwards.slice(0, fwdCount)]
+
+    // Añadir placeholders si faltan delanteros
+    if (this.startingForwards.length < fwdCount) {
+      for (let i = this.startingForwards.length; i < fwdCount; i++) {
+        this.startingForwards.push(this.placeholderService.getPlaceholder("FWD", i))
+      }
+    }
+
+    // Calcular jugadores del banquillo (todos los que no son titulares ni placeholders)
+    this.benchPlayers = [
+      ...this.goalkeepers.slice(1),
+      ...this.defenders.slice(defCount),
+      ...this.midfielders.slice(midCount),
+      ...this.forwards.slice(fwdCount),
+    ]
+  }
+
+  // Añadir este método para mostrar advertencias
+  showFormationWarning(message: string): void {
+    this.formationErrorMessage = message
+    this.showFormationErrorMessage = true
+
+    // Auto-ocultar después de 5 segundos
+    setTimeout(() => {
+      this.showFormationErrorMessage = false
+    }, 5000)
+  }
+
+  // Método para mostrar errores de formación
+  showFormationError(message: string): void {
+    this.formationErrorMessage = message
+    this.showFormationErrorMessage = true
+
+    // Auto-ocultar después de 5 segundos
+    setTimeout(() => {
+      this.showFormationErrorMessage = false
+    }, 5000)
+
+    // Sugerir formación alternativa
+    const suggestedFormation = this.findClosestValidFormation(
+      this.defenders.length,
+      this.midfielders.length,
+      this.forwards.length,
+    )
+
+    if (suggestedFormation) {
+      this.formationErrorMessage += `. Formación sugerida: ${suggestedFormation}`
     }
   }
 
@@ -273,7 +377,7 @@ export class MyTeamComponent implements OnInit {
 
     // Mostrar un mensaje según la posición del jugador
     const positionName = this.getReadablePosition(player.position ?? "")
-    this.exchangeModeMessage = `Selecciona un ${positionName} del banquillo para reemplazar a ${player.name}`
+    this.exchangeModeMessage = `Selecciona un ${positionName} del banquillo para reemplazar a ${player.nickname}`
 
     // Asegurar que el banquillo está visible
     this.showBench = true
@@ -318,7 +422,7 @@ export class MyTeamComponent implements OnInit {
       this.updatePlayerSwap(this.playerToExchange.id, benchPlayer.id)
         .then(() => {
           // Mostrar notificación de éxito
-          console.log(`Cambio realizado: ${this.playerToExchange?.name} por ${benchPlayer.name}`)
+          console.log(`Cambio realizado: ${this.playerToExchange?.nickname} por ${benchPlayer.nickname}`)
         })
         .catch((error) => {
           // Revertir cambios en caso de error
@@ -406,7 +510,7 @@ export class MyTeamComponent implements OnInit {
     if (!this.draggedPlayer) return
 
     // Ya no usamos este método, pero lo mantenemos por compatibilidad
-    console.log(`Moviendo jugador ${this.draggedPlayer.name} a ${targetArea}`)
+    console.log(`Moviendo jugador ${this.draggedPlayer.nickname} a ${targetArea}`)
 
     // Resetear estado
     this.draggedPlayer = null
@@ -435,5 +539,10 @@ export class MyTeamComponent implements OnInit {
   getStatusColor(player: Player): string {
     const status = this.getPlayerStatus(player)
     return this.playerBadgeService.getStatusColor(status)
+  }
+
+  // Añadir este método para verificar si un jugador es un placeholder
+  isPlaceholderPlayer(player: Player): boolean {
+    return this.placeholderService.isPlaceholder(player)
   }
 }

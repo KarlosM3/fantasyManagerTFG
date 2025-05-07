@@ -224,18 +224,22 @@ $bench-toggle-bg: rgba(0, 0, 0, 0.4);
   background-color: $card-background;
   border-radius: 8px;
   padding: 5px;
-  width: 120px;
+  width: 100px; // Reducido de 120px para hacerlas más compactas
+  height: 150px; // Altura fija para mantener consistencia
   text-align: center;
   color: $text-dark;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 
   &:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
   }
 
   &.selected {
@@ -244,6 +248,7 @@ $bench-toggle-bg: rgba(0, 0, 0, 0.4);
     transform: translateY(-5px) scale(1.05);
   }
 
+  // Estilos mejorados para capitán
   &.captain {
     border: 2px solid $captain-color;
 
@@ -262,9 +267,24 @@ $bench-toggle-bg: rgba(0, 0, 0, 0.4);
       justify-content: center;
       font-weight: bold;
       font-size: 12px;
+      z-index: 10;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    // Banda diagonal para capitán
+    &:after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, transparent 50%, rgba(255, 215, 0, 0.5) 50%);
+      z-index: 1;
     }
   }
 
+  // Estilos mejorados para vice-capitán
   &.vice-captain {
     border: 2px solid $vice-captain-color;
 
@@ -283,14 +303,45 @@ $bench-toggle-bg: rgba(0, 0, 0, 0.4);
       justify-content: center;
       font-weight: bold;
       font-size: 10px;
+      z-index: 10;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    // Banda diagonal para vice-capitán
+    &:after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, transparent 50%, rgba(192, 192, 192, 0.5) 50%);
+      z-index: 1;
+    }
+  }
+
+  // Escudo del equipo
+  .team-badge {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: 20px;
+    height: 20px;
+    z-index: 5;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
   }
 
   .player-image-container {
     position: relative;
-    width: 60px;
-    height: 60px;
-    margin: 0 auto 10px;
+    width: 50px; // Reducido de 60px
+    height: 50px; // Reducido de 60px
+    margin: 0 auto 5px; // Reducido el margen inferior
+    z-index: 2;
 
     img {
       width: 100%;
@@ -298,13 +349,13 @@ $bench-toggle-bg: rgba(0, 0, 0, 0.4);
       border-radius: 50%;
       object-fit: cover;
       border: 2px solid #eee;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .player-position-badge {
       position: absolute;
-      bottom: 0;
-      right: 0;
-      background-color: $team-secondary-color;
+      bottom: -2px;
+      right: -2px;
       color: white;
       width: 24px;
       height: 24px;
@@ -315,38 +366,71 @@ $bench-toggle-bg: rgba(0, 0, 0, 0.4);
       font-size: 10px;
       font-weight: bold;
       border: 2px solid white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+
+      // Colores diferentes por posición
+      .goalkeepers & {
+        background-color: #ffcc00; // Amarillo para porteros
+      }
+
+      .defenders & {
+        background-color: #ff3e3e; // Rojo para defensas
+      }
+
+      .midfielders & {
+        background-color: #1e88e5; // Azul para centrocampistas
+      }
+
+      .forwards & {
+        background-color: #10b981; // Verde para delanteros
+      }
     }
+  }
+
+  .player-info-container {
+    display: flex;
+    flex-direction: column;
+    padding: 0 5px;
+    z-index: 2;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 4px;
+    margin: 0 2px;
   }
 
   .player-name {
     font-weight: bold;
-    margin-top: 5px;
-    font-size: 14px;
+    font-size: 12px; // Ligeramente más pequeño para caber en tarjetas más compactas
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    padding: 2px 0;
   }
 
   .player-team {
-    font-size: 12px;
+    font-size: 10px;
     color: #666;
-    margin-bottom: 5px;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .player-points {
     font-weight: bold;
     color: $team-secondary-color;
     font-size: 14px;
+    padding: 2px 0;
   }
 
   .player-actions {
     display: flex;
     justify-content: center;
-    gap: 8px;
-    margin-top: 8px;
+    gap: 4px; // Reducido de 8px
+    margin-top: 4px; // Reducido de 8px
     opacity: 0;
     transform: translateY(10px);
     transition: all 0.3s ease;
+    z-index: 5;
   }
 
   &:hover .player-actions {
@@ -355,13 +439,13 @@ $bench-toggle-bg: rgba(0, 0, 0, 0.4);
   }
 
   .icon-btn {
-    width: 30px;
-    height: 30px;
+    width: 24px; // Reducido de 30px
+    height: 24px; // Reducido de 30px
     border-radius: 50%;
     border: none;
     cursor: pointer;
     font-weight: bold;
-    font-size: 12px;
+    font-size: 10px; // Reducido de 12px
     transition: all 0.2s ease;
 
     &.captain-btn {
@@ -393,6 +477,43 @@ $bench-toggle-bg: rgba(0, 0, 0, 0.4);
   }
 }
 
+// Añadir estilos para las tarjetas de placeholder
+.placeholder-card {
+  background-color: rgba(255, 255, 255, 0.5);
+  border: 2px dashed #666;
+  opacity: 0.8;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.7);
+    border-color: $team-secondary-color;
+  }
+
+  .player-name {
+    color: #666;
+    font-style: italic;
+  }
+
+  .player-team {
+    color: #999;
+  }
+
+  .player-image-container {
+    img {
+      opacity: 0.6;
+    }
+  }
+
+  .player-actions {
+    // Ocultar acciones para placeholders
+    display: none;
+  }
+
+  // No mostrar escudo para placeholders
+  .team-badge {
+    display: none;
+  }
+}
+
 // Banquillo Colapsable
 .bench-container {
   margin-top: 20px;
@@ -400,14 +521,6 @@ $bench-toggle-bg: rgba(0, 0, 0, 0.4);
   border-radius: 8px;
   transition: all 0.3s ease;
   overflow: hidden;
-
-  &.collapsed {
-    max-height: 60px;
-
-    .bench-header {
-      border-bottom: none;
-    }
-  }
 }
 
 .bench-header {
@@ -579,6 +692,16 @@ $bench-toggle-bg: rgba(0, 0, 0, 0.4);
   }
 }
 
+// Estilo para el mensaje informativo de placeholders
+.placeholder-info {
+  margin: 15px 0;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
 // Team stats
 .team-stats {
   margin-top: 20px;
@@ -681,13 +804,25 @@ $bench-toggle-bg: rgba(0, 0, 0, 0.4);
   }
 
   .player-card {
-    width: 100px;
-    padding: 8px;
-    margin-bottom: 10px;
+    width: 90px;
+    height: 140px;
+    padding: 4px;
 
     .player-image-container {
-      width: 50px;
-      height: 50px;
+      width: 45px;
+      height: 45px;
+    }
+
+    .player-name {
+      font-size: 11px;
+    }
+
+    .player-team {
+      font-size: 9px;
+    }
+
+    .player-points {
+      font-size: 12px;
     }
   }
 
@@ -703,5 +838,238 @@ $bench-toggle-bg: rgba(0, 0, 0, 0.4);
     .cancel-btn {
       align-self: flex-end;
     }
+  }
+}
+
+  // Estilos para el modal de formación mejorado
+  .formation-modal {
+    max-width: 700px;
+  }
+
+  .formations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .formation-card {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 2px solid transparent;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      transform: translateY(-3px);
+    }
+
+    &.active {
+      border-color: $team-secondary-color;
+      background-color: rgba($team-secondary-color, 0.1);
+    }
+
+    .formation-name {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 12px;
+      color: white;
+    }
+  }
+
+  // Mini campo de fútbol para visualizar formaciones
+  .mini-pitch {
+    width: 120px;
+    height: 160px;
+    background-color: $pitch-bg-color;
+    border-radius: 4px;
+    position: relative;
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10px 5px;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+
+    // Línea central
+    &:before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background-color: rgba(255, 255, 255, 0.5);
+    }
+
+    // Círculo central
+    &:after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 20px;
+      height: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 50%;
+    }
+  }
+
+  .mini-row {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    z-index: 2;
+  }
+
+  .mini-player {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    z-index: 2;
+
+    &.gk {
+      background-color: #ffcc00;
+      position: absolute;
+      bottom: 5px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    &.def {
+      background-color: #ff3e3e;
+    }
+
+    &.mid {
+      background-color: #1e88e5;
+    }
+
+    &.fwd {
+      background-color: #10b981;
+    }
+  }
+
+  .def-row {
+    margin-top: 20px;
+  }
+
+  .mid-row {
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+
+  .fwd-row {
+    margin-bottom: 20px;
+  }
+
+  .formation-stats {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .value {
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+    }
+  }
+
+  // Mensaje de error/advertencia mejorado
+  .formation-error {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    border-left: 4px solid #ffcc00;
+    padding: 12px 16px;
+    border-radius: 4px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    max-width: 90%;
+    width: 500px;
+    z-index: 1100;
+    animation: slideUp 0.3s ease-out;
+
+    p {
+      margin: 0;
+      flex: 1;
+    }
+
+    .quick-transfer-btn {
+      @include button-style;
+      background-color: #ffcc00;
+      color: #333;
+      padding: 6px 12px;
+      font-size: 12px;
+      white-space: nowrap;
+
+      &:hover {
+        background-color: darken(#ffcc00, 10%);
+      }
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translate(-50%, 20px);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+  }
+
+  // Ajustes responsive
+  @media (max-width: 768px) {
+    .formations-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .formations-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+// Ajustes para posiciones específicas
+.position-row {
+  &.goalkeepers .player-card {
+    border-bottom: 3px solid #ffcc00;
+  }
+
+  &.defenders .player-card {
+    border-bottom: 3px solid #ff3e3e;
+  }
+
+  &.midfielders .player-card {
+    border-bottom: 3px solid #1e88e5;
+  }
+
+  &.forwards .player-card {
+    border-bottom: 3px solid #10b981;
   }
 }
