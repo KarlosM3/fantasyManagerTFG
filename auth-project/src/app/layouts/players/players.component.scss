@@ -10,7 +10,7 @@ $sidebar-active: #333333;
 $card-bg: #333333;
 
 // Estilos generales
-.market-container {
+.players-container {
   background-color: $background-color;
   color: $text-color;
   min-height: 100vh;
@@ -46,7 +46,7 @@ $card-bg: #333333;
 }
 
 // Contenido del mercado
-.market-content {
+.players-content {
   flex: 1;
   padding: 20px;
 }

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { LayoutsRoutingModule } from './layouts-routing.module';
 import { HomeComponent } from './home/home.component';
-import { MarketComponent } from './market/market.component';
+import { PlayersComponent } from './players/players.component';
 import { CreateLeagueModalComponent } from '../modals/create-league-modal/create-league-modal.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ClassificationComponent } from './classification/classification.component';
@@ -13,7 +13,7 @@ import { MyTeamComponent } from './my-team/my-team.component';
 @NgModule({
   declarations: [
     HomeComponent,
-    MarketComponent,
+    PlayersComponent,
     CreateLeagueModalComponent,
     ClassificationComponent,
     MyTeamComponent

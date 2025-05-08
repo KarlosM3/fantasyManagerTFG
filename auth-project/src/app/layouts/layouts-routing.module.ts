@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
-import { MarketComponent } from './market/market.component';
+import { PlayersComponent } from './players/players.component';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { ClassificationComponent } from './classification/classification.component';
 import { MyTeamComponent } from './my-team/my-team.component';
@@ -13,8 +13,8 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
-    path: 'market',
-    component: MarketComponent,
+    path: 'players',
+    component: PlayersComponent,
     canActivate: [AuthGuard]
   },
   {

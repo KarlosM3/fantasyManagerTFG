@@ -3,11 +3,11 @@ import { PlayerService, Player } from './services/player.service';
 import { Router } from '@angular/router';
 
 @Component({
-  selector: 'app-market',
-  templateUrl: './market.component.html',
-  styleUrls: ['./market.component.scss']
+  selector: 'app-players',
+  templateUrl: './players.component.html',
+  styleUrls: ['./players.component.scss']
 })
-export class MarketComponent implements OnInit {
+export class PlayersComponent implements OnInit {
   jugadores: Player[] = [];
   jugadoresFiltrados: Player[] = [];
   filtroActual: string = 'Todos';
