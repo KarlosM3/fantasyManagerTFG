@@ -9,6 +9,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { ClassificationComponent } from './classification/classification.component';
 import { SharedModule } from '../shared/shared.module';
 import { MyTeamComponent } from './my-team/my-team.component';
+import { MarketComponent } from './market/market.component';
 
 @NgModule({
   declarations: [
@@ -16,7 +17,8 @@ import { MyTeamComponent } from './my-team/my-team.component';
     PlayersComponent,
     CreateLeagueModalComponent,
     ClassificationComponent,
-    MyTeamComponent
+    MyTeamComponent,
+    MarketComponent
     ],
   imports: [
     CommonModule,
