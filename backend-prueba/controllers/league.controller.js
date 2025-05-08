@@ -64,11 +64,22 @@ exports.assignRandomTeam = async (req, res) => {
     const { leagueId } = req.params;
     const userId = req.user.id || req.user._id;
 
-    // ¿Ya tiene equipo en esta liga?
+    // Verificar si ya tiene equipo
     const existingTeam = await Team.findOne({ league: leagueId, user: userId });
     if (existingTeam && existingTeam.playersData && existingTeam.playersData.length > 0) {
       return res.status(200).json(existingTeam.playersData);
     }
+
+    // Obtener todos los equipos existentes en esta liga
+    const existingTeams = await Team.find({ league: leagueId });
+    
+    // Crear un conjunto de IDs de jugadores ya utilizados
+    const usedPlayerIds = new Set();
+    existingTeams.forEach(team => {
+      (team.playersData || []).forEach(player => {
+        usedPlayerIds.add(player.id);
+      });
+    });
 
     // Estructura y presupuesto
     const teamStructure = { GK: 2, DEF: 5, MID: 5, FWD: 3 };
@@ -77,14 +88,17 @@ exports.assignRandomTeam = async (req, res) => {
 
     // Obtener todos los jugadores de la API externa
     const response = await axios.get('https://api-fantasy.llt-services.com/api/v3/players');
-    const allPlayers = response.data; // Ajusta si la respuesta es { data: [...] }
+    const allPlayers = response.data;
 
-    // Selección aleatoria
+    // Filtrar jugadores ya utilizados
+    const availablePlayers = allPlayers.filter(player => !usedPlayerIds.has(player.id));
+
+    // Selección optimizada para usar el presupuesto
     let selectedPlayers = [];
     let totalSpent = 0;
     let teamCounts = {};
 
-    // Mapear posiciones de la API a tus posiciones
+    // Mapear posiciones
     const positionMap = {
       "1": "GK",
       "2": "DEF",
@@ -92,14 +106,31 @@ exports.assignRandomTeam = async (req, res) => {
       "4": "FWD"
     };
 
+    // Calcular el total de jugadores necesarios
+    const totalPlayersNeeded = Object.values(teamStructure).reduce((a, b) => a + b, 0);
+
     for (const positionKey of Object.keys(teamStructure)) {
       let needed = teamStructure[positionKey];
-      let pool = allPlayers.filter(p => positionMap[p.positionId] === positionKey);
-
+      let pool = availablePlayers.filter(p => positionMap[p.positionId] === positionKey);
+      
+      // Calcular presupuesto promedio por jugador restante
+      const playersSelected = selectedPlayers.length;
+      const remainingPlayers = totalPlayersNeeded - playersSelected;
+      const avgBudgetPerPlayer = (budget - totalSpent) / Math.max(1, remainingPlayers);
+      
+      // Ordenar jugadores según cuánto presupuesto queda
+      if (avgBudgetPerPlayer > 8000000) {
+        // Si queda mucho presupuesto, priorizar jugadores caros
+        pool.sort((a, b) => Number(b.marketValue) - Number(a.marketValue));
+      } else {
+        // Si queda poco presupuesto, mezclar aleatoriamente
+        pool.sort(() => Math.random() - 0.5);
+      }
+      
       while (needed > 0 && pool.length > 0) {
-        const idx = Math.floor(Math.random() * pool.length);
-        const player = pool[idx];
-
+        const player = pool[0];
+        pool.shift(); // Quitar el primer jugador
+        
         if (
           !selectedPlayers.find(p => p.id === player.id) &&
           (teamCounts[player.team?.name] || 0) < maxPlayersPerTeam &&
@@ -109,29 +140,27 @@ exports.assignRandomTeam = async (req, res) => {
           totalSpent += Number(player.marketValue);
           teamCounts[player.team?.name] = (teamCounts[player.team?.name] || 0) + 1;
           needed--;
-        } else {
-          pool.splice(idx, 1);
         }
       }
     }
 
-    // Guarda el equipo con los datos completos de los jugadores
+    // Guardar el equipo
     await Team.create({
       league: leagueId,
       user: userId,
-      players: [], // No guardamos referencias locales
+      players: [],
       budget: budget - totalSpent,
-      playersData: selectedPlayers // <-- añade este campo en tu modelo si no lo tienes
+      playersData: selectedPlayers,
+      formation: '4-4-2' // Formación por defecto
     });
 
-    // Devuelve los jugadores seleccionados al frontend
     res.status(201).json(selectedPlayers);
-
   } catch (error) {
     console.error('Error asignando equipo aleatorio:', error.message);
     res.status(500).json({ message: 'Error asignando equipo aleatorio', error: error.message });
   }
 };
+
 
 // Obtener clasificación de una liga
 exports.getLeagueClassification = async (req, res) => {
@@ -206,40 +235,48 @@ exports.joinLeagueByCode = async (req, res) => {
   try {
     const { inviteCode } = req.body;
     const userId = req.user.id || req.user._id;
-    
     const league = await League.findOne({ inviteCode });
-    
+
     if (!league) {
       return res.status(404).json({ message: 'Liga no encontrada' });
     }
-    
+
     // Verificar si el usuario ya es miembro
-    const isMember = league.members.some(member => 
+    const isMember = league.members.some(member =>
       member.userId.toString() === userId.toString()
     );
-    
+
     if (isMember) {
       return res.status(400).json({ message: 'Ya eres miembro de esta liga' });
     }
-    
+
     // Añadir usuario a la liga
     league.members.push({
       userId,
       role: 'manager',
       joinedAt: new Date()
     });
-    
     await league.save();
     
-    // IMPORTANTE: Añadir la liga al usuario también
+    // Añadir la liga al usuario también
     await User.findByIdAndUpdate(
       userId,
       { $push: { leagues: league._id } },
       { new: true }
     );
-    
-    // Crear equipo aleatorio para el nuevo miembro
+
     try {
+      // Obtener todos los equipos existentes en esta liga
+      const existingTeams = await Team.find({ league: league._id });
+      
+      // Crear un conjunto de IDs de jugadores ya utilizados
+      const usedPlayerIds = new Set();
+      existingTeams.forEach(team => {
+        (team.playersData || []).forEach(player => {
+          usedPlayerIds.add(player.id);
+        });
+      });
+
       // Estructura y presupuesto
       const teamStructure = { GK: 2, DEF: 5, MID: 5, FWD: 3 };
       const maxPlayersPerTeam = 3;
@@ -249,12 +286,15 @@ exports.joinLeagueByCode = async (req, res) => {
       const response = await axios.get('https://api-fantasy.llt-services.com/api/v3/players');
       const allPlayers = response.data;
 
-      // Selección aleatoria
+      // Filtrar jugadores ya utilizados
+      const availablePlayers = allPlayers.filter(player => !usedPlayerIds.has(player.id));
+
+      // Selección optimizada para usar el presupuesto
       let selectedPlayers = [];
       let totalSpent = 0;
       let teamCounts = {};
 
-      // Mapear posiciones de la API a tus posiciones
+      // Mapear posiciones
       const positionMap = {
         "1": "GK",
         "2": "DEF",
@@ -262,14 +302,31 @@ exports.joinLeagueByCode = async (req, res) => {
         "4": "FWD"
       };
 
+      // Calcular el total de jugadores necesarios
+      const totalPlayersNeeded = Object.values(teamStructure).reduce((a, b) => a + b, 0);
+
       for (const positionKey of Object.keys(teamStructure)) {
         let needed = teamStructure[positionKey];
-        let pool = allPlayers.filter(p => positionMap[p.positionId] === positionKey);
-
+        let pool = availablePlayers.filter(p => positionMap[p.positionId] === positionKey);
+        
+        // Calcular presupuesto promedio por jugador restante
+        const playersSelected = selectedPlayers.length;
+        const remainingPlayers = totalPlayersNeeded - playersSelected;
+        const avgBudgetPerPlayer = (budget - totalSpent) / Math.max(1, remainingPlayers);
+        
+        // Ordenar jugadores según cuánto presupuesto queda
+        if (avgBudgetPerPlayer > 8000000) {
+          // Si queda mucho presupuesto, priorizar jugadores caros
+          pool.sort((a, b) => Number(b.marketValue) - Number(a.marketValue));
+        } else {
+          // Si queda poco presupuesto, mezclar aleatoriamente
+          pool.sort(() => Math.random() - 0.5);
+        }
+        
         while (needed > 0 && pool.length > 0) {
-          const idx = Math.floor(Math.random() * pool.length);
-          const player = pool[idx];
-
+          const player = pool[0];
+          pool.shift(); // Quitar el primer jugador
+          
           if (
             !selectedPlayers.find(p => p.id === player.id) &&
             (teamCounts[player.team?.name] || 0) < maxPlayersPerTeam &&
@@ -279,8 +336,6 @@ exports.joinLeagueByCode = async (req, res) => {
             totalSpent += Number(player.marketValue);
             teamCounts[player.team?.name] = (teamCounts[player.team?.name] || 0) + 1;
             needed--;
-          } else {
-            pool.splice(idx, 1);
           }
         }
       }
@@ -291,31 +346,33 @@ exports.joinLeagueByCode = async (req, res) => {
         user: userId,
         players: [],
         budget: budget - totalSpent,
-        playersData: selectedPlayers
+        playersData: selectedPlayers,
+        formation: '4-4-2' // Formación por defecto
       });
-      
-      // Solo envía una respuesta al final
+
       return res.status(200).json({
         success: true,
         message: 'Te has unido a la liga correctamente',
         leagueId: league._id,
-        team: selectedPlayers // Añadir el equipo aleatorio en la respuesta
+        team: selectedPlayers
       });
     } catch (teamError) {
       console.error('Error asignando equipo aleatorio:', teamError);
-      return res.status(500).json({ 
-        message: 'Error asignando equipo aleatorio', 
-        error: teamError.message 
+      return res.status(500).json({
+        message: 'Error asignando equipo aleatorio',
+        error: teamError.message
       });
     }
   } catch (error) {
     console.error('Error al unirse a la liga:', error);
-    return res.status(500).json({ 
-      message: 'Error al unirse a la liga', 
-      error: error.message 
+    return res.status(500).json({
+      message: 'Error al unirse a la liga',
+      error: error.message
     });
   }
 };
+
+
 
 // Obtener liga por código de invitación
 exports.getLeagueByInviteCode = async (req, res) => {
