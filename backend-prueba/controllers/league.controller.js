@@ -359,7 +359,13 @@ exports.getMyTeam = async (req, res) => {
     res.json({
       teamValue,
       budget: team.budget,
-      playersData: team.playersData
+      playersData: team.playersData,
+      team: {
+        formation: team.formation,
+        startingEleven: team.startingEleven,
+        captain: team.captain,
+        viceCaptain: team.viceCaptain
+      }
     });
   } catch (error) {
     console.error('Error al obtener equipo:', error);
@@ -405,5 +411,65 @@ exports.updateTeamFormation = async (req, res) => {
     res.status(500).json({ message: 'Error updating team formation', error: error.message });
   }
 };
+
+
+exports.saveTeamChanges = async (req, res) => {
+  try {
+    const { leagueId } = req.params;
+    const { formation, players, captainId, viceCaptainId } = req.body;
+    const userId = req.user.id || req.user._id;
+
+    // Buscar el equipo del usuario en esta liga
+    const team = await Team.findOne({ league: leagueId, user: userId });
+    if (!team) {
+      return res.status(404).json({
+        success: false,
+        message: 'No tienes un equipo en esta liga'
+      });
+    }
+
+    // Preparar las actualizaciones
+    const updates = {
+      formation: formation || team.formation,
+      lastSaved: new Date()
+    };
+
+    // Actualizar startingEleven con los jugadores que no son placeholders
+    if (players && players.length) {
+      updates.startingEleven = players.filter(player => player.id && !player.id.startsWith('placeholder'));
+    }
+
+    // Actualizar capitán y vicecapitán
+    if (captainId) {
+      updates.captain = captainId;
+    }
+    
+    if (viceCaptainId) {
+      updates.viceCaptain = viceCaptainId;
+    }
+
+    // Actualizar el equipo en la base de datos
+    const updatedTeam = await Team.findOneAndUpdate(
+      { league: leagueId, user: userId },
+      { $set: updates },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Cambios guardados correctamente',
+      team: updatedTeam
+    });
+  } catch (error) {
+    console.error('Error al guardar cambios del equipo:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al guardar cambios del equipo',
+      error: error.message
+    });
+  }
+};
+
+
 
 

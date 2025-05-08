@@ -75,7 +75,7 @@ export class MyTeamComponent implements OnInit {
     this.leagueService.getMyTeam(this.leagueId).subscribe({
       next: (response: any) => {
         // Verifica si la respuesta es un array o un objeto con una propiedad que contiene el array
-        const data = Array.isArray(response) ? response : response.playersData || []
+        const data = Array.isArray(response.playersData) ? response.playersData : (response.team?.playersData || []);
 
         this.players = data.map((player: any) => ({
           ...player,
@@ -86,38 +86,123 @@ export class MyTeamComponent implements OnInit {
             ...player.team,
             badgeColor: player.team?.badgeColor || null,
           },
-        }))
+        }));
 
-        this.filterPlayersByPosition()
-        this.normalizeFormation() // Normalizar formación antes de seleccionar jugadores
-        this.selectStartingEleven()
-        this.calculateTeamStats()
+        // Cargar formación guardada
+        this.currentFormation = response.team?.formation || '4-4-2';
+
+        this.filterPlayersByPosition();
+        this.applyFormationWithPlaceholders();
+        this.calculateTeamStats();
+
+        // Restaurar capitán y vicecapitán si existen
+        if (response.team?.captain) {
+          const captain = this.players.find(p => p.id === response.team.captain);
+          if (captain) {
+            this.setCaptainSilently(captain);
+          }
+        }
+
+        if (response.team?.viceCaptain) {
+          const viceCaptain = this.players.find(p => p.id === response.team.viceCaptain);
+          if (viceCaptain) {
+            this.setViceCaptainSilently(viceCaptain);
+          }
+        }
+
+        // Restaurar alineación si existe
+        if (response.team?.startingEleven && response.team.startingEleven.length > 0) {
+          this.restoreStartingEleven(response.team.startingEleven);
+        }
       },
       error: (error) => {
-        console.error("Error loading team:", error)
+        console.error("Error loading team:", error);
+        this.showErrorMessage("Error al cargar el equipo");
       },
-    })
+    });
   }
 
-  // Asegura que la formación sea válida (sume 10 jugadores de campo)
-  normalizeFormation(): void {
-    const defCount = this.defenders.length
-    const midCount = this.midfielders.length
-    const fwdCount = this.forwards.length
+  // Método auxiliar para establecer capitán sin hacer llamadas al servidor
+  private setCaptainSilently(player: Player): void {
+    // Quitar capitán anterior
+    this.players.forEach((p) => (p.isCaptain = false));
+    player.isCaptain = true;
+  }
 
-    // Calcular formación basada en jugadores disponibles
-    const calculatedFormation = `${defCount}-${midCount}-${fwdCount}`
+  // Método auxiliar para establecer vicecapitán sin hacer llamadas al servidor
+  private setViceCaptainSilently(player: Player): void {
+    // Quitar vice-capitán anterior
+    this.players.forEach((p) => (p.isViceCaptain = false));
+    player.isViceCaptain = true;
+  }
 
-    // Verificar si la formación calculada es válida (suma 10 jugadores de campo)
-    const totalFieldPlayers = defCount + midCount + fwdCount
+  // Método para restaurar la alineación guardada
+  private restoreStartingEleven(startingEleven: any[]): void {
+    // Identificar jugadores por posición
+    const starters = {
+      GK: startingEleven.filter(p => p.position === 'GK' || this.positionMap[p.positionId as keyof typeof this.positionMap] === 'GK'),
+      DEF: startingEleven.filter(p => p.position === 'DEF' || this.positionMap[p.positionId as keyof typeof this.positionMap] === 'DEF'),
+      MID: startingEleven.filter(p => p.position === 'MID' || this.positionMap[p.positionId as keyof typeof this.positionMap] === 'MID'),
+      FWD: startingEleven.filter(p => p.position === 'FWD' || this.positionMap[p.positionId as keyof typeof this.positionMap] === 'FWD')
+    };
 
-    if (totalFieldPlayers !== 10) {
-      // Si no es válida, usar la formación más cercana de las válidas
-      this.currentFormation = this.findClosestValidFormation(defCount, midCount, fwdCount)
-      console.log(`Formación ajustada a ${this.currentFormation} (la original ${calculatedFormation} no suma 10)`)
-    } else {
-      this.currentFormation = calculatedFormation
+    // Reconstruir alineación con jugadores actuales
+    const formationParts = this.currentFormation.split('-').map(part => Number.parseInt(part));
+
+    // Portero
+    if (starters.GK.length > 0) {
+      const gkIds = starters.GK.map(p => p.id);
+      this.startingGoalkeeper = this.goalkeepers.filter(p => gkIds.includes(p.id));
+
+      // Completar con placeholders si es necesario
+      if (this.startingGoalkeeper.length < 1) {
+        this.startingGoalkeeper.push(this.placeholderService.getPlaceholder('GK', 0));
+      }
     }
+
+    // Defensas
+    const defCount = formationParts[0];
+    if (starters.DEF.length > 0) {
+      const defIds = starters.DEF.map(p => p.id);
+      this.startingDefenders = this.defenders.filter(p => defIds.includes(p.id));
+
+      // Completar con placeholders si es necesario
+      while (this.startingDefenders.length < defCount) {
+        this.startingDefenders.push(this.placeholderService.getPlaceholder('DEF', this.startingDefenders.length));
+      }
+    }
+
+    // Centrocampistas
+    const midCount = formationParts[1];
+    if (starters.MID.length > 0) {
+      const midIds = starters.MID.map(p => p.id);
+      this.startingMidfielders = this.midfielders.filter(p => midIds.includes(p.id));
+
+      // Completar con placeholders si es necesario
+      while (this.startingMidfielders.length < midCount) {
+        this.startingMidfielders.push(this.placeholderService.getPlaceholder('MID', this.startingMidfielders.length));
+      }
+    }
+
+    // Delanteros
+    const fwdCount = formationParts[2];
+    if (starters.FWD.length > 0) {
+      const fwdIds = starters.FWD.map(p => p.id);
+      this.startingForwards = this.forwards.filter(p => fwdIds.includes(p.id));
+
+      // Completar con placeholders si es necesario
+      while (this.startingForwards.length < fwdCount) {
+        this.startingForwards.push(this.placeholderService.getPlaceholder('FWD', this.startingForwards.length));
+      }
+    }
+
+    // Actualizar banquillo
+    this.benchPlayers = [
+      ...this.goalkeepers.filter(p => !this.startingGoalkeeper.map(s => s.id).includes(p.id)),
+      ...this.defenders.filter(p => !this.startingDefenders.map(s => s.id).includes(p.id)),
+      ...this.midfielders.filter(p => !this.startingMidfielders.map(s => s.id).includes(p.id)),
+      ...this.forwards.filter(p => !this.startingForwards.map(s => s.id).includes(p.id))
+    ];
   }
 
   // Encuentra la formación válida más cercana
@@ -145,17 +230,6 @@ export class MyTeamComponent implements OnInit {
   // Función para seleccionar los 11 titulares según la formación
   selectStartingEleven(): void {
     this.applyFormationWithPlaceholders()
-  }
-
-  // Función para obtener etiqueta legible de posición
-  getPositionLabel(positionId: string): string {
-    const positionMap: { [key: string]: string } = {
-      "1": "POR",
-      "2": "DEF",
-      "3": "MED",
-      "4": "DEL",
-    }
-    return positionMap[positionId] || "N/A"
   }
 
   filterPlayersByPosition(): void {
@@ -394,49 +468,34 @@ export class MyTeamComponent implements OnInit {
 
   completeExchange(benchPlayer: Player): void {
     if (!this.playerToExchange || !this.isCompatibleExchange(benchPlayer)) {
-      return
+      return;
     }
 
     // Obtener arrays para realizar el intercambio
-    const { starter, starters, index } = this.getPlayerArrays(this.playerToExchange)
-
+    const { starter, starters, index } = this.getPlayerArrays(this.playerToExchange);
     if (starter && starters && index >= 0) {
       // Guardar el capitán/vice-capitán
-      const isCaptain = starter.isCaptain
-      const isViceCaptain = starter.isViceCaptain
+      const isCaptain = starter.isCaptain;
+      const isViceCaptain = starter.isViceCaptain;
 
       // Transferir capitán/vice-capitán si es necesario
-      benchPlayer.isCaptain = isCaptain
-      benchPlayer.isViceCaptain = isViceCaptain
+      benchPlayer.isCaptain = isCaptain;
+      benchPlayer.isViceCaptain = isViceCaptain;
 
       // Intercambiar jugadores
-      starters[index] = benchPlayer
+      starters[index] = benchPlayer;
 
       // Reemplazar en el banquillo
-      const benchIndex = this.benchPlayers.findIndex((p) => p.id === benchPlayer.id)
+      const benchIndex = this.benchPlayers.findIndex((p) => p.id === benchPlayer.id);
       if (benchIndex >= 0) {
-        this.benchPlayers[benchIndex] = starter
+        this.benchPlayers[benchIndex] = starter;
       }
 
-      // Actualizar en el servidor (aquí iría la lógica real)
-      this.updatePlayerSwap(this.playerToExchange.id, benchPlayer.id)
-        .then(() => {
-          // Mostrar notificación de éxito
-          console.log(`Cambio realizado: ${this.playerToExchange?.nickname} por ${benchPlayer.nickname}`)
-        })
-        .catch((error) => {
-          // Revertir cambios en caso de error
-          console.error("Error al realizar el cambio:", error)
-
-          if (starter && starters && index >= 0 && benchIndex >= 0) {
-            starters[index] = starter
-            this.benchPlayers[benchIndex] = benchPlayer
-          }
-        })
-        .finally(() => {
-          // Limpiar estado
-          this.cancelExchange()
-        })
+      // Cancelar el modo de intercambio
+      this.exchangeMode = false;
+      this.playerToExchange = null;
+      this.selectedPlayer = null;
+      this.exchangeModeMessage = "";
     }
   }
 
@@ -479,44 +538,6 @@ export class MyTeamComponent implements OnInit {
     return { starter: player, starters, index }
   }
 
-  // Método para actualizar en el servidor
-  private async updatePlayerSwap(starterId: string, benchId: string): Promise<void> {
-    // Aquí iría la lógica real de la API
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        // Simular éxito
-        const success = Math.random() > 0.1 // 90% de éxito
-        if (success) {
-          resolve()
-        } else {
-          reject(new Error("Error en la API"))
-        }
-      }, 1000)
-    })
-  }
-
-  // Métodos para drag and drop (obsoletos pero mantenidos por compatibilidad)
-  onDragStart(player: Player): void {
-    this.draggedPlayer = player
-  }
-
-  onDragOver(event: DragEvent, targetArea: string): void {
-    event.preventDefault()
-    this.dropTarget = targetArea
-  }
-
-  onDrop(event: DragEvent, targetArea: string): void {
-    event.preventDefault()
-    if (!this.draggedPlayer) return
-
-    // Ya no usamos este método, pero lo mantenemos por compatibilidad
-    console.log(`Moviendo jugador ${this.draggedPlayer.nickname} a ${targetArea}`)
-
-    // Resetear estado
-    this.draggedPlayer = null
-    this.dropTarget = ""
-  }
-
   getPlayerPositionClass(player: Player): string {
     if (player.isCaptain) return "captain"
     if (player.isViceCaptain) return "vice-captain"
@@ -544,5 +565,55 @@ export class MyTeamComponent implements OnInit {
   // Añadir este método para verificar si un jugador es un placeholder
   isPlaceholderPlayer(player: Player): boolean {
     return this.placeholderService.isPlaceholder(player)
+  }
+
+  saveTeamChanges(): void {
+    // Recopilar todos los jugadores del 11 inicial, excluyendo los placeholders
+    const startingEleven = [
+      ...this.startingGoalkeeper,
+      ...this.startingDefenders,
+      ...this.startingMidfielders,
+      ...this.startingForwards
+    ].filter(player => !this.isPlaceholderPlayer(player));
+
+    // Encontrar capitán y vicecapitán
+    const captainPlayer = this.players.find(p => p.isCaptain);
+    const viceCaptainPlayer = this.players.find(p => p.isViceCaptain);
+
+    // Crear objeto con todos los cambios
+    const teamChanges = {
+      formation: this.currentFormation,
+      players: startingEleven,
+      captainId: captainPlayer?.id,
+      viceCaptainId: viceCaptainPlayer?.id
+    };
+
+    // Enviar al servidor
+    this.leagueService.saveTeamChanges(this.leagueId, teamChanges)
+      .subscribe({
+        next: (response) => {
+          console.log("Cambios guardados con éxito");
+          // Mostrar notificación de éxito
+          this.showSuccessMessage("Cambios guardados correctamente");
+        },
+        error: (error) => {
+          console.error("Error al guardar los cambios:", error);
+          // Mostrar notificación de error
+          this.showErrorMessage("Error al guardar los cambios");
+        }
+      });
+  }
+
+  // Método auxiliar para mostrar mensaje de éxito
+  private showSuccessMessage(message: string): void {
+    // Implementar lógica para mostrar notificación
+    // Por ejemplo, podrías usar un servicio de notificaciones o un simple alert
+    alert(message);
+  }
+
+  // Método auxiliar para mostrar mensaje de error
+  private showErrorMessage(message: string): void {
+    // Implementar lógica para mostrar notificación de error
+    alert(message);
   }
 }

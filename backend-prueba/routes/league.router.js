@@ -39,4 +39,7 @@ router.put('/:leagueId/my-team/captain', leagueController.updateTeamCaptain);
 //Insertar la formacion del equipo
 router.put('/:leagueId/my-team/formation', leagueController.updateTeamFormation);
 
+// Guardar cambios del equipo (formación, jugadores, capitán, etc.)
+router.post('/:leagueId/my-team/save-changes', leagueController.saveTeamChanges);
+
 module.exports = router;

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Player } from '../../../player.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -53,5 +54,20 @@ export class LeagueService {
   updateTeamFormation(leagueId: string, formation: string): Observable<any> {
     return this.http.put(`${this.apiUrl}/${leagueId}/my-team/formation`, { formation });
   }
+
+  updateStartingEleven(leagueId: string, players: Player[]): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${leagueId}/my-team/lineup`, { players });
+  }
+
+  // Nuevo método para guardar todos los cambios del equipo
+  saveTeamChanges(leagueId: string, teamChanges: {
+    formation: string;
+    players: Player[];
+    captainId?: string;
+    viceCaptainId?: string;
+  }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${leagueId}/my-team/save-changes`, teamChanges);
+  }
+
 
 }
