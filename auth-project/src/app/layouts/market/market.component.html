@@ -1,1 +1,237 @@
-<p>market works!</p>
+<div class="market-container">
+  <!-- Cabecera con título y presupuesto -->
+  <div class="market-header">
+    <h1>Mercado de Jugadores</h1>
+    <div class="market-update-info">
+      <span class="update-timer">{{ getTimeUntilNextUpdate() }}</span>
+    </div>
+    <div class="budget-display" *ngIf="activeLeagueId">
+      <span class="budget-label">Presupuesto disponible:</span>
+      <span class="budget-amount">{{ formatMarketValue(teamBudget) }}</span>
+    </div>
+  </div>
+
+  <!-- Mensaje si no hay liga activa -->
+  <div class="no-league-message" *ngIf="!activeLeagueId">
+    <div class="message-content">
+      <i class="material-icons">info</i>
+      <p>Debes seleccionar una liga para acceder al mercado de jugadores</p>
+      <button class="primary-btn" routerLink="/layouts/home">Ir a Mis Ligas</button>
+    </div>
+  </div>
+
+  <!-- Contenido principal del mercado -->
+  <div class="market-content" *ngIf="activeLeagueId">
+    <!-- Filtros y búsqueda -->
+    <div class="filters-section">
+      <div class="search-box">
+        <input
+          type="text"
+          placeholder="Buscar jugador o equipo..."
+          [(ngModel)]="searchTerm"
+          (keyup.enter)="onSearch()"
+        >
+        <button class="search-btn" (click)="onSearch()">
+          <i class="material-icons">search</i>
+        </button>
+      </div>
+
+      <div class="filter-options">
+        <div class="filter-group">
+          <label>Posición:</label>
+          <select [(ngModel)]="positionFilter" (change)="onFilterChange()">
+            <option value="all">Todas</option>
+            <option value="1">Porteros</option>
+            <option value="2">Defensas</option>
+            <option value="3">Centrocampistas</option>
+            <option value="4">Delanteros</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de jugadores -->
+    <div class="players-table-container">
+      <table class="players-table" *ngIf="!isLoading && filteredPlayers.length > 0">
+        <thead>
+          <tr>
+            <th (click)="onSortChange('name')">
+              Jugador <i class="material-icons">{{ getSortIcon('name') }}</i>
+            </th>
+            <th>Posición</th>
+            <th>Equipo</th>
+            <th (click)="onSortChange('points')">
+              Puntos <i class="material-icons">{{ getSortIcon('points') }}</i>
+            </th>
+            <th (click)="onSortChange('marketValue')">
+              Valor <i class="material-icons">{{ getSortIcon('marketValue') }}</i>
+            </th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let player of paginatedPlayers">
+            <td class="player-info">
+              <div class="player-card">
+                <img
+                  [src]="player.images?.transparent['256x256']"
+                  [alt]="player.nickname"
+                  class="player-image"
+                  (error)="player.imageError = true"
+                  [ngClass]="{'hidden': player.imageError}"
+                />
+                <div class="player-details">
+                  <span class="player-name">{{ player.nickname || 'Sin nombre' }}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="position-badge" [style.background-color]="getPositionColor(player.positionId)">
+                {{ positionMap[player.positionId] }}
+              </span>
+            </td>
+            <td>{{ player.team?.name }}</td>
+            <td>{{ player.points }}</td>
+            <td>{{ formatMarketValue(player.marketValue) }}</td>
+            <td>
+              <button
+                class="btn-comprar"
+                (click)="openBuyModal(player)"
+                [disabled]="player.inMyTeam">
+                Comprar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+
+    </div>
+
+    <!-- Paginación -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button
+        class="pagination-btn"
+        [disabled]="currentPage === 1"
+        (click)="changePage(currentPage - 1)"
+      >
+        <i class="material-icons">chevron_left</i>
+      </button>
+
+      <div class="page-info">
+        Página {{ currentPage }} de {{ totalPages }}
+      </div>
+
+      <button
+        class="pagination-btn"
+        [disabled]="currentPage === totalPages"
+        (click)="changePage(currentPage + 1)"
+      >
+        <i class="material-icons">chevron_right</i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal de compra -->
+  <div class="modal" *ngIf="showBuyModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Comprar Jugador</h2>
+        <button class="close-btn" (click)="closeBuyModal()">×</button>
+      </div>
+      <div class="modal-body" *ngIf="selectedPlayer">
+        <div class="player-info">
+          <div class="player-name">{{ selectedPlayer.name }}</div>
+          <div class="player-details">
+            <span class="position-badge" [style.background-color]="getPositionColor(selectedPlayer.positionId)">
+              {{ positionMap[selectedPlayer.positionId] }}
+            </span>
+            <span class="team-name">{{ selectedPlayer.team?.name || 'Sin equipo' }}</span>
+          </div>
+          <div class="player-value">
+            <span class="value-label">Valor de mercado:</span>
+            <span class="value-amount">{{ formatMarketValue(selectedPlayer.marketValue) }}</span>
+          </div>
+        </div>
+
+        <div class="budget-info">
+          <div class="budget-row">
+            <span>Presupuesto actual:</span>
+            <span>{{ formatMarketValue(teamBudget) }}</span>
+          </div>
+          <div class="budget-row">
+            <span>Coste del jugador:</span>
+            <span>-{{ formatMarketValue(selectedPlayer.marketValue) }}</span>
+          </div>
+          <div class="budget-row total">
+            <span>Presupuesto restante:</span>
+            <span>{{ formatMarketValue(teamBudget - selectedPlayer.marketValue) }}</span>
+          </div>
+        </div>
+
+        <div class="confirmation-message">
+          <p>¿Estás seguro de que quieres comprar a este jugador?</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="cancel-btn" (click)="closeBuyModal()">Cancelar</button>
+        <button
+          class="confirm-btn"
+          [disabled]="!selectedPlayer || teamBudget < selectedPlayer.marketValue"
+          (click)="buyPlayer()"
+        >
+          Confirmar Compra
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de venta -->
+  <div class="modal" *ngIf="showSellModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Vender Jugador</h2>
+        <button class="close-btn" (click)="closeSellModal()">×</button>
+      </div>
+      <div class="modal-body" *ngIf="selectedPlayer">
+        <div class="player-info">
+          <div class="player-name">{{ selectedPlayer.name }}</div>
+          <div class="player-details">
+            <span class="position-badge" [style.background-color]="getPositionColor(selectedPlayer.positionId)">
+              {{ positionMap[selectedPlayer.positionId] }}
+            </span>
+            <span class="team-name">{{ selectedPlayer.team?.name || 'Sin equipo' }}</span>
+          </div>
+          <div class="player-value">
+            <span class="value-label">Valor de venta:</span>
+            <span class="value-amount">{{ formatMarketValue(selectedPlayer.marketValue) }}</span>
+          </div>
+        </div>
+
+        <div class="budget-info">
+          <div class="budget-row">
+            <span>Presupuesto actual:</span>
+            <span>{{ formatMarketValue(teamBudget) }}</span>
+          </div>
+          <div class="budget-row">
+            <span>Valor de venta:</span>
+            <span>+{{ formatMarketValue(selectedPlayer.marketValue) }}</span>
+          </div>
+          <div class="budget-row total">
+            <span>Nuevo presupuesto:</span>
+            <span>{{ formatMarketValue(teamBudget + selectedPlayer.marketValue) }}</span>
+          </div>
+        </div>
+
+        <div class="confirmation-message">
+          <p>¿Estás seguro de que quieres vender a este jugador?</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="cancel-btn" (click)="closeSellModal()">Cancelar</button>
+        <button class="confirm-btn" (click)="sellPlayer()">Confirmar Venta</button>
+      </div>
+    </div>
+  </div>
+</div>
+

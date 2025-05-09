@@ -10,6 +10,8 @@ import { ClassificationComponent } from './classification/classification.compone
 import { SharedModule } from '../shared/shared.module';
 import { MyTeamComponent } from './my-team/my-team.component';
 import { MarketComponent } from './market/market.component';
+import { FormsModule } from '@angular/forms';
+
 
 @NgModule({
   declarations: [
@@ -25,6 +27,7 @@ import { MarketComponent } from './market/market.component';
     HttpClientModule,
     LayoutsRoutingModule,
     ReactiveFormsModule,
+    FormsModule,
     SharedModule
   ]
 })
