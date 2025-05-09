@@ -1,136 +1,104 @@
 <div class="market-container">
-  <!-- Cabecera con título y presupuesto -->
   <div class="market-header">
     <h1>Mercado de Jugadores</h1>
-    <div class="market-update-info">
-      <span class="update-timer">{{ getTimeUntilNextUpdate() }}</span>
-    </div>
-    <div class="budget-display" *ngIf="activeLeagueId">
+    <div class="budget-display">
       <span class="budget-label">Presupuesto disponible:</span>
       <span class="budget-amount">{{ formatMarketValue(teamBudget) }}</span>
     </div>
   </div>
 
-  <!-- Mensaje si no hay liga activa -->
-  <div class="no-league-message" *ngIf="!activeLeagueId">
-    <div class="message-content">
-      <i class="material-icons">info</i>
-      <p>Debes seleccionar una liga para acceder al mercado de jugadores</p>
-      <button class="primary-btn" routerLink="/layouts/home">Ir a Mis Ligas</button>
+  <div class="market-content" *ngIf="activeLeagueId; else noLeague">
+    <div class="market-update-info">
+      <span class="update-timer">{{ getTimeUntilNextUpdate() }}</span>
     </div>
-  </div>
 
-  <!-- Contenido principal del mercado -->
-  <div class="market-content" *ngIf="activeLeagueId">
-    <!-- Filtros y búsqueda -->
     <div class="filters-section">
-      <div class="search-box">
-        <input
-          type="text"
-          placeholder="Buscar jugador o equipo..."
-          [(ngModel)]="searchTerm"
-          (keyup.enter)="onSearch()"
-        >
-        <button class="search-btn" (click)="onSearch()">
-          <i class="material-icons">search</i>
-        </button>
-      </div>
-
       <div class="filter-options">
         <div class="filter-group">
-          <label>Posición:</label>
-          <select [(ngModel)]="positionFilter" (change)="onFilterChange()">
+          <label for="positionFilter">Posición:</label>
+          <select id="positionFilter" [(ngModel)]="positionFilter" (change)="onFilterChange()">
             <option value="all">Todas</option>
-            <option value="1">Porteros</option>
-            <option value="2">Defensas</option>
-            <option value="3">Centrocampistas</option>
-            <option value="4">Delanteros</option>
+            <option value="1">Portero</option>
+            <option value="2">Defensa</option>
+            <option value="3">Centrocampista</option>
+            <option value="4">Delantero</option>
           </select>
         </div>
       </div>
     </div>
 
-    <!-- Tabla de jugadores -->
-    <div class="players-table-container">
-      <table class="players-table" *ngIf="!isLoading && filteredPlayers.length > 0">
-        <thead>
-          <tr>
-            <th (click)="onSortChange('name')">
-              Jugador <i class="material-icons">{{ getSortIcon('name') }}</i>
-            </th>
-            <th>Posición</th>
-            <th>Equipo</th>
-            <th (click)="onSortChange('points')">
-              Puntos <i class="material-icons">{{ getSortIcon('points') }}</i>
-            </th>
-            <th (click)="onSortChange('marketValue')">
-              Valor <i class="material-icons">{{ getSortIcon('marketValue') }}</i>
-            </th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let player of paginatedPlayers">
-            <td class="player-info">
-              <div class="player-card">
-                <img
-                  [src]="player.images?.transparent['256x256']"
-                  [alt]="player.nickname"
-                  class="player-image"
-                  (error)="player.imageError = true"
-                  [ngClass]="{'hidden': player.imageError}"
-                />
-                <div class="player-details">
-                  <span class="player-name">{{ player.nickname || 'Sin nombre' }}</span>
-                </div>
-              </div>
-            </td>
-            <td>
-              <span class="position-badge" [style.background-color]="getPositionColor(player.positionId)">
-                {{ positionMap[player.positionId] }}
-              </span>
-            </td>
-            <td>{{ player.team?.name }}</td>
-            <td>{{ player.points }}</td>
-            <td>{{ formatMarketValue(player.marketValue) }}</td>
-            <td>
-              <button
-                class="btn-comprar"
-                (click)="openBuyModal(player)"
-                [disabled]="player.inMyTeam">
-                Comprar
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-
+    <div class="players-grid" *ngIf="!isLoading && paginatedPlayers.length > 0; else loadingOrEmpty">
+      <div class="player-card" *ngFor="let player of paginatedPlayers">
+        <div class="player-header">
+          <span class="position-badge" [style.background-color]="getPositionColor(player.positionId)">
+            {{ positionMap[player.positionId] }}
+          </span>
+          <img
+            [src]="player.images?.transparent['256x256']"
+            [alt]="player.nickname"
+            class="player-image"
+            (error)="player.imageError = true"
+            [ngClass]="{'hidden': player.imageError}"
+          />
+        </div>
+        <div class="player-info">
+          <div class="player-name">{{ player.nickname || 'Sin nombre' }}</div>
+          <div class="player-team">{{ player.team?.name }}</div>
+          <div class="player-stats">
+            <div class="stat">
+              <div class="stat-value">{{ player.points }}</div>
+              <div class="stat-label">Puntos</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">{{ formatMarketValue(player.marketValue) }}</div>
+              <div class="stat-label">Valor</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <button
+            class="action-btn buy-btn"
+            (click)="openBuyModal(player)"
+            [disabled]="player.inMyTeam">
+            {{ player.inMyTeam ? 'En tu equipo' : 'Comprar' }}
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- Paginación -->
+    <ng-template #loadingOrEmpty>
+      <div class="players-table-container">
+        <div class="loading-state" *ngIf="isLoading">
+          <div class="spinner"></div>
+          <p>Cargando jugadores...</p>
+        </div>
+        <div class="empty-state" *ngIf="!isLoading && paginatedPlayers.length === 0">
+          <i class="material-icons">search_off</i>
+          <p>No se encontraron jugadores</p>
+        </div>
+      </div>
+    </ng-template>
+
     <div class="pagination" *ngIf="totalPages > 1">
-      <button
-        class="pagination-btn"
-        [disabled]="currentPage === 1"
-        (click)="changePage(currentPage - 1)"
-      >
+      <button class="pagination-btn" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">
         <i class="material-icons">chevron_left</i>
       </button>
-
-      <div class="page-info">
-        Página {{ currentPage }} de {{ totalPages }}
-      </div>
-
-      <button
-        class="pagination-btn"
-        [disabled]="currentPage === totalPages"
-        (click)="changePage(currentPage + 1)"
-      >
+      <span class="page-info">Página {{ currentPage }} de {{ totalPages }}</span>
+      <button class="pagination-btn" (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">
         <i class="material-icons">chevron_right</i>
       </button>
     </div>
   </div>
+
+  <ng-template #noLeague>
+    <div class="no-league-message">
+      <div class="message-content">
+        <i class="material-icons">sports_soccer</i>
+        <p>Necesitas seleccionar una liga para ver el mercado de jugadores.</p>
+        <button class="primary-btn" routerLink="/layouts/home">Ir a mis ligas</button>
+      </div>
+    </div>
+  </ng-template>
 
   <!-- Modal de compra -->
   <div class="modal" *ngIf="showBuyModal">
@@ -234,4 +202,5 @@
     </div>
   </div>
 </div>
+
 

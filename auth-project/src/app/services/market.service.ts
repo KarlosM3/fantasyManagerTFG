@@ -11,9 +11,9 @@ export class MarketService {
   constructor(private http: HttpClient) {}
 
   // Obtener todos los jugadores del mercado
-  getAllPlayers(): Observable<any> {
-  return this.http.get<any>(`${this.apiUrl}/players`);
-  }
+  getAllPlayers(leagueId: string): Observable<any> {
+  return this.http.get<any>(`${this.apiUrl}/players?leagueId=${leagueId}`);
+}
 
   // Comprar un jugador
   buyPlayer(leagueId: string, playerId: string): Observable<any> {

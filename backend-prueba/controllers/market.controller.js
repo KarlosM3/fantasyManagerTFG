@@ -4,15 +4,25 @@ const Transaction = require("../models/transaction.model")
 const axios = require("axios")
 
 // Obtener jugadores del mercado actual
-// En market.controller.js, modifica el método getAllPlayers
 exports.getAllPlayers = async (req, res) => {
   try {
-    // Buscar el mercado actual
-    let market = await Market.findOne().sort({ lastUpdated: -1 });
+    const { leagueId } = req.query;
+    
+    if (!leagueId) {
+      return res.status(400).json({
+        success: false,
+        message: "Se requiere el ID de la liga"
+      });
+    }
+
+    // Buscar el mercado actual para esta liga específica
+    let market = await Market.findOne({ 
+      league: leagueId 
+    }).sort({ lastUpdated: -1 });
     
     // Si no existe o necesita actualización, crear uno nuevo
     if (!market || new Date() > market.nextUpdate) {
-      market = await refreshMarket();
+      market = await refreshMarket(leagueId);
     }
     
     // Devolver un objeto con los jugadores y la información de actualización
@@ -32,8 +42,9 @@ exports.getAllPlayers = async (req, res) => {
 };
 
 
+
 // Función para refrescar el mercado
-async function refreshMarket() {
+async function refreshMarket(leagueId) {
   try {
     // Obtener todos los jugadores de la API
     const response = await axios.get("https://api-fantasy.llt-services.com/api/v3/players");
@@ -41,7 +52,6 @@ async function refreshMarket() {
     
     // Seleccionar 12 jugadores aleatorios
     const marketPlayers = [];
-    const playerCount = 12;
     
     // Asegurar distribución por posiciones
     const positionCounts = { "1": 2, "2": 4, "3": 4, "4": 2 };
@@ -64,8 +74,9 @@ async function refreshMarket() {
     const nextUpdate = new Date();
     nextUpdate.setHours(nextUpdate.getHours() + 24);
     
-    // Guardar el nuevo mercado
+    // Guardar el nuevo mercado para esta liga específica
     const newMarket = await Market.create({
+      league: leagueId,
       players: marketPlayers,
       lastUpdated: new Date(),
       nextUpdate: nextUpdate
@@ -77,6 +88,7 @@ async function refreshMarket() {
     throw error;
   }
 }
+
 
 
 

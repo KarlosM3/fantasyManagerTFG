@@ -57,32 +57,36 @@ export class MarketComponent implements OnInit {
 
 
   loadData(): void {
-    this.isLoading = true;
+  this.isLoading = true;
 
-    forkJoin({
-      marketPlayers: this.marketService.getAllPlayers(),
-      teamData: this.leagueservice.getMyTeam(this.activeLeagueId!),
-    }).subscribe({
-      next: (results) => {
-        this.players = results.marketPlayers.players;
-        this.nextMarketUpdate = new Date(results.marketPlayers.nextMarketUpdate);
-        this.myTeamPlayers = results.teamData.playersData || [];
-        this.teamBudget = results.teamData.budget || 0;
-        // Marcar jugadores que ya están en mi equipo
-        this.players = this.players.map((player) => ({
-          ...player,
-          inMyTeam: this.myTeamPlayers.some((myPlayer) => myPlayer.id === player.id),
-        }));
+  forkJoin({
+    marketPlayers: this.marketService.getAllPlayers(this.activeLeagueId!),
+    teamData: this.leagueservice.getMyTeam(this.activeLeagueId!)
+  }).subscribe({
+    next: (results) => {
+      this.players = results.marketPlayers.players;
+      this.nextMarketUpdate = new Date(results.marketPlayers.nextMarketUpdate);
+      // Falta asignar estos valores:
+      this.myTeamPlayers = results.teamData.playersData || [];
+      this.teamBudget = results.teamData.budget || 0;
 
-        this.applyFilters();
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error("Error cargando datos del mercado:", error);
-        this.isLoading = false;
-      },
-    });
-  }
+      // Marcar jugadores que ya están en el equipo
+      this.players = this.players.map((player) => ({
+        ...player,
+        inMyTeam: this.myTeamPlayers.some((myPlayer) => myPlayer.id === player.id),
+      }));
+
+      this.applyFilters();
+      this.isLoading = false;
+    },
+    error: (error) => {
+      console.error("Error cargando datos del mercado:", error);
+      this.isLoading = false;
+    },
+  });
+}
+
+
 
 
   // Método para mostrar tiempo restante
