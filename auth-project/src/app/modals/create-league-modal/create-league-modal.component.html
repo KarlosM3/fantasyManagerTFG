@@ -40,14 +40,28 @@
 
         <div class="form-group">
           <label for="initialBudget">Presupuesto inicial (€)</label>
-          <input
-            type="number"
-            id="initialBudget"
-            formControlName="initialBudget"
-            min="50000000"
-            max="200000000"
-          />
+          <div class="budget-selector">
+            <div class="budget-presets">
+              <button type="button" (click)="setBudget(50000000)" [class.active]="leagueForm.get('initialBudget')?.value === 50000000">50M</button>
+              <button type="button" (click)="setBudget(100000000)" [class.active]="leagueForm.get('initialBudget')?.value === 100000000">100M</button>
+              <button type="button" (click)="setBudget(150000000)" [class.active]="leagueForm.get('initialBudget')?.value === 150000000">150M</button>
+              <button type="button" (click)="setBudget(200000000)" [class.active]="leagueForm.get('initialBudget')?.value === 200000000">200M</button>
+            </div>
+            <input
+              type="range"
+              id="initialBudget"
+              formControlName="initialBudget"
+              min="50000000"
+              max="200000000"
+              step="10000000"
+            >
+            <div class="budget-display">{{ formatBudget(leagueForm.get('initialBudget')?.value) }}</div>
+          </div>
+          <div class="budget-description">
+            El presupuesto inicial determina cuánto dinero tendrán todos los managers para fichar jugadores al inicio de la liga.
+          </div>
         </div>
+
 
         <div class="form-actions">
           <button type="button" class="secondary-btn" (click)="closeModal()">Cancelar</button>

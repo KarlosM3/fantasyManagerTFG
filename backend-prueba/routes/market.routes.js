@@ -8,6 +8,8 @@ router.post("/buy", authMiddleware, marketController.buyPlayer)
 router.post("/sell", authMiddleware, marketController.sellPlayer)
 router.get("/transactions/:leagueId", authMiddleware, marketController.getTransactionHistory)
 router.get("/players", authMiddleware, marketController.getAllPlayers);
+router.post("/bid", authMiddleware, marketController.placeBid);
+router.get("/bids/:leagueId", authMiddleware, marketController.getUserBids);
 
 
 module.exports = router

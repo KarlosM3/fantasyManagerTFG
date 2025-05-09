@@ -84,7 +84,9 @@ exports.assignRandomTeam = async (req, res) => {
     // Estructura y presupuesto
     const teamStructure = { GK: 2, DEF: 5, MID: 5, FWD: 3 };
     const maxPlayersPerTeam = 3;
-    const budget = 100000000;
+    const league = await League.findById(leagueId);
+    const targetTeamValue = 100000000; // Valor fijo cercano a 100M para el equipo
+    const transferBudget = league.initialBudget || 100000000; // Presupuesto para fichajes
 
     // Obtener todos los jugadores de la API externa
     const response = await axios.get('https://api-fantasy.llt-services.com/api/v3/players');
@@ -116,7 +118,7 @@ exports.assignRandomTeam = async (req, res) => {
       // Calcular presupuesto promedio por jugador restante
       const playersSelected = selectedPlayers.length;
       const remainingPlayers = totalPlayersNeeded - playersSelected;
-      const avgBudgetPerPlayer = (budget - totalSpent) / Math.max(1, remainingPlayers);
+      const avgBudgetPerPlayer = (targetTeamValue - totalSpent) / Math.max(1, remainingPlayers);
       
       // Ordenar jugadores según cuánto presupuesto queda
       if (avgBudgetPerPlayer > 8000000) {
@@ -134,7 +136,7 @@ exports.assignRandomTeam = async (req, res) => {
         if (
           !selectedPlayers.find(p => p.id === player.id) &&
           (teamCounts[player.team?.name] || 0) < maxPlayersPerTeam &&
-          totalSpent + Number(player.marketValue) <= budget
+          totalSpent + Number(player.marketValue) <= targetTeamValue
         ) {
           selectedPlayers.push(player);
           totalSpent += Number(player.marketValue);
@@ -149,9 +151,9 @@ exports.assignRandomTeam = async (req, res) => {
       league: leagueId,
       user: userId,
       players: [],
-      budget: budget - totalSpent,
+      budget: transferBudget, // Presupuesto para fichajes (no se resta el valor del equipo)
       playersData: selectedPlayers,
-      formation: '4-4-2' // Formación por defecto
+      formation: '4-4-2'
     });
 
     res.status(201).json(selectedPlayers);
@@ -160,6 +162,7 @@ exports.assignRandomTeam = async (req, res) => {
     res.status(500).json({ message: 'Error asignando equipo aleatorio', error: error.message });
   }
 };
+
 
 
 // Obtener clasificación de una liga
@@ -280,7 +283,8 @@ exports.joinLeagueByCode = async (req, res) => {
       // Estructura y presupuesto
       const teamStructure = { GK: 2, DEF: 5, MID: 5, FWD: 3 };
       const maxPlayersPerTeam = 3;
-      const budget = 100000000;
+      const targetTeamValue = 100000000; // Valor fijo cercano a 100M para el equipo
+      const transferBudget = league.initialBudget || 100000000; // Presupuesto para fichajes
 
       // Obtener todos los jugadores de la API externa
       const response = await axios.get('https://api-fantasy.llt-services.com/api/v3/players');
@@ -312,7 +316,7 @@ exports.joinLeagueByCode = async (req, res) => {
         // Calcular presupuesto promedio por jugador restante
         const playersSelected = selectedPlayers.length;
         const remainingPlayers = totalPlayersNeeded - playersSelected;
-        const avgBudgetPerPlayer = (budget - totalSpent) / Math.max(1, remainingPlayers);
+        const avgBudgetPerPlayer = (targetTeamValue - totalSpent) / Math.max(1, remainingPlayers);
         
         // Ordenar jugadores según cuánto presupuesto queda
         if (avgBudgetPerPlayer > 8000000) {
@@ -330,7 +334,7 @@ exports.joinLeagueByCode = async (req, res) => {
           if (
             !selectedPlayers.find(p => p.id === player.id) &&
             (teamCounts[player.team?.name] || 0) < maxPlayersPerTeam &&
-            totalSpent + Number(player.marketValue) <= budget
+            totalSpent + Number(player.marketValue) <= targetTeamValue
           ) {
             selectedPlayers.push(player);
             totalSpent += Number(player.marketValue);
@@ -345,7 +349,7 @@ exports.joinLeagueByCode = async (req, res) => {
         league: league._id,
         user: userId,
         players: [],
-        budget: budget - totalSpent,
+        budget: transferBudget, // Presupuesto para fichajes (no se resta el valor del equipo)
         playersData: selectedPlayers,
         formation: '4-4-2' // Formación por defecto
       });
@@ -371,6 +375,7 @@ exports.joinLeagueByCode = async (req, res) => {
     });
   }
 };
+
 
 
 

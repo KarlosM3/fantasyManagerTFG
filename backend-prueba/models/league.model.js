@@ -24,7 +24,11 @@ const leagueSchema = new mongoose.Schema({
   },
   initialBudget: {
     type: Number,
-    default: 100000000
+    default: 100000000 // Presupuesto para fichajes
+  },
+  teamValue: {
+    type: Number,
+    default: 100000000  // Este será el valor objetivo del equipo aleatorio
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,

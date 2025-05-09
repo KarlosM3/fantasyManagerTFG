@@ -29,4 +29,14 @@ export class MarketService {
   getTransactionHistory(leagueId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/transactions/${leagueId}`)
   }
+
+  // Realizar una puja por un jugador
+  placeBid(playerId: string, leagueId: string, amount: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/bid`, { playerId, leagueId, amount });
+  }
+
+  // Obtener pujas del usuario actual
+  getUserBids(leagueId: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/bids/${leagueId}`);
+  }
 }

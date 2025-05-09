@@ -4,11 +4,19 @@ import { ActiveLeagueService } from "../home/services/active-league.service"
 import { LeagueService } from "../../modals/create-league-modal/services/create-league.service"
 import { forkJoin } from "rxjs"
 
+interface Notification {
+  show: boolean;
+  message: string;
+  type: 'success' | 'error' | 'warning';
+  timeout?: any;
+}
+
 @Component({
   selector: "app-market",
   templateUrl: "./market.component.html",
   styleUrls: ["./market.component.scss"],
 })
+
 export class MarketComponent implements OnInit {
   players: any[] = []
   filteredPlayers: any[] = []
@@ -26,6 +34,12 @@ export class MarketComponent implements OnInit {
   currentPage = 1
   itemsPerPage = 10
   totalItems = 0
+
+  // Propiedades para pujas
+  bidAmount: number = 0;
+  userBids: any[] = [];
+  minBidAmount: number = 0;
+  isProcessing: boolean = false;
 
   // Para el modal de compra/venta
   selectedPlayer: any = null
@@ -55,39 +69,65 @@ export class MarketComponent implements OnInit {
     }
   }
 
-
   loadData(): void {
-  this.isLoading = true;
+    this.isLoading = true;
 
-  forkJoin({
-    marketPlayers: this.marketService.getAllPlayers(this.activeLeagueId!),
-    teamData: this.leagueservice.getMyTeam(this.activeLeagueId!)
-  }).subscribe({
-    next: (results) => {
-      this.players = results.marketPlayers.players;
-      this.nextMarketUpdate = new Date(results.marketPlayers.nextMarketUpdate);
-      // Falta asignar estos valores:
-      this.myTeamPlayers = results.teamData.playersData || [];
-      this.teamBudget = results.teamData.budget || 0;
+    forkJoin({
+      marketPlayers: this.marketService.getAllPlayers(this.activeLeagueId!),
+      teamData: this.leagueservice.getMyTeam(this.activeLeagueId!),
+      userBids: this.marketService.getUserBids(this.activeLeagueId!)
+    }).subscribe({
+      next: (results) => {
+        this.players = results.marketPlayers.players;
+        this.nextMarketUpdate = new Date(results.marketPlayers.nextMarketUpdate);
+        this.myTeamPlayers = results.teamData.playersData || [];
+        this.teamBudget = results.teamData.budget || 0;
+        this.userBids = results.userBids || [];
 
-      // Marcar jugadores que ya están en el equipo
-      this.players = this.players.map((player) => ({
-        ...player,
-        inMyTeam: this.myTeamPlayers.some((myPlayer) => myPlayer.id === player.id),
-      }));
+        // Marcar jugadores que ya están en mi equipo o tienen pujas
+        this.players = this.players.map((player) => {
+          const existingBid = this.userBids.find(bid => bid.player.id === player.id);
+          return {
+            ...player,
+            inMyTeam: this.myTeamPlayers.some((myPlayer) => myPlayer.id === player.id),
+            currentBid: existingBid ? existingBid.amount : 0
+          };
+        });
 
-      this.applyFilters();
-      this.isLoading = false;
-    },
-    error: (error) => {
-      console.error("Error cargando datos del mercado:", error);
-      this.isLoading = false;
-    },
-  });
-}
+        this.applyFilters();
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error("Error cargando datos del mercado:", error);
+        this.isLoading = false;
+      },
+    });
+  }
 
+  // Cargar pujas del usuario
+  loadUserBids() {
+    if (this.activeLeagueId) {
+      this.marketService.getUserBids(this.activeLeagueId).subscribe({
+        next: (bids) => {
+          this.userBids = bids;
 
+          // Actualizar las pujas actuales en la lista de jugadores
+          this.players = this.players.map(player => {
+            const existingBid = this.userBids.find(bid => bid.player.id === player.id);
+            return {
+              ...player,
+              currentBid: existingBid ? existingBid.amount : player.currentBid || 0
+            };
+          });
 
+          this.applyFilters();
+        },
+        error: (error) => {
+          console.error('Error cargando pujas:', error);
+        }
+      });
+    }
+  }
 
   // Método para mostrar tiempo restante
   getTimeUntilNextUpdate(): string {
@@ -104,7 +144,6 @@ export class MarketComponent implements OnInit {
     return `Próxima actualización en ${hours}h ${minutes}m`;
   }
 
-
   applyFilters(): void {
     let result = [...this.players]
 
@@ -113,7 +152,8 @@ export class MarketComponent implements OnInit {
       const term = this.searchTerm.toLowerCase()
       result = result.filter(
         (player) =>
-          player.name.toLowerCase().includes(term) ||
+          player.name?.toLowerCase().includes(term) ||
+          player.nickname?.toLowerCase().includes(term) ||
           (player.team?.name && player.team.name.toLowerCase().includes(term)),
       )
     }
@@ -173,8 +213,19 @@ export class MarketComponent implements OnInit {
   }
 
   openBuyModal(player: any): void {
-    this.selectedPlayer = player
-    this.showBuyModal = true
+    console.log('Abriendo modal para:', player.nickname);
+    this.selectedPlayer = player;
+
+    // Establecer puja mínima (valor de mercado o puja existente)
+    const existingBid = this.userBids.find(bid => bid.player.id === player.id);
+    if (existingBid) {
+      this.bidAmount = existingBid.amount;
+    } else {
+      this.bidAmount = Number(player.marketValue);
+    }
+
+    this.minBidAmount = this.bidAmount;
+    this.showBuyModal = true;
   }
 
   openSellModal(player: any): void {
@@ -192,20 +243,54 @@ export class MarketComponent implements OnInit {
     this.selectedPlayer = null
   }
 
-  buyPlayer(): void {
-    if (!this.selectedPlayer || !this.activeLeagueId) return
+  // Método para realizar una puja
+  placeBid(): void {
+    if (!this.selectedPlayer || !this.activeLeagueId) return;
 
-    this.marketService.buyPlayer(this.activeLeagueId, this.selectedPlayer.id).subscribe({
-      next: (response) => {
-        this.teamBudget = response.newBudget
-        this.closeBuyModal()
-        this.loadData() // Recargar datos
-      },
-      error: (error) => {
-        console.error("Error al comprar jugador:", error)
-        // Aquí podrías mostrar un mensaje de error
-      },
-    })
+    // Validar que la puja sea mayor o igual al mínimo
+    if (this.bidAmount < this.minBidAmount) {
+      this.showNotification(`La puja debe ser al menos ${this.formatMarketValue(this.minBidAmount)}`, 'warning');
+      return;
+    }
+
+    // Validar que el usuario tenga suficiente presupuesto
+    if (this.bidAmount > this.teamBudget) {
+      this.showNotification('No tienes suficiente presupuesto para esta puja', 'error');
+      return;
+    }
+
+    this.isProcessing = true;
+
+    this.marketService.placeBid(this.selectedPlayer.id, this.activeLeagueId, this.bidAmount)
+      .subscribe({
+        next: (response) => {
+          // Actualizar pujas locales
+          this.loadUserBids();
+
+          // Actualizar la puja en la lista de jugadores
+          const playerIndex = this.players.findIndex(p => p.id === this.selectedPlayer.id);
+          if (playerIndex >= 0) {
+            this.players[playerIndex].currentBid = this.bidAmount;
+          }
+
+          // Cerrar modal y mostrar mensaje de éxito
+          this.showBuyModal = false;
+          this.showNotification('Puja realizada con éxito', 'success');
+          this.isProcessing = false;
+        },
+        error: (error) => {
+          console.error('Error al realizar puja:', error);
+          this.showNotification(error.error?.message || 'Error al procesar la puja', 'error');
+          this.isProcessing = false;
+        }
+      });
+  }
+
+
+  // Método antiguo (mantener por compatibilidad)
+  buyPlayer(): void {
+    // Redirigir al nuevo método de pujas
+    this.placeBid();
   }
 
   sellPlayer(): void {
@@ -219,7 +304,7 @@ export class MarketComponent implements OnInit {
       },
       error: (error) => {
         console.error("Error al vender jugador:", error)
-        // Aquí podrías mostrar un mensaje de error
+        this.showErrorMessage(error.error?.message || 'Error al vender el jugador');
       },
     })
   }
@@ -260,4 +345,45 @@ export class MarketComponent implements OnInit {
     }
     return colors[positionId] || "#9E9E9E"
   }
+
+  notification: Notification = {
+  show: false,
+  message: '',
+  type: 'success',
+  timeout: null
+};
+
+showSuccessMessage(message: string): void {
+  this.showNotification(message, 'success');
+}
+
+showErrorMessage(message: string): void {
+  this.showNotification(message, 'error');
+}
+
+// Añade estos métodos para manejar notificaciones
+showNotification(message: string, type: 'success' | 'error' | 'warning'): void {
+  // Limpiar timeout anterior si existe
+  if (this.notification.timeout) {
+    clearTimeout(this.notification.timeout);
+  }
+
+  // Mostrar nueva notificación
+  this.notification = {
+    show: true,
+    message,
+    type,
+    timeout: setTimeout(() => {
+      this.hideNotification();
+    }, 3000) // Desaparece después de 3 segundos
+  };
+}
+
+hideNotification(): void {
+  this.notification.show = false;
+  if (this.notification.timeout) {
+    clearTimeout(this.notification.timeout);
+  }
+}
+
 }

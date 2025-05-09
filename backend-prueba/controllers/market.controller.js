@@ -1,7 +1,9 @@
 const Team = require("../models/team.model")
 const Market = require("../models/market.model")
 const Transaction = require("../models/transaction.model")
+const Bid = require("../models/bid.model")
 const axios = require("axios")
+const mongoose = require("mongoose")
 
 // Obtener jugadores del mercado actual
 exports.getAllPlayers = async (req, res) => {
@@ -25,9 +27,27 @@ exports.getAllPlayers = async (req, res) => {
       market = await refreshMarket(leagueId);
     }
     
+    // Obtener conteo de pujas por jugador
+    const bidCounts = await Bid.aggregate([
+      { $match: { league: new mongoose.Types.ObjectId(leagueId) } },
+      { $group: { _id: "$player.id", count: { $sum: 1 } } }
+    ]);
+    
+    // Crear un mapa de conteos
+    const bidCountMap = {};
+    bidCounts.forEach(item => {
+      bidCountMap[item._id] = item.count;
+    });
+    
+    // Añadir conteo a los jugadores
+    const playersWithBidCount = market.players.map(player => ({
+      ...player,
+      bidCount: bidCountMap[player.id] || 0
+    }));
+    
     // Devolver un objeto con los jugadores y la información de actualización
     res.status(200).json({
-      players: market.players,
+      players: playersWithBidCount,
       nextMarketUpdate: market.nextUpdate,
       lastUpdated: market.lastUpdated
     });
@@ -43,9 +63,13 @@ exports.getAllPlayers = async (req, res) => {
 
 
 
+
 // Función para refrescar el mercado
 async function refreshMarket(leagueId) {
   try {
+    // Procesar pujas existentes antes de actualizar el mercado
+    await exports.processBids(leagueId);
+    
     // Obtener todos los jugadores de la API
     const response = await axios.get("https://api-fantasy.llt-services.com/api/v3/players");
     const allPlayers = response.data;
@@ -75,12 +99,15 @@ async function refreshMarket(leagueId) {
     nextUpdate.setHours(nextUpdate.getHours() + 24);
     
     // Guardar el nuevo mercado para esta liga específica
-    const newMarket = await Market.create({
-      league: leagueId,
-      players: marketPlayers,
-      lastUpdated: new Date(),
-      nextUpdate: nextUpdate
-    });
+    const newMarket = await Market.findOneAndUpdate(
+      { league: leagueId },
+      {
+        players: marketPlayers,
+        lastUpdated: new Date(),
+        nextUpdate: nextUpdate
+      },
+      { new: true, upsert: true }
+    );
     
     return newMarket;
   } catch (error) {
@@ -89,6 +116,161 @@ async function refreshMarket(leagueId) {
   }
 }
 
+
+
+// Hacer una puja por un jugador
+exports.placeBid = async (req, res) => {
+  try {
+    const { playerId, leagueId, amount } = req.body;
+    const userId = req.user.id || req.user._id;
+
+    // Verificar que el jugador está en el mercado
+    const market = await Market.findOne({ league: leagueId });
+    if (!market) {
+      return res.status(404).json({ success: false, message: 'Mercado no encontrado' });
+    }
+
+    const player = market.players.find(p => p.id === playerId);
+    if (!player) {
+      return res.status(404).json({ success: false, message: 'Jugador no disponible en el mercado' });
+    }
+
+    // Verificar presupuesto del equipo
+    const team = await Team.findOne({ user: userId, league: leagueId });
+    if (!team) {
+      return res.status(404).json({ success: false, message: 'Equipo no encontrado' });
+    }
+
+    if (team.budget < amount) {
+      return res.status(400).json({ success: false, message: 'Presupuesto insuficiente para esta puja' });
+    }
+
+    // Verificar si ya existe una puja del mismo usuario por este jugador
+    const existingBid = await Bid.findOne({ 
+      league: leagueId, 
+      'player.id': playerId, 
+      user: userId 
+    });
+
+    if (existingBid) {
+      // Actualizar puja existente
+      existingBid.amount = amount;
+      await existingBid.save();
+    } else {
+      // Crear nueva puja
+      await Bid.create({
+        league: leagueId,
+        player: player,
+        user: userId,
+        amount: amount
+      });
+    }
+
+    res.status(200).json({ 
+      success: true, 
+      message: 'Puja realizada con éxito',
+      bidAmount: amount
+    });
+  } catch (error) {
+    console.error('Error al realizar puja:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error al procesar la puja', 
+      error: error.message 
+    });
+  }
+};
+
+// Procesar pujas cuando se actualiza el mercado
+exports.processBids = async (leagueId) => {
+  try {
+    // Obtener todas las pujas para esta liga
+    const allBids = await Bid.find({ league: leagueId });
+    
+    // Agrupar pujas por jugador
+    const bidsByPlayer = {};
+    allBids.forEach(bid => {
+      if (!bidsByPlayer[bid.player.id]) {
+        bidsByPlayer[bid.player.id] = [];
+      }
+      bidsByPlayer[bid.player.id].push(bid);
+    });
+
+    // Para cada jugador, encontrar la puja más alta
+    for (const playerId in bidsByPlayer) {
+      const playerBids = bidsByPlayer[playerId];
+      
+      // Ordenar pujas por monto (de mayor a menor)
+      playerBids.sort((a, b) => b.amount - a.amount);
+      
+      if (playerBids.length > 0) {
+        const winningBid = playerBids[0];
+        
+        // Asignar jugador al ganador
+        const team = await Team.findOne({ 
+          user: winningBid.user, 
+          league: leagueId 
+        });
+        
+        if (team) {
+          // Restar el monto de la puja del presupuesto
+          team.budget -= winningBid.amount;
+          
+          // Añadir jugador al equipo
+          team.playersData.push(winningBid.player);
+          
+          await team.save();
+          
+          // Registrar la transacción
+          await Transaction.create({
+            league: leagueId,
+            user: winningBid.user,
+            player: {
+              id: winningBid.player.id,
+              name: winningBid.player.nickname || winningBid.player.name,
+              positionId: winningBid.player.positionId,
+              team: winningBid.player.team?.name || "Sin equipo",
+            },
+            type: "buy",
+            amount: winningBid.amount,
+            date: new Date(),
+          });
+        }
+      }
+    }
+
+    // Eliminar todas las pujas procesadas
+    await Bid.deleteMany({ league: leagueId });
+
+    return true;
+  } catch (error) {
+    console.error('Error al procesar pujas:', error);
+    return false;
+  }
+};
+
+
+// Obtener pujas del usuario actual
+exports.getUserBids = async (req, res) => {
+  try {
+    const { leagueId } = req.params;
+    const userId = req.user.id || req.user._id;
+
+    const bids = await Bid.find({ 
+      league: leagueId, 
+      user: userId 
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json(bids);
+  } catch (error) {
+    console.error('Error al obtener pujas del usuario:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error al obtener pujas', 
+      error: error.message 
+    });
+  }
+};
 
 
 

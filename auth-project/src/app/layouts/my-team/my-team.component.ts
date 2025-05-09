@@ -29,7 +29,7 @@ export class MyTeamComponent implements OnInit {
   currentFormation = "4-4-2"
   totalPoints = 0
   teamValue = 0
-  availableBudget = 100000000
+  availableBudget = 0
 
   // Estado para modales
   showFormationModal = false
@@ -77,6 +77,7 @@ export class MyTeamComponent implements OnInit {
         // Verifica si la respuesta es un array o un objeto con una propiedad que contiene el array
         const data = Array.isArray(response.playersData) ? response.playersData : (response.team?.playersData || []);
 
+        this.availableBudget = response.budget || 0
         this.players = data.map((player: any) => ({
           ...player,
           position: this.positionMap[player.positionId as keyof typeof this.positionMap],

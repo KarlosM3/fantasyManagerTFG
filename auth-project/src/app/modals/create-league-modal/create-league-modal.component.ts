@@ -37,6 +37,14 @@ export class CreateLeagueModalComponent implements OnInit {
     }
   }
 
+  setBudget(amount: number): void {
+    this.leagueForm.get('initialBudget')?.setValue(amount);
+  }
+
+  formatBudget(value: number): string {
+    return `${(value / 1000000).toFixed(0)}M €`;
+  }
+
   closeModal(): void {
     this.close.emit();
   }
