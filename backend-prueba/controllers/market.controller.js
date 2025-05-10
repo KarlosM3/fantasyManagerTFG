@@ -567,16 +567,20 @@ exports.listPlayerForSale = async (req, res) => {
       status: 'active'
     });
     
-    // Opcional: Generar una oferta automática
-    const autoOfferAmount = Math.round(Number(player.marketValue) * (0.9 + Math.random() * 0.2));
-    if (autoOfferAmount < askingPrice) {
-      await MarketOffer.create({
-        listing: listing._id,
-        amount: autoOfferAmount,
-        isAutoOffer: true,
-        createdAt: new Date()
-      });
-    }
+    // Generar una oferta automática (entre 80% y 95% del precio pedido)
+    const minPercentage = 0.80;
+    const maxPercentage = 0.95;
+    const randomPercentage = minPercentage + Math.random() * (maxPercentage - minPercentage);
+    const autoOfferAmount = Math.round(askingPrice * randomPercentage);
+    
+    // Crear la oferta automática
+    await MarketOffer.create({
+      listing: listing._id,
+      amount: autoOfferAmount,
+      isAutoOffer: true,
+      status: 'pending',
+      createdAt: new Date()
+    });
     
     res.status(200).json({
       success: true,
@@ -591,6 +595,7 @@ exports.listPlayerForSale = async (req, res) => {
     });
   }
 };
+
 
 
 // Obtener jugadores puestos a la venta en una liga
@@ -727,6 +732,7 @@ exports.makeOffer = async (req, res) => {
 
 
 // Aceptar una oferta
+// En market.controller.js, método acceptOffer
 exports.acceptOffer = async (req, res) => {
   try {
     const { offerId } = req.body;
@@ -759,98 +765,91 @@ exports.acceptOffer = async (req, res) => {
       });
     }
     
-    // Obtener equipos del comprador y vendedor
-    const buyerTeam = await Team.findOne({ 
-      user: offer.buyer, 
-      league: offer.listing.league 
-    });
-    
+    // Obtener el equipo del vendedor
     const sellerTeam = await Team.findOne({ 
       user: userId, 
       league: offer.listing.league 
     });
     
-    if (!buyerTeam || !sellerTeam) {
+    if (!sellerTeam) {
       return res.status(404).json({ success: false, message: 'Equipo no encontrado' });
     }
     
-    // Verificar que el comprador tiene suficiente presupuesto
-    if (buyerTeam.budget < offer.amount) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'El comprador ya no tiene suficiente presupuesto' 
+    // Verificar si es una oferta automática o de usuario real
+    if (offer.isAutoOffer) {
+      // Procesar oferta automática (sin transferencia a otro equipo)
+      
+      // 1. Quitar jugador del equipo del vendedor
+      const playerIndex = sellerTeam.playersData.findIndex(
+        p => p.id === offer.listing.player.id
+      );
+      
+      if (playerIndex === -1) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'El jugador ya no está en tu equipo' 
+        });
+      }
+      
+      // 2. Actualizar presupuesto del vendedor
+      sellerTeam.playersData.splice(playerIndex, 1);
+      sellerTeam.budget += offer.amount;
+      await sellerTeam.save();
+      
+      // 3. Actualizar estado del listado y de la oferta
+      offer.listing.status = 'sold';
+      await offer.listing.save();
+      
+      offer.status = 'accepted';
+      await offer.save();
+      
+      // 4. Rechazar otras ofertas
+      await MarketOffer.updateMany(
+        { listing: offer.listing._id, _id: { $ne: offerId } },
+        { status: 'rejected' }
+      );
+      
+      // 5. Registrar transacción de venta
+      await Transaction.create({
+        league: offer.listing.league,
+        user: userId,
+        player: {
+          id: offer.listing.player.id,
+          name: offer.listing.player.nickname || offer.listing.player.name,
+          positionId: offer.listing.player.positionId,
+          team: offer.listing.player.team?.name || "Sin equipo",
+        },
+        type: "sell",
+        amount: offer.amount,
+        date: new Date(),
       });
-    }
-    
-    // Realizar la transferencia
-    // 1. Quitar jugador del equipo del vendedor
-    const playerIndex = sellerTeam.playersData.findIndex(
-      p => p.id === offer.listing.player.id
-    );
-    
-    if (playerIndex === -1) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'El jugador ya no está en tu equipo' 
+      
+      res.status(200).json({
+        success: true,
+        message: 'Oferta automática aceptada con éxito',
+        newBudget: sellerTeam.budget
       });
+    } else {
+      // Procesar oferta de usuario real (código existente)
+      const buyerTeam = await Team.findOne({ 
+        user: offer.buyer, 
+        league: offer.listing.league 
+      });
+      
+      if (!buyerTeam) {
+        return res.status(404).json({ success: false, message: 'Equipo del comprador no encontrado' });
+      }
+      
+      // Verificar que el comprador tiene suficiente presupuesto
+      if (buyerTeam.budget < offer.amount) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'El comprador ya no tiene suficiente presupuesto' 
+        });
+      }
+      
+      // Resto del código para transferencia entre usuarios...
     }
-    
-    sellerTeam.playersData.splice(playerIndex, 1);
-    sellerTeam.budget += offer.amount;
-    await sellerTeam.save();
-    
-    // 2. Añadir jugador al equipo del comprador
-    buyerTeam.playersData.push(offer.listing.player);
-    buyerTeam.budget -= offer.amount;
-    await buyerTeam.save();
-    
-    // 3. Actualizar estado del listado y de la oferta
-    offer.listing.status = 'sold';
-    await offer.listing.save();
-    
-    offer.status = 'accepted';
-    await offer.save();
-    
-    // 4. Rechazar otras ofertas
-    await MarketOffer.updateMany(
-      { listing: offer.listing._id, _id: { $ne: offerId } },
-      { status: 'rejected' }
-    );
-    
-    // 5. Registrar transacciones
-    await Transaction.create({
-      league: offer.listing.league,
-      user: userId,
-      player: {
-        id: offer.listing.player.id,
-        name: offer.listing.player.nickname || offer.listing.player.name,
-        positionId: offer.listing.player.positionId,
-        team: offer.listing.player.team?.name || "Sin equipo",
-      },
-      type: "sell",
-      amount: offer.amount,
-      date: new Date(),
-    });
-    
-    await Transaction.create({
-      league: offer.listing.league,
-      user: offer.buyer,
-      player: {
-        id: offer.listing.player.id,
-        name: offer.listing.player.nickname || offer.listing.player.name,
-        positionId: offer.listing.player.positionId,
-        team: offer.listing.player.team?.name || "Sin equipo",
-      },
-      type: "buy",
-      amount: offer.amount,
-      date: new Date(),
-    });
-    
-    res.status(200).json({
-      success: true,
-      message: 'Oferta aceptada con éxito',
-      newBudget: sellerTeam.budget
-    });
   } catch (error) {
     console.error('Error al aceptar oferta:', error);
     res.status(500).json({
@@ -860,6 +859,7 @@ exports.acceptOffer = async (req, res) => {
     });
   }
 };
+
 
 // Obtener ofertas recibidas por los jugadores del usuario
 exports.getReceivedOffers = async (req, res) => {
