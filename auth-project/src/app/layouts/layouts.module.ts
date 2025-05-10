@@ -11,6 +11,7 @@ import { SharedModule } from '../shared/shared.module';
 import { MyTeamComponent } from './my-team/my-team.component';
 import { MarketComponent } from './market/market.component';
 import { FormsModule } from '@angular/forms';
+import { OffersComponent } from './offers/offers.component';
 
 
 @NgModule({
@@ -20,7 +21,8 @@ import { FormsModule } from '@angular/forms';
     CreateLeagueModalComponent,
     ClassificationComponent,
     MyTeamComponent,
-    MarketComponent
+    MarketComponent,
+    OffersComponent
     ],
   imports: [
     CommonModule,

@@ -27,7 +27,10 @@
         routerLinkActive="active" [class.disabled]="!ligaActivaId">Mi Equipo
       </div>
       <div class="menu-item" routerLink="/layouts/market" routerLinkActive="active">Mercado</div>
-
+      <div
+        class="menu-item" routerLink="/layouts/offers" routerLinkActive="active"
+        [class.disabled]="!ligaActivaId">Ofertas
+      </div>
       <div class="menu-item">Más</div>
     </div>
 

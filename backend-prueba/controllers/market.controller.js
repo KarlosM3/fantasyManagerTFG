@@ -2,7 +2,7 @@ const Team = require("../models/team.model")
 const Market = require("../models/market.model")
 const Transaction = require("../models/transaction.model")
 const Bid = require("../models/bid.model")
-const MarketListing = require("../models/market-listening.model")
+const MarketListening = require("../models/market-listening.model")
 const MarketOffer = require("../models/market-offer.model")
 const axios = require("axios")
 const mongoose = require("mongoose")
@@ -558,7 +558,7 @@ exports.listPlayerForSale = async (req, res) => {
     const expiryDate = new Date();
     expiryDate.setDate(expiryDate.getDate() + 3); // 3 días de duración
     
-    const listing = await MarketListing.create({
+    const listing = await MarketListening.create({
       league: leagueId,
       seller: userId,
       player: player,
@@ -606,7 +606,7 @@ exports.getListedPlayers = async (req, res) => {
     }
     
     // Obtener listados activos que no hayan expirado
-    const listings = await MarketListing.find({
+    const listings = await MarketListening.find({
       league: leagueId,
       status: 'active',
       expiryDate: { $gt: new Date() }
@@ -649,7 +649,7 @@ exports.makeOffer = async (req, res) => {
     const userId = req.user.id || req.user._id;
     
     // Verificar que el listado existe y está activo
-    const listing = await MarketListing.findOne({ 
+    const listing = await MarketListening.findOne({ 
       _id: listingId,
       status: 'active',
       expiryDate: { $gt: new Date() }
@@ -860,3 +860,108 @@ exports.acceptOffer = async (req, res) => {
     });
   }
 };
+
+// Obtener ofertas recibidas por los jugadores del usuario
+exports.getReceivedOffers = async (req, res) => {
+  try {
+    const { leagueId } = req.query;
+    const userId = req.user.id || req.user._id;
+    
+    if (!leagueId) {
+      return res.status(400).json({
+        success: false,
+        message: "Se requiere el ID de la liga"
+      });
+    }
+    
+    // Buscar listados del usuario
+    const listings = await MarketListening.find({
+      league: leagueId,
+      seller: userId,
+      status: 'active'
+    });
+    
+    const listingIds = listings.map(listing => listing._id);
+    
+    // Buscar ofertas para esos listados
+    const offers = await MarketOffer.find({
+      listing: { $in: listingIds },
+      status: 'pending'
+    }).populate({
+      path: 'listing',
+      populate: { path: 'seller', select: 'name' }
+    }).populate('buyer', 'name');
+    
+    // Agrupar ofertas por listado
+    const offersByListing = {};
+    
+    for (const offer of offers) {
+      const listingId = offer.listing._id.toString();
+      
+      if (!offersByListing[listingId]) {
+        offersByListing[listingId] = {
+          listing: offer.listing,
+          offers: []
+        };
+      }
+      
+      offersByListing[listingId].offers.push(offer);
+    }
+    
+    // Convertir a array
+    const result = Object.values(offersByListing);
+    
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error al obtener ofertas recibidas:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener ofertas recibidas',
+      error: error.message
+    });
+  }
+};
+
+// Rechazar una oferta
+exports.rejectOffer = async (req, res) => {
+  try {
+    const { offerId } = req.body;
+    const userId = req.user.id || req.user._id;
+    
+    // Obtener la oferta con el listado
+    const offer = await MarketOffer.findById(offerId)
+      .populate({
+        path: 'listing',
+        populate: { path: 'seller' }
+      });
+    
+    if (!offer) {
+      return res.status(404).json({ success: false, message: 'Oferta no encontrada' });
+    }
+    
+    // Verificar que el usuario es el vendedor
+    if (offer.listing.seller._id.toString() !== userId.toString()) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'No tienes permiso para rechazar esta oferta' 
+      });
+    }
+    
+    // Actualizar estado de la oferta
+    offer.status = 'rejected';
+    await offer.save();
+    
+    res.status(200).json({
+      success: true,
+      message: 'Oferta rechazada con éxito'
+    });
+  } catch (error) {
+    console.error('Error al rechazar oferta:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al rechazar oferta',
+      error: error.message
+    });
+  }
+};
+

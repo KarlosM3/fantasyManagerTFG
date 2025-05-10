@@ -13,5 +13,7 @@ router.get("/bids/:leagueId", authMiddleware, marketController.getUserBids);
 router.get("/listings", authMiddleware, marketController.getListedPlayers);
 router.post("/offer", authMiddleware, marketController.makeOffer);
 router.post("/accept-offer", authMiddleware, marketController.acceptOffer)
+router.get("/received-offers", authMiddleware, marketController.getReceivedOffers);
+router.post("/reject-offer", authMiddleware, marketController.rejectOffer);
 
 module.exports = router

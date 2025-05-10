@@ -55,4 +55,14 @@ export class MarketService {
     return this.http.post(`${this.apiUrl}/accept-offer`, { offerId });
   }
 
+  // Obtener ofertas recibidas
+  getReceivedOffers(leagueId: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/received-offers?leagueId=${leagueId}`);
+  }
+
+  // Rechazar una oferta
+  rejectOffer(offerId: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reject-offer`, { offerId });
+  }
+
 }
