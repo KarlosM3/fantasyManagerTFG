@@ -31,9 +31,16 @@ export class MyTeamComponent implements OnInit {
   teamValue = 0
   availableBudget = 0
 
+  // Propiedades para venta
+  playerToSell: Player | null = null;
+  askingPrice: number = 0;
+  minAskingPrice: number = 0;
+  sellModeMessage: string = "";
+
   // Estado para modales
   showFormationModal = false
-  showTransfersModal = false
+  showSellModal: boolean = false;
+  sellMode: boolean = false;
 
   // Estado para banquillo
   showBench = false
@@ -420,12 +427,49 @@ export class MyTeamComponent implements OnInit {
     }
   }
 
-  openTransfersModal(): void {
-    this.showTransfersModal = true
+  // Abrir modal de venta
+  openSellModal(player: Player): void {
+    this.playerToSell = player;
+    this.minAskingPrice = Number(player.marketValue);
+    this.askingPrice = this.minAskingPrice;
+    this.showSellModal = true;
   }
 
-  closeTransfersModal(): void {
-    this.showTransfersModal = false
+  initiateSellMode(): void {
+    this.sellMode = true;
+    this.sellModeMessage = "Selecciona el jugador que deseas vender";
+    // Cancelar cualquier otro modo activo
+    this.exchangeMode = false;
+    this.playerToExchange = null;
+  }
+
+  closeSellModal(): void {
+    this.showSellModal = false;
+    this.playerToSell = null;
+  }
+
+  //Poner jugador en venta
+  listPlayerForSale(): void {
+    if (!this.playerToSell || !this.leagueId) return;
+
+    // Validar que el precio sea al menos el valor de mercado
+    if (this.askingPrice < this.minAskingPrice) {
+      this.showErrorMessage(`El precio debe ser al menos ${this.formatCurrency(this.minAskingPrice)}`);
+      return;
+    }
+
+    this.leagueService.listPlayerForSale(this.leagueId, this.playerToSell.id, this.askingPrice)
+      .subscribe({
+        next: (response) => {
+          this.showSuccessMessage('Jugador puesto a la venta con éxito');
+          this.closeSellModal();
+          this.loadTeam(); // Recargar datos
+        },
+        error: (error) => {
+          console.error('Error al poner jugador a la venta:', error);
+          this.showErrorMessage(error.error?.message || 'Error al procesar la venta');
+        }
+      });
   }
 
   // Funciones para controlar el banquillo
@@ -437,13 +481,23 @@ export class MyTeamComponent implements OnInit {
   selectPlayer(player: Player): void {
     if (this.exchangeMode) {
       if (this.isCompatibleExchange(player)) {
-        this.completeExchange(player)
+        this.completeExchange(player);
       }
-      return
+      return;
+    }
+    // Si el modo de venta está activo, abrir el modal de venta
+    if (this.sellMode) {
+      if (!this.isPlaceholderPlayer(player)) {
+        this.openSellModal(player);
+        this.sellMode = false;
+        this.sellModeMessage = "";
+      }
+      return;
     }
 
-    this.selectedPlayer = player
+    this.selectedPlayer = player;
   }
+
 
   initiateExchange(player: Player): void {
     this.playerToExchange = player

@@ -69,5 +69,10 @@ export class LeagueService {
     return this.http.post(`${this.apiUrl}/${leagueId}/my-team/save-changes`, teamChanges);
   }
 
+  // Poner jugador a la venta
+  listPlayerForSale(leagueId: string, playerId: string, askingPrice: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${leagueId}/market/sell`, { playerId, askingPrice });
+  }
+
 
 }

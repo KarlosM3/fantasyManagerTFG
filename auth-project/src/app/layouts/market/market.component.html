@@ -27,6 +27,8 @@
       </div>
     </div>
 
+    <!-- Sección de jugadores del mercado -->
+    <h2>Jugadores disponibles</h2>
     <div class="players-grid" *ngIf="!isLoading && paginatedPlayers.length > 0; else loadingOrEmpty">
       <div class="player-card" *ngFor="let player of paginatedPlayers">
         <div class="player-header">
@@ -66,6 +68,53 @@
             [disabled]="player.inMyTeam">
             {{ player.inMyTeam ? 'En tu equipo' : 'Comprar' }}
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección de jugadores en venta -->
+    <div class="market-section" *ngIf="listedPlayers.length > 0">
+      <h2>Jugadores en venta</h2>
+      <div class="players-grid">
+        <div class="player-card" *ngFor="let listing of listedPlayers">
+          <div class="player-header">
+            <span class="position-badge" [style.background-color]="getPositionColor(listing.player.positionId)">
+              {{ positionMap[listing.player.positionId] }}
+            </span>
+            <img
+              [src]="listing.player.images?.transparent['256x256']"
+              [alt]="listing.player.nickname"
+              class="player-image"
+              (error)="listing.imageError = true"
+              [ngClass]="{'hidden': listing.imageError}"
+            />
+          </div>
+          <div class="player-info">
+            <div class="player-name">{{ listing.player.nickname || 'Sin nombre' }}</div>
+            <div class="player-team">{{ listing.player.team?.name }}</div>
+            <div class="player-stats">
+              <div class="stat">
+                <div class="stat-value">{{ listing.player.points }}</div>
+                <div class="stat-label">Puntos</div>
+              </div>
+              <div class="stat">
+                <div class="stat-value">{{ formatMarketValue(listing.askingPrice) }}</div>
+                <div class="stat-label">Precio</div>
+              </div>
+              <div class="stat" *ngIf="listing.offerCount > 0">
+                <div class="stat-value">{{ listing.offerCount }}</div>
+                <div class="stat-label">Ofertas</div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <button
+              class="action-btn buy-btn"
+              (click)="openOfferModal(listing)"
+              [disabled]="listing.seller === userId">
+              {{ listing.seller === userId ? 'Tu jugador' : 'Hacer oferta' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -199,6 +248,56 @@
       <div class="modal-footer">
         <button class="cancel-btn" (click)="closeSellModal()">Cancelar</button>
         <button class="confirm-btn" (click)="sellPlayer()">Confirmar Venta</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de oferta para jugadores en venta -->
+  <div class="modal-overlay" *ngIf="showOfferModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Hacer oferta</h3>
+        <button class="close-btn" (click)="closeOfferModal()">&times;</button>
+      </div>
+      <div class="modal-body" *ngIf="selectedListing">
+        <div class="player-preview">
+          <img [src]="selectedListing.player.images?.transparent['256x256']" [alt]="selectedListing.player.nickname" class="player-image">
+          <div class="player-details">
+            <h4>{{ selectedListing.player.nickname }}</h4>
+            <p>{{ selectedListing.player.team?.name }}</p>
+            <p class="position-badge" [style.background-color]="getPositionColor(selectedListing.player.positionId)">
+              {{ positionMap[selectedListing.player.positionId] }}
+            </p>
+            <p class="player-value">Precio pedido: {{ formatMarketValue(selectedListing.askingPrice) }}</p>
+          </div>
+        </div>
+
+        <div class="bid-section">
+          <p class="bid-info">Este jugador estará disponible hasta {{ selectedListing.expiryDate | date:'dd/MM/yyyy HH:mm' }}</p>
+
+          <div class="bid-input-group">
+            <label for="offerAmount">Tu oferta:</label>
+            <input
+              type="number"
+              id="offerAmount"
+              [(ngModel)]="offerAmount"
+              [min]="selectedListing.askingPrice"
+              [max]="teamBudget"
+              step="100000"
+            >
+            <span class="currency">€</span>
+          </div>
+
+          <div class="budget-info">
+            <p>Presupuesto disponible: {{ formatMarketValue(teamBudget) }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="action-btn cancel-btn" (click)="closeOfferModal()">Cancelar</button>
+        <button class="action-btn buy-btn" (click)="makeOffer()" [disabled]="isProcessing">
+          {{ isProcessing ? 'Procesando...' : 'Confirmar oferta' }}
+        </button>
       </div>
     </div>
   </div>

@@ -3,6 +3,7 @@ import { MarketService } from "../../services/market.service"
 import { ActiveLeagueService } from "../home/services/active-league.service"
 import { LeagueService } from "../../modals/create-league-modal/services/create-league.service"
 import { forkJoin } from "rxjs"
+import { AuthService } from "../../auth/services/auth.service"
 
 interface Notification {
   show: boolean;
@@ -29,6 +30,7 @@ export class MarketComponent implements OnInit {
   sortOption = "marketValue"
   sortDirection: "asc" | "desc" = "desc"
   nextMarketUpdate: Date | null = null;
+  userId: string = '';
 
   // Para la paginación
   currentPage = 1
@@ -46,6 +48,12 @@ export class MarketComponent implements OnInit {
   showBuyModal = false
   showSellModal = false
 
+  //Propiedades para ofertas
+  listedPlayers: any[] = [];
+  showOfferModal = false;
+  selectedListing: any = null;
+  offerAmount: number = 0;
+
   // Mapeo de posiciones
   positionMap: any = {
     "1": "Portero",
@@ -58,10 +66,14 @@ export class MarketComponent implements OnInit {
     private marketService: MarketService,
     private activeLeagueService: ActiveLeagueService,
     private leagueservice: LeagueService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    this.activeLeagueId = this.activeLeagueService.getActiveLeague()
+    this.activeLeagueId = this.activeLeagueService.getActiveLeague();
+    // Obtener el ID del usuario del servicio de autenticación
+    this.userId = this.authService.getUserName();
+
     if (this.activeLeagueId) {
       this.loadData()
     } else {
@@ -75,7 +87,8 @@ export class MarketComponent implements OnInit {
     forkJoin({
       marketPlayers: this.marketService.getAllPlayers(this.activeLeagueId!),
       teamData: this.leagueservice.getMyTeam(this.activeLeagueId!),
-      userBids: this.marketService.getUserBids(this.activeLeagueId!)
+      userBids: this.marketService.getUserBids(this.activeLeagueId!),
+      listedPlayers: this.marketService.getListedPlayers(this.activeLeagueId!)
     }).subscribe({
       next: (results) => {
         this.players = results.marketPlayers.players;
@@ -93,6 +106,9 @@ export class MarketComponent implements OnInit {
             currentBid: existingBid ? existingBid.amount : 0
           };
         });
+
+        // Añadir jugadores en venta
+        this.listedPlayers = results.listedPlayers;
 
         this.applyFilters();
         this.isLoading = false;
@@ -233,6 +249,12 @@ export class MarketComponent implements OnInit {
     this.showSellModal = true
   }
 
+  openOfferModal(listing: any): void {
+    this.selectedListing = listing;
+    this.offerAmount = listing.askingPrice;
+    this.showOfferModal = true;
+  }
+
   closeBuyModal(): void {
     this.showBuyModal = false
     this.selectedPlayer = null
@@ -241,6 +263,11 @@ export class MarketComponent implements OnInit {
   closeSellModal(): void {
     this.showSellModal = false
     this.selectedPlayer = null
+  }
+
+  closeOfferModal(): void {
+    this.showOfferModal = false;
+    this.selectedListing = null;
   }
 
   // Método para realizar una puja
@@ -307,6 +334,43 @@ export class MarketComponent implements OnInit {
         this.showErrorMessage(error.error?.message || 'Error al vender el jugador');
       },
     })
+  }
+
+  // Método para hacer una oferta
+  makeOffer(): void {
+    if (!this.selectedListing || !this.activeLeagueId) return;
+
+    // Validar que la oferta sea mayor o igual al precio pedido
+    if (this.offerAmount < this.selectedListing.askingPrice) {
+      this.showNotification(`La oferta debe ser al menos ${this.formatMarketValue(this.selectedListing.askingPrice)}`, 'warning');
+      return;
+    }
+
+    // Validar que el usuario tenga suficiente presupuesto
+    if (this.offerAmount > this.teamBudget) {
+      this.showNotification('No tienes suficiente presupuesto para esta oferta', 'error');
+      return;
+    }
+
+    this.isProcessing = true;
+
+    this.marketService.makeOffer(this.selectedListing._id, this.offerAmount)
+      .subscribe({
+        next: (response) => {
+          // Recargar datos
+          this.loadData();
+
+          // Cerrar modal y mostrar mensaje de éxito
+          this.showOfferModal = false;
+          this.showNotification('Oferta realizada con éxito', 'success');
+          this.isProcessing = false;
+        },
+        error: (error) => {
+          console.error('Error al realizar oferta:', error);
+          this.showNotification(error.error?.message || 'Error al procesar la oferta', 'error');
+          this.isProcessing = false;
+        }
+      });
   }
 
   // Helpers para la paginación

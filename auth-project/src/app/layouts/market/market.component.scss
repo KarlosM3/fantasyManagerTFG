@@ -519,6 +519,49 @@
   }
 }
 
+// Sección de mercado
+.market-section {
+  margin-top: 30px;
+  margin-bottom: 20px;
+
+  h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #ffffff;
+    border-bottom: 1px solid #444444;
+    padding-bottom: 10px;
+  }
+}
+
+// Estilos para el badge de "Tu jugador"
+.player-card {
+  .card-footer {
+    .action-btn {
+      &:disabled {
+        &.buy-btn {
+          background-color: #555555;
+
+          &:hover {
+            background-color: #555555;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Estilos para la fecha de expiración
+.bid-info {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  padding: 8px;
+  text-align: center;
+  font-size: 13px;
+  margin-bottom: 15px;
+}
+
+
 // Estilos para notificaciones
 .notification-container {
   position: fixed;

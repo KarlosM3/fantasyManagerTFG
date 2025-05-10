@@ -2,6 +2,8 @@ const Team = require("../models/team.model")
 const Market = require("../models/market.model")
 const Transaction = require("../models/transaction.model")
 const Bid = require("../models/bid.model")
+const MarketListing = require("../models/market-listening.model")
+const MarketOffer = require("../models/market-offer.model")
 const axios = require("axios")
 const mongoose = require("mongoose")
 
@@ -523,3 +525,338 @@ exports.getTransactionHistory = async (req, res) => {
     })
   }
 }
+
+// Poner jugador a la venta
+exports.listPlayerForSale = async (req, res) => {
+  try {
+    const { leagueId } = req.params;
+    const { playerId, askingPrice } = req.body;
+    const userId = req.user.id || req.user._id;
+    
+    // Verificar que el jugador pertenece al usuario
+    const team = await Team.findOne({ league: leagueId, user: userId });
+    if (!team) {
+      return res.status(404).json({ success: false, message: 'Equipo no encontrado' });
+    }
+    
+    const playerIndex = team.playersData.findIndex(p => p.id === playerId);
+    if (playerIndex === -1) {
+      return res.status(404).json({ success: false, message: 'Jugador no encontrado en tu equipo' });
+    }
+    
+    const player = team.playersData[playerIndex];
+    
+    // Verificar precio mínimo
+    if (askingPrice < Number(player.marketValue)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'El precio debe ser al menos igual al valor de mercado del jugador' 
+      });
+    }
+    
+    // Crear listado de venta
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 3); // 3 días de duración
+    
+    const listing = await MarketListing.create({
+      league: leagueId,
+      seller: userId,
+      player: player,
+      askingPrice: askingPrice,
+      expiryDate: expiryDate,
+      status: 'active'
+    });
+    
+    // Opcional: Generar una oferta automática
+    const autoOfferAmount = Math.round(Number(player.marketValue) * (0.9 + Math.random() * 0.2));
+    if (autoOfferAmount < askingPrice) {
+      await MarketOffer.create({
+        listing: listing._id,
+        amount: autoOfferAmount,
+        isAutoOffer: true,
+        createdAt: new Date()
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      message: 'Jugador puesto a la venta con éxito'
+    });
+  } catch (error) {
+    console.error('Error al poner jugador a la venta:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al procesar la venta',
+      error: error.message
+    });
+  }
+};
+
+
+// Obtener jugadores puestos a la venta en una liga
+exports.getListedPlayers = async (req, res) => {
+  try {
+    const { leagueId } = req.query;
+    
+    if (!leagueId) {
+      return res.status(400).json({
+        success: false,
+        message: "Se requiere el ID de la liga"
+      });
+    }
+    
+    // Obtener listados activos que no hayan expirado
+    const listings = await MarketListing.find({
+      league: leagueId,
+      status: 'active',
+      expiryDate: { $gt: new Date() }
+    }).populate('seller', 'username');
+    
+    // Obtener ofertas para cada listado
+    const listingsWithOffers = await Promise.all(listings.map(async (listing) => {
+      const offers = await MarketOffer.find({ 
+        listing: listing._id,
+        status: 'pending'
+      }).sort({ amount: -1 });
+      
+      // Contar ofertas y obtener la oferta más alta
+      const offerCount = offers.length;
+      const highestOffer = offers.length > 0 ? offers[0].amount : 0;
+      
+      return {
+        ...listing.toObject(),
+        offerCount,
+        highestOffer
+      };
+    }));
+    
+    res.status(200).json(listingsWithOffers);
+  } catch (error) {
+    console.error("Error al obtener jugadores en venta:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error al obtener jugadores en venta",
+      error: error.message,
+    });
+  }
+};
+
+
+// Hacer una oferta por un jugador puesto a la venta
+exports.makeOffer = async (req, res) => {
+  try {
+    const { listingId, amount } = req.body;
+    const userId = req.user.id || req.user._id;
+    
+    // Verificar que el listado existe y está activo
+    const listing = await MarketListing.findOne({ 
+      _id: listingId,
+      status: 'active',
+      expiryDate: { $gt: new Date() }
+    });
+    
+    if (!listing) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Listado no encontrado o ya no está disponible' 
+      });
+    }
+    
+    // Verificar que el usuario no es el vendedor
+    if (listing.seller.toString() === userId.toString()) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'No puedes hacer una oferta por tu propio jugador' 
+      });
+    }
+    
+    // Verificar presupuesto del equipo
+    const team = await Team.findOne({ user: userId, league: listing.league });
+    if (!team) {
+      return res.status(404).json({ success: false, message: 'Equipo no encontrado' });
+    }
+    
+    if (team.budget < amount) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Presupuesto insuficiente para esta oferta' 
+      });
+    }
+    
+    // Verificar que la oferta es al menos igual al precio pedido
+    if (amount < listing.askingPrice) {
+      return res.status(400).json({ 
+        success: false, 
+        message: `La oferta debe ser al menos ${listing.askingPrice}` 
+      });
+    }
+    
+    // Crear o actualizar oferta
+    const existingOffer = await MarketOffer.findOne({
+      listing: listingId,
+      buyer: userId,
+      status: 'pending'
+    });
+    
+    if (existingOffer) {
+      existingOffer.amount = amount;
+      await existingOffer.save();
+    } else {
+      await MarketOffer.create({
+        listing: listingId,
+        buyer: userId,
+        amount: amount,
+        status: 'pending',
+        isAutoOffer: false
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      message: 'Oferta realizada con éxito'
+    });
+  } catch (error) {
+    console.error('Error al realizar oferta:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al procesar la oferta',
+      error: error.message
+    });
+  }
+};
+
+
+// Aceptar una oferta
+exports.acceptOffer = async (req, res) => {
+  try {
+    const { offerId } = req.body;
+    const userId = req.user.id || req.user._id;
+    
+    // Obtener la oferta con el listado
+    const offer = await MarketOffer.findById(offerId)
+      .populate({
+        path: 'listing',
+        populate: { path: 'seller' }
+      });
+    
+    if (!offer) {
+      return res.status(404).json({ success: false, message: 'Oferta no encontrada' });
+    }
+    
+    // Verificar que el usuario es el vendedor
+    if (offer.listing.seller._id.toString() !== userId.toString()) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'No tienes permiso para aceptar esta oferta' 
+      });
+    }
+    
+    // Verificar que el listado sigue activo
+    if (offer.listing.status !== 'active') {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Este listado ya no está activo' 
+      });
+    }
+    
+    // Obtener equipos del comprador y vendedor
+    const buyerTeam = await Team.findOne({ 
+      user: offer.buyer, 
+      league: offer.listing.league 
+    });
+    
+    const sellerTeam = await Team.findOne({ 
+      user: userId, 
+      league: offer.listing.league 
+    });
+    
+    if (!buyerTeam || !sellerTeam) {
+      return res.status(404).json({ success: false, message: 'Equipo no encontrado' });
+    }
+    
+    // Verificar que el comprador tiene suficiente presupuesto
+    if (buyerTeam.budget < offer.amount) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'El comprador ya no tiene suficiente presupuesto' 
+      });
+    }
+    
+    // Realizar la transferencia
+    // 1. Quitar jugador del equipo del vendedor
+    const playerIndex = sellerTeam.playersData.findIndex(
+      p => p.id === offer.listing.player.id
+    );
+    
+    if (playerIndex === -1) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'El jugador ya no está en tu equipo' 
+      });
+    }
+    
+    sellerTeam.playersData.splice(playerIndex, 1);
+    sellerTeam.budget += offer.amount;
+    await sellerTeam.save();
+    
+    // 2. Añadir jugador al equipo del comprador
+    buyerTeam.playersData.push(offer.listing.player);
+    buyerTeam.budget -= offer.amount;
+    await buyerTeam.save();
+    
+    // 3. Actualizar estado del listado y de la oferta
+    offer.listing.status = 'sold';
+    await offer.listing.save();
+    
+    offer.status = 'accepted';
+    await offer.save();
+    
+    // 4. Rechazar otras ofertas
+    await MarketOffer.updateMany(
+      { listing: offer.listing._id, _id: { $ne: offerId } },
+      { status: 'rejected' }
+    );
+    
+    // 5. Registrar transacciones
+    await Transaction.create({
+      league: offer.listing.league,
+      user: userId,
+      player: {
+        id: offer.listing.player.id,
+        name: offer.listing.player.nickname || offer.listing.player.name,
+        positionId: offer.listing.player.positionId,
+        team: offer.listing.player.team?.name || "Sin equipo",
+      },
+      type: "sell",
+      amount: offer.amount,
+      date: new Date(),
+    });
+    
+    await Transaction.create({
+      league: offer.listing.league,
+      user: offer.buyer,
+      player: {
+        id: offer.listing.player.id,
+        name: offer.listing.player.nickname || offer.listing.player.name,
+        positionId: offer.listing.player.positionId,
+        team: offer.listing.player.team?.name || "Sin equipo",
+      },
+      type: "buy",
+      amount: offer.amount,
+      date: new Date(),
+    });
+    
+    res.status(200).json({
+      success: true,
+      message: 'Oferta aceptada con éxito',
+      newBudget: sellerTeam.budget
+    });
+  } catch (error) {
+    console.error('Error al aceptar oferta:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al procesar la aceptación',
+      error: error.message
+    });
+  }
+};

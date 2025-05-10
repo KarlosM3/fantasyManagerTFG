@@ -5,13 +5,19 @@
       <button class="primary-btn" (click)="openFormationModal()">
         Cambiar Formación
       </button>
-      <button class="secondary-btn" (click)="openTransfersModal()">
-        Transferencias
+      <button class="action-btn" (click)="initiateSellMode()">
+        Vender Jugador
       </button>
       <button class="btn btn-primary" (click)="saveTeamChanges()">
         Guardar Cambios
       </button>
     </div>
+  </div>
+
+   <!-- Mensaje de modo venta -->
+  <div class="mode-message" *ngIf="sellMode">
+    {{ sellModeMessage }}
+    <button class="cancel-btn" (click)="sellMode = false; sellModeMessage = ''">Cancelar</button>
   </div>
 
   <div class="formation-view" style="height: 700px">
@@ -262,7 +268,7 @@
       </div>
     </div>
 
-    <!-- Mensaje de error/advertencia -->
+    <!-- Mensaje de error/advertencia
     <div *ngIf="showFormationErrorMessage" class="formation-error">
       <p>{{ formationErrorMessage }}</p>
       <button *ngIf="formationErrorMessage.includes('Faltan')"
@@ -270,19 +276,49 @@
               (click)="openTransfersModal(); closeFormationModal()">
         Buscar jugadores
       </button>
-    </div>
+    </div>-->
   </div>
 
-  <!-- Modal de Transferencias -->
-  <div class="modal-overlay" *ngIf="showTransfersModal">
+  <!-- Modal de Venta -->
+  <div class="modal-overlay" *ngIf="showSellModal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>Transferencias</h3>
-        <button class="close-btn" (click)="closeTransfersModal()">&times;</button>
+        <h3>Vender jugador</h3>
+        <button class="close-btn" (click)="closeSellModal()">&times;</button>
       </div>
-      <p>Funcionalidad de transferencias en desarrollo.</p>
-      <div class="modal-actions">
-        <button class="primary-btn" (click)="closeTransfersModal()">Cerrar</button>
+      <div class="modal-body" *ngIf="playerToSell">
+        <div class="player-preview">
+          <img [src]="playerToSell.image" [alt]="playerToSell.nickname" class="player-image">
+          <div class="player-details">
+            <h4>{{ playerToSell.nickname }}</h4>
+            <p>{{ playerToSell.team?.name }}</p>
+            <p class="position-badge">{{ getReadablePosition(playerToSell.position || '') }}</p>
+            <p class="player-value">Valor actual: {{ formatCurrency(playerToSell.marketValue || 0) }}</p>
+          </div>
+        </div>
+
+        <div class="sell-options">
+          <div class="price-input-group">
+            <label for="askingPrice">Precio de venta:</label>
+            <input
+              type="number"
+              id="askingPrice"
+              [(ngModel)]="askingPrice"
+              [min]="minAskingPrice"
+              step="100000"
+            >
+            <span class="currency">€</span>
+          </div>
+
+          <div class="price-info">
+            <p>Precio mínimo: {{ formatCurrency(minAskingPrice) }}</p>
+            <p>Las ofertas estarán disponibles por 3 días</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="action-btn cancel-btn" (click)="closeSellModal()">Cancelar</button>
+        <button class="action-btn sell-btn" (click)="listPlayerForSale()">Poner a la venta</button>
       </div>
     </div>
   </div>

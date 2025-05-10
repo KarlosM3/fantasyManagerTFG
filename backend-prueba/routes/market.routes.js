@@ -10,6 +10,8 @@ router.get("/transactions/:leagueId", authMiddleware, marketController.getTransa
 router.get("/players", authMiddleware, marketController.getAllPlayers);
 router.post("/bid", authMiddleware, marketController.placeBid);
 router.get("/bids/:leagueId", authMiddleware, marketController.getUserBids);
-
+router.get("/listings", authMiddleware, marketController.getListedPlayers);
+router.post("/offer", authMiddleware, marketController.makeOffer);
+router.post("/accept-offer", authMiddleware, marketController.acceptOffer)
 
 module.exports = router

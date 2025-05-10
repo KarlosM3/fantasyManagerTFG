@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const leagueController = require('../controllers/league.controller');
 const authMiddleware = require('../middleware/auth.middleware'); // Ajusta si tu middleware tiene otro nombre
+const marketController = require('../controllers/market.controller');
 
 // Proteger las rutas con autenticación
 router.use(authMiddleware);
@@ -41,5 +42,8 @@ router.put('/:leagueId/my-team/formation', leagueController.updateTeamFormation)
 
 // Guardar cambios del equipo (formación, jugadores, capitán, etc.)
 router.post('/:leagueId/my-team/save-changes', leagueController.saveTeamChanges);
+
+//Guardar los jugadores en venta al mercado
+router.post("/:leagueId/market/sell", authMiddleware, marketController.listPlayerForSale);
 
 module.exports = router;

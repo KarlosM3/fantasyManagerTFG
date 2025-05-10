@@ -39,4 +39,20 @@ export class MarketService {
   getUserBids(leagueId: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/bids/${leagueId}`);
   }
+
+  // Obtener jugadores puestos a la venta
+  getListedPlayers(leagueId: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/listings?leagueId=${leagueId}`);
+  }
+
+  // Hacer una oferta por un jugador
+  makeOffer(listingId: string, amount: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/offer`, { listingId, amount });
+  }
+
+  // Aceptar una oferta
+  acceptOffer(offerId: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/accept-offer`, { offerId });
+  }
+
 }
