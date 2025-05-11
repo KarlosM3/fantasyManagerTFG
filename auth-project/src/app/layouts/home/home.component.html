@@ -31,6 +31,12 @@
         class="menu-item" routerLink="/layouts/offers" routerLinkActive="active"
         [class.disabled]="!ligaActivaId">Ofertas
       </div>
+      <div
+        class="menu-item"
+        [routerLink]="ligaActivaId ? ['/layouts/team-points', ligaActivaId] : null"
+        routerLinkActive="active"
+        [class.disabled]="!ligaActivaId">Puntos del Equipo
+      </div>
       <div class="menu-item">Más</div>
     </div>
 

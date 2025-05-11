@@ -165,7 +165,7 @@ exports.assignRandomTeam = async (req, res) => {
 
 
 
-// Obtener clasificación de una liga
+// Obtener la clasificación de la liga
 exports.getLeagueClassification = async (req, res) => {
   try {
     const { leagueId } = req.params;
@@ -175,22 +175,31 @@ exports.getLeagueClassification = async (req, res) => {
     
     // Para cada equipo, calcula los puntos y el valor del equipo
     const classification = teams.map(team => {
-      // Calcular puntos totales
-      const totalPoints = (team.playersData || []).reduce((sum, player) => {
-        // Usa el campo correcto para puntos, por ejemplo player.points o player.lastSeasonPoints
-        return sum + (Number(player.points) || 0);
-      }, 0);
+      // Verificar si el equipo tiene 11 jugadores en startingEleven
+      const hasCompleteTeam = team.startingEleven && team.startingEleven.length === 11;
+      
+      // Calcular puntos totales solo si tiene equipo completo
+      let totalPoints = 0;
+      if (hasCompleteTeam) {
+        totalPoints = (team.playersData || []).reduce((sum, player) => {
+          return sum + (Number(player.points) || 0);
+        }, 0);
+      }
       
       // Calcular valor total del equipo
       const teamValue = (team.playersData || []).reduce((sum, player) => {
         return sum + (Number(player.marketValue) || 0);
       }, 0);
       
+      // Calcular jornadas jugadas (solo aquellas con 11 jugadores)
+      const matchdaysPlayed = hasCompleteTeam ? team.matchdaysPlayed || 0 : 0;
+      
       return {
         userId: team.user._id,
         name: team.user.name,
         points: totalPoints,
-        teamValue: teamValue
+        teamValue: teamValue,
+        matchdaysPlayed: matchdaysPlayed
       };
     });
     
@@ -202,6 +211,7 @@ exports.getLeagueClassification = async (req, res) => {
     res.status(500).json({ message: 'Error al obtener clasificación', error: error.message });
   }
 };
+
 
 
 exports.generateInviteLink = async (req, res) => {
@@ -509,6 +519,7 @@ exports.saveTeamChanges = async (req, res) => {
       updates.startingEleven = players.filter(player => player.id && !player.id.startsWith('placeholder'));
     }
 
+
     // Actualizar capitán y vicecapitán
     if (captainId) {
       updates.captain = captainId;
@@ -571,7 +582,4 @@ exports.getLeagueById = async (req, res) => {
     });
   }
 };
-
-
-
 

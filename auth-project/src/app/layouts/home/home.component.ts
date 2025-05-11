@@ -17,6 +17,7 @@ export class HomeComponent implements OnInit {
   ligaActivaId: string | null = null;
   isTeamModalOpen = false;
   randomTeam: any[] = [];
+  equipoId: string | null = null;
 
   constructor(
     private authService: AuthService,
@@ -28,8 +29,20 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
     this.userName = this.authService.getUserName();
     this.loadUserLeagues();
+
     // Inicializa la liga activa si ya hay una guardada
     this.ligaActivaId = this.activeLeagueService.getActiveLeague();
+
+  }
+
+
+  navegarAPuntosEquipo() {
+    if (this.equipoId) {
+      console.log('Navegando a puntos del equipo:', this.equipoId);
+      this.router.navigate(['/layouts/team-points', this.equipoId]);
+    } else {
+      console.log('No hay ID de equipo disponible');
+    }
   }
 
   loadUserLeagues(): void {

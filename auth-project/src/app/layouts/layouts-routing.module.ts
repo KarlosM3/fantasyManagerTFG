@@ -7,6 +7,7 @@ import { ClassificationComponent } from './classification/classification.compone
 import { MyTeamComponent } from './my-team/my-team.component';
 import { MarketComponent } from './market/market.component';
 import { OffersComponent } from './offers/offers.component';
+import { TeamPointsComponent } from './team-points/team-points.component';
 
 const routes: Routes = [
   {
@@ -38,7 +39,13 @@ const routes: Routes = [
     path: 'offers',
     component: OffersComponent,
     canActivate: [AuthGuard]
+  },
+  {
+    path: 'team-points/:leagueId',
+    component: TeamPointsComponent,
+    canActivate: [AuthGuard]
   }
+
 
 ];
 

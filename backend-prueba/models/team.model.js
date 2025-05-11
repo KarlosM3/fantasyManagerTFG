@@ -11,8 +11,8 @@ const teamSchema = new mongoose.Schema({
   viceCaptain: { type: String, default: null },
   formation: { type: String, default: '4-4-2' },
   startingEleven: { type: Array, default: [] },
-  lastSaved: { type: Date, default: Date.now } // Para seguimiento de la última actualización
-  
+  lastSaved: { type: Date, default: Date.now }, // Para seguimiento de la última actualización
+  matchdaysPlayed: { type: Number, default: 0 } // Nuevo campo para contar jornadas jugadas
 });
 
 // Añadir al team.model.js existente

@@ -52,6 +52,29 @@ exports.syncPointsFromExternalAPI = async (req, res) => {
   }
 };
 
+// Función para calcular los puntos de un equipo
+async function calculateTeamPoints(teamId, matchday) {
+  // Obtener el equipo con sus jugadores
+  const team = await Team.findById(teamId);
+  if (!team || !team.players || team.players.length === 0) return 0;
+  
+  // Verificar si el equipo tiene 11 jugadores en startingEleven
+  const hasCompleteTeam = team.startingEleven && team.startingEleven.length === 11;
+  if (!hasCompleteTeam) return 0; // No dar puntos si no tiene equipo completo
+  
+  // Obtener los IDs de los jugadores externos
+  const externalPlayerIds = team.players.map(player => player.toString());
+  
+  // Obtener los puntos de estos jugadores para la jornada específica
+  const playerScores = await PlayerScore.find({
+    player: { $in: externalPlayerIds },
+    matchday: matchday
+  });
+  
+  // Sumar los puntos
+  return playerScores.reduce((sum, score) => sum + score.points, 0);
+}
+
 // Función auxiliar para actualizar puntos de equipos
 async function updateTeamPointsForMatchday(matchday) {
   // Obtener todos los equipos
@@ -67,26 +90,16 @@ async function updateTeamPointsForMatchday(matchday) {
       { points: totalPoints },
       { upsert: true, new: true }
     );
+    
+    // Si el equipo tiene 11 jugadores, incrementar el contador de jornadas jugadas
+    if (team.startingEleven && team.startingEleven.length === 11 && totalPoints > 0) {
+      await Team.findByIdAndUpdate(
+        team._id,
+        { $inc: { matchdaysPlayed: 1 } },
+        { new: true }
+      );
+    }
   }
-}
-
-// Función para calcular los puntos de un equipo
-async function calculateTeamPoints(teamId, matchday) {
-  // Obtener el equipo con sus jugadores
-  const team = await Team.findById(teamId);
-  if (!team || !team.players || team.players.length === 0) return 0;
-  
-  // Obtener los IDs de los jugadores externos
-  const externalPlayerIds = team.players.map(player => player.toString());
-  
-  // Obtener los puntos de estos jugadores para la jornada específica
-  const playerScores = await PlayerScore.find({
-    player: { $in: externalPlayerIds },
-    matchday: matchday
-  });
-  
-  // Sumar los puntos
-  return playerScores.reduce((sum, score) => sum + score.points, 0);
 }
 
 // Obtener puntos de un equipo por jornada
@@ -107,38 +120,38 @@ exports.getTeamPointsByMatchday = async (req, res) => {
     // Obtener los jugadores del equipo
     const playerIds = team.players;
     
-    // Obtener puntos de los jugadores para esta jornada
-    const playerScores = await Promise.all(
-      playerIds.map(async (playerId) => {
-        // Buscar puntos en la base de datos
-        const score = await PlayerScore.findOne({ 
-          player: playerId, 
-          matchday: parseInt(matchday) 
-        });
-        
-        // Obtener datos del jugador desde la API externa
-        const response = await axios.get('https://api-fantasy.llt-services.com/api/v4/players');
-        const externalPlayers = response.data;
-        const externalPlayer = externalPlayers.find(p => p.id === playerId.toString());
-        
-        if (!externalPlayer) return null;
-        
-        return {
-          id: externalPlayer.id,
-          name: externalPlayer.name,
-          nickname: externalPlayer.nickname || externalPlayer.name,
-          position: externalPlayer.position,
-          positionId: externalPlayer.positionId,
-          marketValue: externalPlayer.marketValue,
-          images: externalPlayer.images,
-          team: externalPlayer.team,
-          points: score ? score.points : 0
-        };
-      })
-    );
+    // Obtener puntos de los jugadores para esta jornada (una sola consulta)
+    const playerScores = await PlayerScore.find({ 
+      player: { $in: playerIds }, 
+      matchday: parseInt(matchday) 
+    });
     
-    // Filtrar jugadores nulos
-    const formattedScores = playerScores.filter(score => score !== null);
+    // Obtener datos de todos los jugadores desde la API externa (una sola vez)
+    const response = await axios.get('https://api-fantasy.llt-services.com/api/v4/players');
+    const externalPlayers = response.data;
+    
+    // Mapear los resultados
+    const formattedScores = playerIds.map(playerId => {
+      // Buscar puntos en los resultados de la consulta
+      const score = playerScores.find(s => s.player.toString() === playerId.toString());
+      
+      // Buscar datos del jugador en los resultados de la API
+      const externalPlayer = externalPlayers.find(p => p.id === playerId.toString());
+      
+      if (!externalPlayer) return null;
+      
+      return {
+        id: externalPlayer.id,
+        name: externalPlayer.name,
+        nickname: externalPlayer.nickname || externalPlayer.name,
+        position: externalPlayer.position,
+        positionId: externalPlayer.positionId,
+        marketValue: externalPlayer.marketValue,
+        images: externalPlayer.images,
+        team: externalPlayer.team,
+        points: score ? score.points : 0
+      };
+    }).filter(score => score !== null);
     
     res.status(200).json({
       success: true,
@@ -158,12 +171,14 @@ exports.getTeamPointsHistory = async (req, res) => {
     const { teamId } = req.params;
     
     // Verificar que el equipo existe
+
+    console.log(`Buscando equipo con ID: ${teamId}`);
     const team = await Team.findById(teamId);
+    console.log(`Equipo encontrado: ${team ? 'Sí' : 'No'}`);
     
     if (!team) {
       return res.status(404).json({
         success: false,
-        message: 'Equipo no encontrado'
       });
     }
     
@@ -206,13 +221,13 @@ exports.getLeagueStandingsByPoints = async (req, res) => {
       
       // Calcular puntos totales y jornadas jugadas
       const totalPoints = teamPoints.reduce((sum, entry) => sum + entry.points, 0);
-      const matchdaysPlayed = teamPoints.length;
+      const matchdaysPlayed = team.matchdaysPlayed || 0;
       
       standings.push({
         id: team._id,
-        name: team.name || `Equipo de ${team.user.username}`,
+        name: team.user.name || `Equipo sin nombre`,
         user_id: team.user._id,
-        username: team.user.username,
+        username: team.user.name,
         total_points: totalPoints,
         matchdays_played: matchdaysPlayed
       });

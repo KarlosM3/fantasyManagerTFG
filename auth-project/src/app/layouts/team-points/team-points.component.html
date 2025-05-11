@@ -5,6 +5,7 @@
     <div class="matchday-selector">
       <label for="matchday">Jornada:</label>
       <select id="matchday" [(ngModel)]="matchday" (change)="changeMatchday(matchday)">
+        <option *ngIf="availableMatchdays.length === 0" [value]="1">Jornada 1 (0 pts)</option>
         <option *ngFor="let md of availableMatchdays" [value]="md">
           Jornada {{ md }} ({{ getMatchdayPoints(md) }} pts)
         </option>
@@ -14,12 +15,31 @@
     <div class="total-points">
       <h3>Puntos totales: {{ totalPoints }}</h3>
       <p>Puntos en la jornada {{ matchday }}: {{ getMatchdayPoints(matchday) }}</p>
+      <p *ngIf="availableMatchdays.length === 0" class="info-message">
+        Aún no hay datos de puntos disponibles. Los puntos se actualizarán después de cada jornada.
+      </p>
     </div>
   </div>
 
   <div class="field-container" *ngIf="!loading; else loadingTemplate">
     <!-- Campo de fútbol con jugadores y sus puntos -->
     <div class="soccer-field">
+      <!-- Elementos del campo -->
+      <div class="goal-area top"></div>
+      <div class="goal-area bottom"></div>
+      <div class="center-circle"></div>
+
+      <!-- Formación -->
+      <div class="formation-display">
+        Formación: {{ getFormationString() }}
+      </div>
+
+      <!-- Puntos totales de la jornada -->
+      <div class="total-matchday-points">
+        <div class="points-value">{{ getMatchdayPoints(matchday) }}</div>
+        <div class="pts-label">pts</div>
+      </div>
+
       <!-- Porteros -->
       <div class="position-row goalkeepers">
         <div *ngFor="let player of goalkeepers.slice(0,1)" class="player-card">
