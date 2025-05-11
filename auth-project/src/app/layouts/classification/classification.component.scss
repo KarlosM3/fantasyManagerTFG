@@ -134,8 +134,8 @@ body, .main-content {
 }
 
 .ranking-points {
-  width: 80px;
-  text-align: right;
+  width: 200px;
+  text-align: center;
   color: $text-color;
   font-weight: bold;
   font-size: 1.1rem;
@@ -197,6 +197,56 @@ body, .main-content {
       }
     }
   }
+}
+
+// Añadir a classification.component.scss
+
+// Estilos para las pestañas de clasificación
+.standings-tabs {
+  display: flex;
+  margin-bottom: 20px;
+
+  button {
+    background: $card-bg;
+    color: $text-color;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    margin-right: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+
+    &:hover {
+      background: lighten($card-bg, 5%);
+    }
+
+    &.active {
+      background: $accent-color;
+      color: white;
+    }
+  }
+}
+
+// Añadir columna para jornadas en clasificación por puntos
+.ranking-jornadas {
+  width: 80px;
+  text-align: center;
+  color: $text-color;
+}
+
+// Estilo para resaltar al usuario actual
+.ranking-row.current-user {
+  background-color: rgba($accent-color, 0.1);
+
+  .user-name {
+    color: $accent-color;
+    font-weight: bold;
+  }
+}
+
+// Animación para transición entre clasificaciones
+.ranking-table {
+  transition: opacity 0.3s;
 }
 
 

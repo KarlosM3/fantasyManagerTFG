@@ -15,4 +15,23 @@ const teamSchema = new mongoose.Schema({
   
 });
 
+// Añadir al team.model.js existente
+teamSchema.methods.calculatePoints = async function(matchday) {
+  const PlayerScore = mongoose.model('PlayerScore');
+  
+  // Obtener puntos de todos los jugadores del equipo para una jornada específica
+  const playerScores = await PlayerScore.find({
+    player: { $in: this.players },
+    matchday: matchday
+  }).populate('player');
+  
+  // Calcular puntos totales
+  const totalPoints = playerScores.reduce((sum, score) => sum + score.points, 0);
+  
+  return {
+    totalPoints,
+    playerScores
+  };
+};
+
 module.exports = mongoose.model('Team', teamSchema);

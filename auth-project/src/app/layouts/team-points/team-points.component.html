@@ -1,0 +1,105 @@
+<div class="team-points-container">
+  <div class="header">
+    <h2>Puntos de mi equipo</h2>
+
+    <div class="matchday-selector">
+      <label for="matchday">Jornada:</label>
+      <select id="matchday" [(ngModel)]="matchday" (change)="changeMatchday(matchday)">
+        <option *ngFor="let md of availableMatchdays" [value]="md">
+          Jornada {{ md }} ({{ getMatchdayPoints(md) }} pts)
+        </option>
+      </select>
+    </div>
+
+    <div class="total-points">
+      <h3>Puntos totales: {{ totalPoints }}</h3>
+      <p>Puntos en la jornada {{ matchday }}: {{ getMatchdayPoints(matchday) }}</p>
+    </div>
+  </div>
+
+  <div class="field-container" *ngIf="!loading; else loadingTemplate">
+    <!-- Campo de fútbol con jugadores y sus puntos -->
+    <div class="soccer-field">
+      <!-- Porteros -->
+      <div class="position-row goalkeepers">
+        <div *ngFor="let player of goalkeepers.slice(0,1)" class="player-card">
+          <div class="player-image">
+            <img [src]="player.images?.transparent?.['256x256'] || 'assets/images/player-placeholder.png'" alt="{{ player.name }}">
+          </div>
+          <div class="player-info">
+            <div class="player-name">{{ player.nickname || player.name }}</div>
+            <div class="player-points">{{ player.points || 0 }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Defensas -->
+      <div class="position-row defenders">
+        <div *ngFor="let player of defenders.slice(0,4)" class="player-card">
+          <div class="player-image">
+            <img [src]="player.images?.transparent?.['256x256'] || 'assets/images/player-placeholder.png'" alt="{{ player.name }}">
+          </div>
+          <div class="player-info">
+            <div class="player-name">{{ player.nickname || player.name }}</div>
+            <div class="player-points">{{ player.points || 0 }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Centrocampistas -->
+      <div class="position-row midfielders">
+        <div *ngFor="let player of midfielders.slice(0,3)" class="player-card">
+          <div class="player-image">
+            <img [src]="player.images?.transparent?.['256x256'] || 'assets/images/player-placeholder.png'" alt="{{ player.name }}">
+          </div>
+          <div class="player-info">
+            <div class="player-name">{{ player.nickname || player.name }}</div>
+            <div class="player-points">{{ player.points || 0 }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delanteros -->
+      <div class="position-row forwards">
+        <div *ngFor="let player of forwards.slice(0,3)" class="player-card">
+          <div class="player-image">
+            <img [src]="player.images?.transparent?.['256x256'] || 'assets/images/player-placeholder.png'" alt="{{ player.name }}">
+          </div>
+          <div class="player-info">
+            <div class="player-name">{{ player.nickname || player.name }}</div>
+            <div class="player-points">{{ player.points || 0 }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de puntos detallada -->
+    <div class="points-table">
+      <h3>Detalles de puntos por jugador</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Jugador</th>
+            <th>Posición</th>
+            <th>Equipo</th>
+            <th>Puntos</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let player of playerPoints">
+            <td>{{ player.nickname || player.name }}</td>
+            <td>{{ player.position }}</td>
+            <td>{{ player.team?.name }}</td>
+            <td>{{ player.points || 0 }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <ng-template #loadingTemplate>
+    <div class="loading">
+      <p>Cargando puntos...</p>
+    </div>
+  </ng-template>
+</div>

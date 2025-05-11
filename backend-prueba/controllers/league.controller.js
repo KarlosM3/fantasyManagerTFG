@@ -169,32 +169,40 @@ exports.assignRandomTeam = async (req, res) => {
 exports.getLeagueClassification = async (req, res) => {
   try {
     const { leagueId } = req.params;
-
+    
     // Obtén todos los equipos de la liga
     const teams = await Team.find({ league: leagueId }).populate('user');
-
-    // Para cada equipo, calcula los puntos sumando los puntos de cada jugador (ejemplo: lastSeasonPoints)
-    // Si tienes lógica propia para calcular puntos, usa esa.
+    
+    // Para cada equipo, calcula los puntos y el valor del equipo
     const classification = teams.map(team => {
+      // Calcular puntos totales
       const totalPoints = (team.playersData || []).reduce((sum, player) => {
         // Usa el campo correcto para puntos, por ejemplo player.points o player.lastSeasonPoints
         return sum + (Number(player.points) || 0);
       }, 0);
+      
+      // Calcular valor total del equipo
+      const teamValue = (team.playersData || []).reduce((sum, player) => {
+        return sum + (Number(player.marketValue) || 0);
+      }, 0);
+      
       return {
         userId: team.user._id,
         name: team.user.name,
-        points: totalPoints
+        points: totalPoints,
+        teamValue: teamValue
       };
     });
-
+    
     // Ordena por puntos descendente
     classification.sort((a, b) => b.points - a.points);
-
+    
     res.json(classification);
   } catch (error) {
     res.status(500).json({ message: 'Error al obtener clasificación', error: error.message });
   }
 };
+
 
 exports.generateInviteLink = async (req, res) => {
   try {
@@ -528,6 +536,38 @@ exports.saveTeamChanges = async (req, res) => {
       success: false,
       message: 'Error al guardar cambios del equipo',
       error: error.message
+    });
+  }
+};
+
+// Obtener una liga por ID
+exports.getLeagueById = async (req, res) => {
+  try {
+    const { leagueId } = req.params;
+    const league = await League.findById(leagueId);
+    
+    if (!league) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Liga no encontrada' 
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      name: league.name,
+      privacy: league.privacy,
+      maxParticipants: league.maxParticipants,
+      initialBudget: league.initialBudget,
+      createdBy: league.createdBy,
+      inviteCode: league.inviteCode
+    });
+  } catch (error) {
+    console.error('Error al obtener liga:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error al obtener liga', 
+      error: error.message 
     });
   }
 };

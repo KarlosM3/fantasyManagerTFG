@@ -1,0 +1,129 @@
+// src/app/layouts/team-points/team-points.component.scss
+.team-points-container {
+  padding: 20px;
+
+  .header {
+    margin-bottom: 20px;
+
+    h2 {
+      margin-bottom: 15px;
+    }
+
+    .matchday-selector {
+      margin-bottom: 15px;
+
+      select {
+        padding: 8px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+      }
+    }
+
+    .total-points {
+      background-color: #f5f5f5;
+      padding: 15px;
+      border-radius: 8px;
+
+      h3 {
+        margin-bottom: 5px;
+      }
+    }
+  }
+
+  .field-container {
+    .soccer-field {
+      background-image: url('/assets/images/field-background.jpg');
+      background-size: cover;
+      border-radius: 8px;
+      padding: 20px;
+      min-height: 500px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+
+      .position-row {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 20px;
+
+        .player-card {
+          background-color: rgba(255, 255, 255, 0.8);
+          border-radius: 8px;
+          padding: 10px;
+          text-align: center;
+          width: 80px;
+
+          .player-image {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto;
+
+            img {
+              width: 100%;
+              height: 100%;
+              object-fit: contain;
+            }
+          }
+
+          .player-info {
+            margin-top: 5px;
+
+            .player-name {
+              font-size: 12px;
+              font-weight: bold;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+
+            .player-points {
+              font-size: 16px;
+              font-weight: bold;
+              color: #4CAF50;
+              background-color: rgba(0, 0, 0, 0.7);
+              border-radius: 50%;
+              width: 30px;
+              height: 30px;
+              line-height: 30px;
+              margin: 5px auto 0;
+            }
+          }
+        }
+      }
+    }
+
+    .points-table {
+      margin-top: 20px;
+
+      h3 {
+        margin-bottom: 15px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+
+        th, td {
+          padding: 10px;
+          text-align: left;
+          border-bottom: 1px solid #ddd;
+        }
+
+        th {
+          background-color: #f5f5f5;
+        }
+
+        tr:hover {
+          background-color: #f9f9f9;
+        }
+      }
+    }
+  }
+
+  .loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+  }
+}

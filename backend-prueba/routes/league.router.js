@@ -46,4 +46,7 @@ router.post('/:leagueId/my-team/save-changes', leagueController.saveTeamChanges)
 //Guardar los jugadores en venta al mercado
 router.post("/:leagueId/market/sell", authMiddleware, marketController.listPlayerForSale);
 
+// Obtener una liga por ID
+router.get('/:leagueId', leagueController.getLeagueById);
+
 module.exports = router;

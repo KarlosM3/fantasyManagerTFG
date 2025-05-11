@@ -19,6 +19,7 @@ app.use('/api', require('./routes/auth.routes'));
 app.use('/api', require('./routes/players.routes'));
 app.use('/api/leagues', require('./routes/league.router'));
 app.use('/api/market', require('./routes/market.routes'));
+app.use('/api/points', require('./routes/points.router'));
 
 // Ruta de prueba
 app.get('/', (req, res) => {

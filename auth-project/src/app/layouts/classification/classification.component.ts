@@ -1,87 +1,84 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { LeagueService } from '../../modals/create-league-modal/services/create-league.service';
+import { PointsService } from '../../services/points.service';
+import { AuthService } from '../../auth/services/auth.service';
 
 @Component({
   selector: 'app-classification',
   templateUrl: './classification.component.html',
   styleUrls: ['./classification.component.scss']
 })
+
 export class ClassificationComponent implements OnInit {
-  leagueId: string = '';
-  league: any;
+  leagueId!: string;
+  leagueName: string = 'Mi Liga';
   leagueUsers: any[] = [];
-  isInviteModalOpen = false;
-  refreshInterval: any;
+  pointsStandings: any[] = [];
+  showPointsStandings: boolean = false;
+  showInvite: boolean = false;
+  inviteLink: string = '';
 
   constructor(
     private route: ActivatedRoute,
-    private leagueService: LeagueService
-  ) {}
+    private leagueService: LeagueService,
+    private pointsService: PointsService,
+    private authService: AuthService
+  ) { }
 
   ngOnInit(): void {
-    this.leagueId = this.route.snapshot.paramMap.get('leagueId') || '';
-    console.log('League ID:', this.leagueId);
-
-    if (this.leagueId) {
+    this.route.params.subscribe(params => {
+      this.leagueId = params['leagueId'];
+      this.loadLeagueData();
       this.loadClassification();
-
-      // Actualizar cada 30 segundos
-      this.refreshInterval = setInterval(() => {
-        this.loadClassification();
-      }, 30000);
-    } else {
-      console.error('No se ha proporcionado un ID de liga válido');
-    }
+    });
   }
 
-  // Limpiar el intervalo al destruir el componente
-  ngOnDestroy(): void {
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
-    }
+  loadLeagueData(): void {
+    this.leagueService.getLeagueById(this.leagueId).subscribe((league: any) => {
+      this.leagueName = league.name;
+      this.inviteLink = `${window.location.origin}/join-league/${this.leagueId}`;
+    });
   }
 
   loadClassification(): void {
-    this.leagueService.getLeagueClassification(this.leagueId).subscribe((users) => {
+    this.leagueService.getLeagueClassification(this.leagueId).subscribe(users => {
       this.leagueUsers = users;
     });
 
+    this.pointsService.getLeagueStandingsByPoints(this.leagueId).subscribe(response => {
+      if (response.success) {
+        this.pointsStandings = response.data;
+      }
+    });
   }
 
-
-  openInviteModal() {
-    this.isInviteModalOpen = true;
+  showInviteModal(): void {
+    this.showInvite = !this.showInvite;
   }
 
-  closeInviteModal() {
-    this.isInviteModalOpen = false;
+  copyInviteLink(inputElement: HTMLInputElement): void {
+    inputElement.select();
+    document.execCommand('copy');
+    // Mostrar notificación de copiado (opcional)
   }
 
-  // classification.component.ts
-inviteLink: string | null = null;
+  getUserInitials(username: string): string {
+    return username.charAt(0).toUpperCase();
+  }
 
-generateInviteLink() {
-  this.leagueService.getInviteLink(this.leagueId).subscribe({
-    next: (res: any) => {
-      this.inviteLink = res.inviteLink;
-    },
-    error: (err) => {
-      console.error('Error al generar enlace de invitación:', err);
-    }
-  });
-}
+  isCurrentUser(userId: string): boolean {
+    return userId === this.authService.getCurrentUserId();
+  }
 
-copyInviteLink(inputElement: HTMLInputElement) {
-  inputElement.select();
-  document.execCommand('copy');
-  // Mostrar notificación de copiado
-  this.showNotification('Enlace copiado al portapapeles');
-}
+  formatCurrency(value: number): string {
+    return new Intl.NumberFormat("es-ES", {
+      style: "currency",
+      currency: "EUR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value);
+  }
 
-showNotification(message: string) {
-  // Implementa tu sistema de notificaciones
-  // Puede ser un toast, un snackbar, etc.
-}
 
 }

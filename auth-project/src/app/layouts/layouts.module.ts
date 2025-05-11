@@ -12,6 +12,7 @@ import { MyTeamComponent } from './my-team/my-team.component';
 import { MarketComponent } from './market/market.component';
 import { FormsModule } from '@angular/forms';
 import { OffersComponent } from './offers/offers.component';
+import { TeamPointsComponent } from './team-points/team-points.component';
 
 
 @NgModule({
@@ -22,7 +23,8 @@ import { OffersComponent } from './offers/offers.component';
     ClassificationComponent,
     MyTeamComponent,
     MarketComponent,
-    OffersComponent
+    OffersComponent,
+    TeamPointsComponent
     ],
   imports: [
     CommonModule,

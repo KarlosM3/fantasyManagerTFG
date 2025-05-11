@@ -31,6 +31,10 @@ export class LeagueService {
     return this.http.get(`${this.apiUrl}/${leagueId}/classification`);
   }
 
+  getLeagueClassificationWithPoints(leagueId: string) {
+    return this.http.get<any[]>(`${this.apiUrl}/points/league/${leagueId}/standings`);
+  }
+
   getInviteLink(leagueId: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/${leagueId}/invite-link`);
   }
@@ -74,5 +78,9 @@ export class LeagueService {
     return this.http.post(`${this.apiUrl}/${leagueId}/market/sell`, { playerId, askingPrice });
   }
 
+  // En create-league.service.ts
+  getLeagueById(leagueId: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${leagueId}`);
+  }
 
 }

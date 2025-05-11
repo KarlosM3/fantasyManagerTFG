@@ -8,37 +8,65 @@
   </div>
 
   <!-- Contenido principal -->
+  <!-- classification.component.html - Contenido principal -->
   <div class="clasificacion-container">
     <div class="clasificacion-header">
-      <h2>Clasificación</h2>
-      <!-- classification.component.html -->
-<div class="invite-section">
-  <button (click)="generateInviteLink()" class="invite-btn">
-    <i class="fas fa-user-plus"></i> Invitar usuarios
-  </button>
-
-  <div *ngIf="inviteLink" class="invite-link-container">
-    <input type="text" [value]="inviteLink" readonly #inviteLinkInput>
-    <button (click)="copyInviteLink(inviteLinkInput)" class="copy-btn">
-      <i class="fas fa-copy"></i> Copiar
-    </button>
-  </div>
-</div>
+      <h2 class="league-title">{{ leagueName }}</h2>
+      <button class="invite-btn" (click)="showInviteModal()">
+        <i class="fas fa-user-plus"></i> Invitar
+      </button>
     </div>
 
-    <div class="ranking-table">
+    <!-- Pestañas de clasificación -->
+    <div class="standings-tabs">
+      <button [class.active]="!showPointsStandings" (click)="showPointsStandings = false">Clasificación general</button>
+      <button [class.active]="showPointsStandings" (click)="showPointsStandings = true">Clasificación por puntos</button>
+    </div>
+
+    <!-- Clasificación general -->
+    <div class="ranking-table" *ngIf="!showPointsStandings">
       <div class="ranking-row ranking-header">
-        <div class="ranking-pos">#</div>
+        <div class="ranking-pos">Pos</div>
         <div class="ranking-user">Usuario</div>
-        <div class="ranking-points">Puntos</div>
+        <div class="ranking-points">Valor</div>
       </div>
-      <div class="ranking-row" *ngFor="let user of leagueUsers; let i = index">
+      <div class="ranking-row" *ngFor="let user of leagueUsers; let i = index" [class.current-user]="isCurrentUser(user.id)">
         <div class="ranking-pos">{{ i + 1 }}</div>
         <div class="ranking-user">
-          <span class="user-avatar-placeholder">{{ user.name?.charAt(0) | uppercase }}</span>
-          <span class="user-name">{{ user.name }}</span>
+        <div class="user-avatar-placeholder">{{ getUserInitials(user?.name || '') }}</div>
+         <div class="user-name">{{ user.name }}</div>
         </div>
-        <div class="ranking-points">{{ user.points }}</div>
+        <div class="ranking-points">{{ formatCurrency(user.teamValue || 0) }}</div>
+      </div>
+    </div>
+
+    <!-- Clasificación por puntos -->
+    <div class="ranking-table" *ngIf="showPointsStandings">
+      <div class="ranking-row ranking-header">
+        <div class="ranking-pos">Pos</div>
+        <div class="ranking-user">Usuario</div>
+        <div class="ranking-jornadas">Jornadas</div>
+        <div class="ranking-points">Puntos</div>
+      </div>
+      <div class="ranking-row" *ngFor="let team of pointsStandings; let i = index" [class.current-user]="isCurrentUser(team.user_id)">
+        <div class="ranking-pos">{{ i + 1 }}</div>
+        <div class="ranking-user">
+        <div class="user-avatar-placeholder">{{ getUserInitials(team.name || '') }}</div>
+          <div class="user-name">{{ team.name }}</div>
+        </div>
+        <div class="ranking-jornadas">{{ team.matchdays_played }}</div>
+        <div class="ranking-points">{{ team.total_points }}</div>
+      </div>
+    </div>
+
+    <!-- Sección de invitación -->
+    <div class="invite-section" *ngIf="showInvite">
+      <h3>Invitar a la liga</h3>
+      <div class="invite-link-container">
+        <input type="text" [value]="inviteLink" readonly #inviteLinkInput>
+        <button class="copy-btn" (click)="copyInviteLink(inviteLinkInput)">
+          <i class="fas fa-copy"></i> Copiar
+        </button>
       </div>
     </div>
   </div>
