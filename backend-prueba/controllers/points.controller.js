@@ -166,12 +166,11 @@ exports.getTeamPointsByMatchday = async (req, res) => {
 };
 
 // Obtener historial de puntos por jornada
+// Obtener historial de puntos por jornada
 exports.getTeamPointsHistory = async (req, res) => {
   try {
     const { teamId } = req.params;
     
-    // Verificar que el equipo existe
-
     console.log(`Buscando equipo con ID: ${teamId}`);
     const team = await Team.findById(teamId);
     console.log(`Equipo encontrado: ${team ? 'Sí' : 'No'}`);
@@ -179,30 +178,38 @@ exports.getTeamPointsHistory = async (req, res) => {
     if (!team) {
       return res.status(404).json({
         success: false,
+        message: `Equipo con ID ${teamId} no encontrado`
       });
     }
     
-    // Obtener historial de puntos
+    // Obtener historial de puntos del equipo
     const pointsHistory = await TeamPoints.find({ team: teamId })
       .sort({ matchday: 1 });
+    
+    console.log(`Puntos encontrados: ${pointsHistory.length}`);
     
     // Formatear la respuesta
     const formattedHistory = pointsHistory.map(entry => ({
       matchday: entry.matchday,
-      total_points: entry.points
+      total_points: entry.points,
+      date: entry.createdAt || new Date()
     }));
     
+    // Enviar respuesta
     res.status(200).json({
       success: true,
       data: formattedHistory
     });
   } catch (error) {
+    console.error(`Error en getTeamPointsHistory: ${error.message}`);
     res.status(500).json({
       success: false,
       message: error.message
     });
   }
 };
+
+
 
 // Obtener clasificación de la liga por puntos
 exports.getLeagueStandingsByPoints = async (req, res) => {

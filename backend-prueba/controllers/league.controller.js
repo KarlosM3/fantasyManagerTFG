@@ -437,10 +437,12 @@ exports.getMyTeam = async (req, res) => {
     }, 0);
     
     res.json({
+      teamId: team._id, // Añadir explícitamente el ID del equipo
       teamValue,
       budget: team.budget,
       playersData: team.playersData,
       team: {
+        _id: team._id, // También incluirlo aquí para compatibilidad
         formation: team.formation,
         startingEleven: team.startingEleven,
         captain: team.captain,
@@ -452,6 +454,7 @@ exports.getMyTeam = async (req, res) => {
     res.status(500).json({ message: 'Error al obtener tu equipo', error: error.message });
   }
 };
+
 
 exports.updateTeamCaptain = async (req, res) => {
   try {
