@@ -403,9 +403,9 @@ export class MarketComponent implements OnInit {
   getPositionColor(positionId: string): string {
     const colors: { [key: string]: string } = {
       "1": "#FFC107", // Portero - Amarillo
-      "2": "#4CAF50", // Defensa - Verde
+      "2": "#F44336", // Defensa - Verde
       "3": "#2196F3", // Centrocampista - Azul
-      "4": "#F44336", // Delantero - Rojo
+      "4": "#4CAF50", // Delantero - Rojo
     }
     return colors[positionId] || "#9E9E9E"
   }

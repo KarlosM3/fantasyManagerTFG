@@ -85,7 +85,7 @@ exports.assignRandomTeam = async (req, res) => {
     const teamStructure = { GK: 2, DEF: 4, MID: 6, FWD: 3 };
     const maxPlayersPerTeam = 3;
     const league = await League.findById(leagueId);
-    const targetTeamValue = 100000000; // Valor fijo cercano a 100M para el equipo
+    const targetTeamValue = 100000000; // Valor máximo de 100M para el equipo
     const transferBudget = league.initialBudget || 100000000; // Presupuesto para fichajes
 
     // Obtener todos los jugadores de la API externa
@@ -111,9 +111,26 @@ exports.assignRandomTeam = async (req, res) => {
     // Calcular el total de jugadores necesarios
     const totalPlayersNeeded = Object.values(teamStructure).reduce((a, b) => a + b, 0);
 
-    for (const positionKey of Object.keys(teamStructure)) {
+    // Cambiar el orden para priorizar posiciones con menos jugadores disponibles
+    const positionKeys = Object.keys(teamStructure);
+    const positionAvailability = {};
+    
+    for (const posKey of positionKeys) {
+      const posId = Object.keys(positionMap).find(key => positionMap[key] === posKey);
+      positionAvailability[posKey] = availablePlayers.filter(p => p.positionId == posId).length;
+    }
+    
+    // Ordenar posiciones por disponibilidad (menor primero)
+    const sortedPositions = positionKeys.sort((a, b) => positionAvailability[a] - positionAvailability[b]);
+    console.log("Orden de selección por disponibilidad:", sortedPositions);
+
+    // Seleccionar jugadores por posición (en orden de menos a más disponibles)
+    for (const positionKey of sortedPositions) {
       let needed = teamStructure[positionKey];
-      let pool = availablePlayers.filter(p => positionMap[p.positionId] === positionKey);
+      const positionId = Object.keys(positionMap).find(key => positionMap[key] === positionKey);
+      let pool = availablePlayers.filter(p => p.positionId == positionId);
+      
+      console.log(`Seleccionando ${needed} jugadores para posición ${positionKey}. Disponibles: ${pool.length}`);
       
       // Calcular presupuesto promedio por jugador restante
       const playersSelected = selectedPlayers.length;
@@ -146,6 +163,91 @@ exports.assignRandomTeam = async (req, res) => {
       }
     }
 
+    // VERIFICACIÓN FINAL: Asegurar que el equipo no supere los 100M
+    if (totalSpent > targetTeamValue) {
+      console.log(`El valor del equipo (${totalSpent}) excede el límite de 100M. Realizando ajustes...`);
+      
+      // Ordenar jugadores por valor (de mayor a menor)
+      selectedPlayers.sort((a, b) => Number(b.marketValue) - Number(a.marketValue));
+      
+      // Reemplazar jugadores caros por alternativas más baratas
+      while (totalSpent > targetTeamValue && selectedPlayers.length >= totalPlayersNeeded) {
+        // Identificar el jugador más caro
+        const expensivePlayer = selectedPlayers[0];
+        const position = positionMap[expensivePlayer.positionId];
+        
+        // Eliminar el jugador caro
+        totalSpent -= Number(expensivePlayer.marketValue);
+        selectedPlayers.shift();
+        
+        // Buscar un reemplazo más barato de la misma posición
+        const replacementCandidates = availablePlayers.filter(p => 
+          positionMap[p.positionId] === position && 
+          !selectedPlayers.some(sp => sp.id === p.id) &&
+          Number(p.marketValue) < Number(expensivePlayer.marketValue)
+        );
+        
+        if (replacementCandidates.length > 0) {
+          // Ordenar por valor (de menor a mayor)
+          replacementCandidates.sort((a, b) => Number(a.marketValue) - Number(b.marketValue));
+          
+          // Seleccionar el reemplazo más barato que mantenga el equipo bajo el límite
+          for (const replacement of replacementCandidates) {
+            if (totalSpent + Number(replacement.marketValue) <= targetTeamValue) {
+              selectedPlayers.push(replacement);
+              totalSpent += Number(replacement.marketValue);
+              
+              console.log(`Reemplazado ${expensivePlayer.name} (${expensivePlayer.marketValue}) por ${replacement.name} (${replacement.marketValue})`);
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    // VERIFICACIÓN EXPLÍCITA DE POSICIONES
+    const requiredPositions = {
+      "GK": 2,
+      "DEF": 4,
+      "MID": 6,
+      "FWD": 3
+    };
+
+    // Al final del proceso de selección
+    for (const position in requiredPositions) {
+      const positionId = Object.keys(positionMap).find(key => positionMap[key] === position);
+      const count = selectedPlayers.filter(p => p.positionId == positionId).length;
+      
+      if (count < requiredPositions[position]) {
+        console.error(`¡Faltan jugadores en la posición ${position}! Solo hay ${count}/${requiredPositions[position]}`);
+        
+        // Forzar la selección de jugadores faltantes en esta posición
+        const missingCount = requiredPositions[position] - count;
+        const availableForPosition = availablePlayers.filter(p => 
+          positionMap[p.positionId] === position && 
+          !selectedPlayers.some(sp => sp.id === p.id)
+        );
+        
+        // Ordenar por valor de mercado (menor primero para no exceder presupuesto)
+        availableForPosition.sort((a, b) => Number(a.marketValue) - Number(b.marketValue));
+        
+        // Añadir los jugadores faltantes
+        for (let i = 0; i < Math.min(missingCount, availableForPosition.length); i++) {
+          selectedPlayers.push(availableForPosition[i]);
+          totalSpent += Number(availableForPosition[i].marketValue);
+        }
+      }
+    }
+
+    // Verificar distribución final por posiciones
+    const positionCounts = {};
+    for (const pos of Object.keys(teamStructure)) {
+      const posId = Object.keys(positionMap).find(key => positionMap[key] === pos);
+      positionCounts[pos] = selectedPlayers.filter(p => p.positionId == posId).length;
+    }
+    console.log('Distribución final por posiciones:', positionCounts);
+    console.log(`Valor total del equipo: ${totalSpent} (límite: ${targetTeamValue})`);
+
     // Guardar el equipo
     await Team.create({
       league: leagueId,
@@ -162,6 +264,11 @@ exports.assignRandomTeam = async (req, res) => {
     res.status(500).json({ message: 'Error asignando equipo aleatorio', error: error.message });
   }
 };
+
+
+
+
+
 
 
 
@@ -252,6 +359,7 @@ function generateRandomCode(length) {
   return result;
 }
 
+
 exports.joinLeagueByCode = async (req, res) => {
   try {
     const { inviteCode } = req.body;
@@ -301,7 +409,7 @@ exports.joinLeagueByCode = async (req, res) => {
       // Estructura y presupuesto
       const teamStructure = { GK: 2, DEF: 4, MID: 6, FWD: 3 };
       const maxPlayersPerTeam = 3;
-      const targetTeamValue = 100000000; // Valor fijo cercano a 100M para el equipo
+      const targetTeamValue = 100000000; // Valor máximo de 100M para el equipo
       const transferBudget = league.initialBudget || 100000000; // Presupuesto para fichajes
 
       // Obtener todos los jugadores de la API externa
@@ -327,9 +435,26 @@ exports.joinLeagueByCode = async (req, res) => {
       // Calcular el total de jugadores necesarios
       const totalPlayersNeeded = Object.values(teamStructure).reduce((a, b) => a + b, 0);
 
-      for (const positionKey of Object.keys(teamStructure)) {
+      // Cambiar el orden para priorizar posiciones con menos jugadores disponibles
+      const positionKeys = Object.keys(teamStructure);
+      const positionAvailability = {};
+      
+      for (const posKey of positionKeys) {
+        const posId = Object.keys(positionMap).find(key => positionMap[key] === posKey);
+        positionAvailability[posKey] = availablePlayers.filter(p => p.positionId == posId).length;
+      }
+      
+      // Ordenar posiciones por disponibilidad (menor primero)
+      const sortedPositions = positionKeys.sort((a, b) => positionAvailability[a] - positionAvailability[b]);
+      console.log("Orden de selección por disponibilidad:", sortedPositions);
+
+      // Seleccionar jugadores por posición (en orden de menos a más disponibles)
+      for (const positionKey of sortedPositions) {
         let needed = teamStructure[positionKey];
-        let pool = availablePlayers.filter(p => positionMap[p.positionId] === positionKey);
+        const positionId = Object.keys(positionMap).find(key => positionMap[key] === positionKey);
+        let pool = availablePlayers.filter(p => p.positionId == positionId);
+        
+        console.log(`Seleccionando ${needed} jugadores para posición ${positionKey}. Disponibles: ${pool.length}`);
         
         // Calcular presupuesto promedio por jugador restante
         const playersSelected = selectedPlayers.length;
@@ -362,6 +487,91 @@ exports.joinLeagueByCode = async (req, res) => {
         }
       }
 
+      // VERIFICACIÓN FINAL: Asegurar que el equipo no supere los 100M
+      if (totalSpent > targetTeamValue) {
+        console.log(`El valor del equipo (${totalSpent}) excede el límite de 100M. Realizando ajustes...`);
+        
+        // Ordenar jugadores por valor (de mayor a menor)
+        selectedPlayers.sort((a, b) => Number(b.marketValue) - Number(a.marketValue));
+        
+        // Reemplazar jugadores caros por alternativas más baratas
+        while (totalSpent > targetTeamValue && selectedPlayers.length >= totalPlayersNeeded) {
+          // Identificar el jugador más caro
+          const expensivePlayer = selectedPlayers[0];
+          const position = positionMap[expensivePlayer.positionId];
+          
+          // Eliminar el jugador caro
+          totalSpent -= Number(expensivePlayer.marketValue);
+          selectedPlayers.shift();
+          
+          // Buscar un reemplazo más barato de la misma posición
+          const replacementCandidates = availablePlayers.filter(p => 
+            positionMap[p.positionId] === position && 
+            !selectedPlayers.some(sp => sp.id === p.id) &&
+            Number(p.marketValue) < Number(expensivePlayer.marketValue)
+          );
+          
+          if (replacementCandidates.length > 0) {
+            // Ordenar por valor (de menor a mayor)
+            replacementCandidates.sort((a, b) => Number(a.marketValue) - Number(b.marketValue));
+            
+            // Seleccionar el reemplazo más barato que mantenga el equipo bajo el límite
+            for (const replacement of replacementCandidates) {
+              if (totalSpent + Number(replacement.marketValue) <= targetTeamValue) {
+                selectedPlayers.push(replacement);
+                totalSpent += Number(replacement.marketValue);
+                
+                console.log(`Reemplazado ${expensivePlayer.name} (${expensivePlayer.marketValue}) por ${replacement.name} (${replacement.marketValue})`);
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      // VERIFICACIÓN EXPLÍCITA DE POSICIONES
+      const requiredPositions = {
+        "GK": 2,
+        "DEF": 4,
+        "MID": 6,
+        "FWD": 3
+      };
+
+      // Al final del proceso de selección
+      for (const position in requiredPositions) {
+        const positionId = Object.keys(positionMap).find(key => positionMap[key] === position);
+        const count = selectedPlayers.filter(p => p.positionId == positionId).length;
+        
+        if (count < requiredPositions[position]) {
+          console.error(`¡Faltan jugadores en la posición ${position}! Solo hay ${count}/${requiredPositions[position]}`);
+          
+          // Forzar la selección de jugadores faltantes en esta posición
+          const missingCount = requiredPositions[position] - count;
+          const availableForPosition = availablePlayers.filter(p => 
+            positionMap[p.positionId] === position && 
+            !selectedPlayers.some(sp => sp.id === p.id)
+          );
+          
+          // Ordenar por valor de mercado (menor primero para no exceder presupuesto)
+          availableForPosition.sort((a, b) => Number(a.marketValue) - Number(b.marketValue));
+          
+          // Añadir los jugadores faltantes
+          for (let i = 0; i < Math.min(missingCount, availableForPosition.length); i++) {
+            selectedPlayers.push(availableForPosition[i]);
+            totalSpent += Number(availableForPosition[i].marketValue);
+          }
+        }
+      }
+
+      // Verificar distribución final por posiciones
+      const positionCounts = {};
+      for (const pos of Object.keys(teamStructure)) {
+        const posId = Object.keys(positionMap).find(key => positionMap[key] === pos);
+        positionCounts[pos] = selectedPlayers.filter(p => p.positionId == posId).length;
+      }
+      console.log('Distribución final por posiciones:', positionCounts);
+      console.log(`Valor total del equipo: ${totalSpent} (límite: ${targetTeamValue})`);
+
       // Crear el equipo con los jugadores seleccionados
       await Team.create({
         league: league._id,
@@ -393,6 +603,11 @@ exports.joinLeagueByCode = async (req, res) => {
     });
   }
 };
+
+
+
+
+
 
 
 exports.generateInviteCode = async (req, res) => {
