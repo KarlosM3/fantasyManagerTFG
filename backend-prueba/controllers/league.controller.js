@@ -82,7 +82,7 @@ exports.assignRandomTeam = async (req, res) => {
     });
 
     // Estructura y presupuesto
-    const teamStructure = { GK: 2, DEF: 5, MID: 5, FWD: 3 };
+    const teamStructure = { GK: 2, DEF: 4, MID: 6, FWD: 3 };
     const maxPlayersPerTeam = 3;
     const league = await League.findById(leagueId);
     const targetTeamValue = 100000000; // Valor fijo cercano a 100M para el equipo
@@ -299,7 +299,7 @@ exports.joinLeagueByCode = async (req, res) => {
       });
 
       // Estructura y presupuesto
-      const teamStructure = { GK: 2, DEF: 5, MID: 5, FWD: 3 };
+      const teamStructure = { GK: 2, DEF: 4, MID: 6, FWD: 3 };
       const maxPlayersPerTeam = 3;
       const targetTeamValue = 100000000; // Valor fijo cercano a 100M para el equipo
       const transferBudget = league.initialBudget || 100000000; // Presupuesto para fichajes
@@ -395,6 +395,56 @@ exports.joinLeagueByCode = async (req, res) => {
 };
 
 
+exports.generateInviteCode = async (req, res) => {
+  try {
+    const { leagueId } = req.params;
+    const userId = req.user.id || req.user._id;
+    
+    // Verificar que el usuario es miembro o admin de la liga
+    const league = await League.findById(leagueId);
+    
+    if (!league) {
+      return res.status(404).json({ success: false, message: 'Liga no encontrada' });
+    }
+    
+    // Verificar permisos (opcional)
+    const isAdmin = league.members.some(m => 
+      m.userId.toString() === userId.toString() && m.role === 'admin'
+    );
+    
+    if (!isAdmin) {
+      return res.status(403).json({ success: false, message: 'No tienes permisos para generar códigos de invitación' });
+    }
+    
+    // Generar código de invitación si no existe
+    if (!league.inviteCode) {
+      league.inviteCode = generateRandomCode(8); // Función que genera un código aleatorio
+      await league.save();
+    }
+    
+    res.json({ 
+      success: true, 
+      inviteCode: league.inviteCode 
+    });
+  } catch (error) {
+    console.error('Error al generar código de invitación:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error al generar código de invitación', 
+      error: error.message 
+    });
+  }
+};
+
+// Función auxiliar para generar códigos aleatorios
+function generateRandomCode(length) {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return result;
+}
 
 
 // Obtener liga por código de invitación

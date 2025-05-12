@@ -210,14 +210,24 @@ exports.getTeamPointsHistory = async (req, res) => {
 };
 
 
-
 // Obtener clasificación de la liga por puntos
 exports.getLeagueStandingsByPoints = async (req, res) => {
   try {
     const { leagueId } = req.params;
     
+    console.log(`Obteniendo clasificación por puntos para liga: ${leagueId}`);
+    
     // Obtener todos los equipos de la liga
     const teams = await Team.find({ league: leagueId }).populate('user');
+    
+    if (!teams || teams.length === 0) {
+      return res.status(200).json({
+        success: true,
+        data: []
+      });
+    }
+    
+    console.log(`Equipos encontrados: ${teams.length}`);
     
     // Calcular puntos totales para cada equipo
     const standings = [];
@@ -232,9 +242,9 @@ exports.getLeagueStandingsByPoints = async (req, res) => {
       
       standings.push({
         id: team._id,
-        name: team.user.name || `Equipo sin nombre`,
-        user_id: team.user._id,
-        username: team.user.name,
+        name: team.user ? (team.user.name || `Equipo sin nombre`) : `Equipo sin nombre`,
+        user_id: team.user ? team.user._id : null,
+        username: team.user ? team.user.name : null,
         total_points: totalPoints,
         matchdays_played: matchdaysPlayed
       });
@@ -243,11 +253,14 @@ exports.getLeagueStandingsByPoints = async (req, res) => {
     // Ordenar por puntos (de mayor a menor)
     standings.sort((a, b) => b.total_points - a.total_points);
     
+    console.log(`Clasificación generada con ${standings.length} equipos`);
+    
     res.status(200).json({
       success: true,
       data: standings
     });
   } catch (error) {
+    console.error(`Error al obtener clasificación por puntos: ${error.message}`);
     res.status(500).json({
       success: false,
       message: error.message

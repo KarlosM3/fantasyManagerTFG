@@ -22,4 +22,5 @@ router.get('/team/:teamId/history', authMiddleware, pointsController.getTeamPoin
 // Obtener clasificación de la liga por puntos
 router.get('/league/:leagueId/standings', authMiddleware, pointsController.getLeagueStandingsByPoints);
 
+
 module.exports = router;

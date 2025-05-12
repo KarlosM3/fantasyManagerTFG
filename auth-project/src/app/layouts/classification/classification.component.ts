@@ -37,9 +37,22 @@ export class ClassificationComponent implements OnInit {
   loadLeagueData(): void {
     this.leagueService.getLeagueById(this.leagueId).subscribe((league: any) => {
       this.leagueName = league.name;
-      this.inviteLink = `${window.location.origin}/join-league/${this.leagueId}`;
+
+      // Si la liga ya tiene un código de invitación, úsalo
+      if (league.inviteCode) {
+        this.inviteLink = `${window.location.origin}/join-league/${league.inviteCode}`;
+      }
+      // Si no tiene código, solicita uno nuevo
+      else {
+        this.leagueService.generateInviteCode(this.leagueId).subscribe(response => {
+          if (response.success) {
+            this.inviteLink = `${window.location.origin}/join-league/${response.inviteCode}`;
+          }
+        });
+      }
     });
   }
+
 
   loadClassification(): void {
     this.leagueService.getLeagueClassification(this.leagueId).subscribe(users => {

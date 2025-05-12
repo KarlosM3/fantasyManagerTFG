@@ -31,9 +31,10 @@ export class LeagueService {
     return this.http.get(`${this.apiUrl}/${leagueId}/classification`);
   }
 
-  getLeagueClassificationWithPoints(leagueId: string) {
-    return this.http.get<any[]>(`${this.apiUrl}/points/league/${leagueId}/standings`);
+  generateInviteCode(leagueId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${leagueId}/generate-invite-code`, {});
   }
+
 
   getInviteLink(leagueId: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/${leagueId}/invite-link`);

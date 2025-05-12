@@ -22,6 +22,9 @@ router.get('/:leagueId/classification', leagueController.getLeagueClassification
 //Invitar a un usuario a una liga
 router.get('/:leagueId/invite-link', leagueController.generateInviteLink);
 
+// Generar código de invitación para una liga
+router.post('/:leagueId/generate-invite-code', authMiddleware, leagueController.generateInviteCode);
+
 // Unirse a una liga
 router.post('/join', leagueController.joinLeagueByCode);
 

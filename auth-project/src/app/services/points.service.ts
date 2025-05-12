@@ -26,6 +26,7 @@ export class PointsService {
     return this.http.get<{success: boolean, data: TeamStanding[]}>(`${this.apiUrl}/league/${leagueId}/standings`);
   }
 
+
   // Sincronizar puntos desde API externa (solo para administradores)
   syncPointsFromExternalAPI(matchday: number): Observable<{success: boolean, message: string}> {
     return this.http.post<{success: boolean, message: string}>(`${this.apiUrl}/sync/${matchday}`, {});
