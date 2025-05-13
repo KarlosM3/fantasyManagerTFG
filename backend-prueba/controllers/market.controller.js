@@ -848,7 +848,122 @@ exports.acceptOffer = async (req, res) => {
         });
       }
       
-      // Resto del código para transferencia entre usuarios...
+      // Quitar jugador del equipo del vendedor
+      const playerIndex = sellerTeam.playersData.findIndex(p => p.id === offer.listing.player.id);
+            
+      if (playerIndex === -1) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'El jugador ya no está en tu equipo' 
+        });
+      }
+
+      const playerToTransfer = sellerTeam.playersData[playerIndex];
+
+      // Verificar límites del equipo comprador
+      // 1. Límites por posición
+      const positionCounts = {
+        1: 0, // Porteros
+        2: 0, // Defensas
+        3: 0, // Centrocampistas
+        4: 0, // Delanteros
+      };
+
+      buyerTeam.playersData.forEach(player => {
+        if (positionCounts[player.positionId] !== undefined) {
+          positionCounts[player.positionId]++;
+        }
+      });
+
+      const positionLimits = {
+        1: 2, // Máximo 2 porteros
+        2: 5, // Máximo 5 defensas
+        3: 5, // Máximo 5 centrocampistas
+        4: 3, // Máximo 3 delanteros
+      };
+
+      if (positionCounts[playerToTransfer.positionId] >= positionLimits[playerToTransfer.positionId]) {
+        return res.status(400).json({
+          success: false,
+          message: `El comprador ya tiene el máximo de jugadores permitidos en esta posición`
+        });
+      }
+
+      // 2. Verificar límite de jugadores por equipo (máximo 3 del mismo equipo)
+      if (playerToTransfer.team && playerToTransfer.team.name) {
+        const sameTeamCount = buyerTeam.playersData.filter(
+          player => player.team && player.team.name === playerToTransfer.team.name
+        ).length;
+        
+        if (sameTeamCount >= 3) {
+          return res.status(400).json({
+            success: false,
+            message: `El comprador ya tiene el máximo de 3 jugadores del equipo ${playerToTransfer.team.name}`
+          });
+        }
+      }
+
+      // Realizar la transferencia
+      // 1. Quitar jugador del equipo del vendedor
+      sellerTeam.playersData.splice(playerIndex, 1);
+      sellerTeam.budget += offer.amount;
+      await sellerTeam.save();
+
+      // 2. Añadir jugador al equipo del comprador
+      buyerTeam.playersData.push(playerToTransfer);
+      buyerTeam.budget -= offer.amount;
+      await buyerTeam.save();
+
+      // 3. Actualizar estado del listado y de la oferta
+      offer.listing.status = 'sold';
+      await offer.listing.save();
+
+      offer.status = 'accepted';
+      await offer.save();
+
+      // 4. Rechazar otras ofertas
+      await MarketOffer.updateMany(
+        { listing: offer.listing._id, _id: { $ne: offerId } },
+        { status: 'rejected' }
+      );
+
+      // 5. Registrar transacciones
+      // Transacción de venta para el vendedor
+      await Transaction.create({
+        league: offer.listing.league,
+        user: userId,
+        player: {
+          id: playerToTransfer.id,
+          name: playerToTransfer.nickname || playerToTransfer.name,
+          positionId: playerToTransfer.positionId,
+          team: playerToTransfer.team?.name || "Sin equipo",
+        },
+        type: "sell",
+        amount: offer.amount,
+        date: new Date(),
+      });
+
+      // Transacción de compra para el comprador
+      await Transaction.create({
+        league: offer.listing.league,
+        user: offer.buyer,
+        player: {
+          id: playerToTransfer.id,
+          name: playerToTransfer.nickname || playerToTransfer.name,
+          positionId: playerToTransfer.positionId,
+          team: playerToTransfer.team?.name || "Sin equipo",
+        },
+        type: "buy",
+        amount: offer.amount,
+        date: new Date(),
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'Oferta aceptada con éxito',
+        newBudget: sellerTeam.budget
+      });
+
     }
   } catch (error) {
     console.error('Error al aceptar oferta:', error);
