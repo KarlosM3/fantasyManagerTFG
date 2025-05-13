@@ -134,11 +134,11 @@
 
     <div class="pagination" *ngIf="totalPages > 1">
       <button class="pagination-btn" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">
-        <i class="material-icons">chevron_left</i>
+         <span class="arrow-icon left"></span>
       </button>
       <span class="page-info">Página {{ currentPage }} de {{ totalPages }}</span>
       <button class="pagination-btn" (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">
-        <i class="material-icons">chevron_right</i>
+        <span class="arrow-icon right"></span>
       </button>
     </div>
   </div>

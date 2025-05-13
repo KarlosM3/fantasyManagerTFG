@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { LeagueService } from '../../modals/create-league-modal/services/create-league.service';
 import { PointsService } from '../../services/points.service';
 import { AuthService } from '../../auth/services/auth.service';
+import { ActiveLeagueService } from '../home/services/active-league.service';
 
 @Component({
   selector: 'app-classification',
@@ -18,12 +19,14 @@ export class ClassificationComponent implements OnInit {
   showPointsStandings: boolean = false;
   showInvite: boolean = false;
   inviteLink: string = '';
+  ligaActivaId: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
     private leagueService: LeagueService,
     private pointsService: PointsService,
-    private authService: AuthService
+    private authService: AuthService,
+    private activeLeagueService: ActiveLeagueService
   ) { }
 
   ngOnInit(): void {
@@ -31,6 +34,7 @@ export class ClassificationComponent implements OnInit {
       this.leagueId = params['leagueId'];
       this.loadLeagueData();
       this.loadClassification();
+      this.ligaActivaId = this.activeLeagueService.getActiveLeague();
     });
   }
 

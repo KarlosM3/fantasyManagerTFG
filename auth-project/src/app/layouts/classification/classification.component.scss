@@ -80,6 +80,15 @@ body, .main-content {
     font-size: 1.05rem;
     &:hover { background: darken($accent-color, 7%); }
   }
+
+
+}
+
+.invitate-title {
+  font-size: 2rem;
+  color: $text-color;
+  font-weight: bold;
+  margin-right: auto;
 }
 
 .ranking-table {

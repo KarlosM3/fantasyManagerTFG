@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { PlayerService, Player } from './services/player.service';
 import { Router } from '@angular/router';
+import { ActiveLeagueService } from '../home/services/active-league.service';
 
 @Component({
   selector: 'app-players',
@@ -14,14 +15,17 @@ export class PlayersComponent implements OnInit {
   ordenActual: string = '';
   cargando: boolean = true;
   error: string | null = null;
+  ligaActivaId: string | null = null;
 
   constructor(
     private playerService: PlayerService,
-    private router: Router
+    private router: Router,
+    private activeLeagueService: ActiveLeagueService
   ) { }
 
   ngOnInit(): void {
     this.cargarJugadores();
+    this.ligaActivaId = this.activeLeagueService.getActiveLeague();
   }
 
   cargarJugadores() {
