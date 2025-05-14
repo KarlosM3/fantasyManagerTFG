@@ -1,4 +1,4 @@
-// Variables
+// Variables - Actualizado para coincidir con el tema de Domonios Fantasy
 $team-primary-color: #ff3e3e; // Rojo para Fantasy
 $team-secondary-color: #1e88e5; // Azul para botones
 $team-accent-color: #10b981; // Verde para badges disponible
@@ -8,507 +8,446 @@ $pitch-bg-color: #2e7d32; // Campo verde
 $pitch-lines-color: rgba(255, 255, 255, 0.7);
 $text-light: #ffffff;
 $text-dark: #333333;
-$captain-color: #ffd700;
-$vice-captain-color: #c0c0c0;
 
 // Main container
-.team-points-container {
+.team-container {
   padding: 20px;
   background-color: $team-background;
-  border-radius: 8px;
   max-width: 1200px;
   margin: 0 auto;
   color: $text-light;
   position: relative;
+}
 
-  // Header
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-bottom: 24px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+// Header
+.team-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
 
-    h2 {
-      margin: 0;
-      color: $text-light;
-      font-size: 24px;
-      font-weight: 600;
-    }
-
-    .matchday-selector {
-      margin: 10px 0;
-
-      label {
-        margin-right: 10px;
-      }
-
-      select {
-        padding: 8px;
-        border-radius: 4px;
-        border: 1px solid #444;
-        background-color: #333;
-        color: white;
-      }
-    }
-
-    .total-points {
-      background-color: rgba(0, 0, 0, 0.3);
-      padding: 10px 15px;
-      border-radius: 8px;
-
-      h3 {
-        margin: 0 0 5px 0;
-        color: $team-accent-color;
-        font-size: 16px;
-      }
-
-      p {
-        color: white;
-        margin: 0;
-        font-size: 20px;
-        font-weight: bold;
-      }
-    }
+  h2 {
+    margin: 0;
+    color: $text-light;
+    font-size: 24px;
+    font-weight: 600;
   }
+}
 
-  // Mensajes de error y éxito
-  .error-message, .success-message, .info-message {
-    padding: 10px 15px;
-    border-radius: 4px;
-    margin-bottom: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.matchday-selector {
+  display: flex;
+  align-items: center;
 
-    p {
-      margin: 0;
-    }
-
-    button {
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      color: inherit;
-      opacity: 0.7;
-
-      &:hover {
-        opacity: 1;
-      }
-    }
-  }
-
-  .error-message {
-    background-color: rgba(255, 0, 0, 0.1);
-    border-left: 4px solid #ff3e3e;
-    color: #ff3e3e;
-  }
-
-  .success-message {
-    background-color: rgba(16, 185, 129, 0.1);
-    border-left: 4px solid #10b981;
-    color: #10b981;
-  }
-
-  .info-message {
-    background-color: rgba(25, 118, 210, 0.1);
-    border-left: 4px solid #1976d2;
-    color: #1976d2;
-  }
-
-  // Campo de fútbol
-  .formation-view {
-    background: linear-gradient(to bottom,
-      darken($pitch-bg-color, 5%) 0%,
-      $pitch-bg-color 20%,
-      $pitch-bg-color 80%,
-      darken($pitch-bg-color, 5%) 100%);
-    border-radius: 8px;
-    padding: 80px;
+  label {
+    margin-right: 10px;
+    font-weight: 500;
     color: white;
+  }
+
+  .select-wrapper {
     position: relative;
-    overflow: hidden;
-    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.3);
-    height: 700px;
-    margin-bottom: 20px;
 
-    // Línea central
-    &:before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background-color: $pitch-lines-color;
-    }
-
-    .formation-label {
-      text-align: center;
-      font-size: 16px;
-      font-weight: bold;
-      margin-bottom: 20px;
-      background-color: rgba(0, 0, 0, 0.5);
-      padding: 8px 16px;
-      border-radius: 30px;
-      display: inline-block;
-      position: relative;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10;
-    }
-
-    // Elementos del campo
-    .goal-area {
-      position: absolute;
-      width: 60%;
-      height: 20px;
-      border: 2px solid $pitch-lines-color;
-      border-bottom: none;
-      left: 20%;
-    }
-
-    .goal-area.top {
-      top: 0;
-      border-top-left-radius: 8px;
-      border-top-right-radius: 8px;
-    }
-
-    .goal-area.bottom {
-      bottom: 0;
-      border-bottom: none;
-      border-top: 2px solid $pitch-lines-color;
-      border-bottom-left-radius: 8px;
-      border-bottom-right-radius: 8px;
-    }
-
-    .center-circle {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 80px;
-      height: 80px;
-      border: 2px solid $pitch-lines-color;
-      border-radius: 50%;
-    }
-
-    // Grid para posiciones
-    .pitch {
-      display: grid;
-      grid-template-rows: 1fr 1fr 1fr 1fr;
-      gap: 20px;
-      height: 100%;
-      position: relative;
-    }
-
-    .position-row {
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      flex-wrap: wrap;
-      position: relative;
-      z-index: 5;
-    }
-
-    .goalkeepers {
-      grid-row: 1;
-    }
-
-    .defenders {
-      grid-row: 2;
-    }
-
-    .midfielders {
-      grid-row: 3;
-    }
-
-    .forwards {
-      grid-row: 4;
-    }
-
-    // Tarjetas de jugadores
-    .player-card {
-      background-color: $card-background;
-      border-radius: 8px;
-      padding: 5px;
-      width: 100px;
-      height: 150px;
-      text-align: center;
-      color: $text-dark;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      margin: 0 5px;
-
-      &:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
-      }
-
-      // Escudo del equipo
-      .team-badge {
-        position: absolute;
-        top: 5px;
-        left: 5px;
-        width: 20px;
-        height: 20px;
-        z-index: 5;
-
-        img {
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
-        }
-      }
-
-      .player-image-container {
-        position: relative;
-        width: 50px;
-        height: 50px;
-        margin: 0 auto 5px;
-        z-index: 2;
-
-        img {
-          width: 100%;
-          height: 100%;
-          border-radius: 50%;
-          object-fit: cover;
-          border: 2px solid #eee;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .player-position-badge {
-          position: absolute;
-          bottom: -2px;
-          right: -2px;
-          color: white;
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 10px;
-          font-weight: bold;
-          border: 2px solid white;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-          background-color: #666; // Color por defecto
-        }
-      }
-
-      .player-info-container {
-        display: flex;
-        flex-direction: column;
-        padding: 5px;
-        background-color: rgba(255, 255, 255, 0.8);
-        border-radius: 4px;
-        margin: 0 2px;
-
-        .player-name {
-          font-weight: bold;
-          font-size: 12px;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        .player-team {
-          font-size: 10px;
-          color: #666;
-          margin-bottom: 2px;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        .player-points {
-          font-weight: bold;
-          color: $team-secondary-color;
-          font-size: 14px;
-        }
-      }
-    }
-  }
-
-  // Colores específicos para las posiciones (usando !important para asegurar que se apliquen)
-  .goalkeepers .player-position-badge {
-    background-color: #ffcc00 !important; // Amarillo para porteros
-  }
-
-  .defenders .player-position-badge {
-    background-color: #ff3e3e !important; // Rojo para defensas
-  }
-
-  .midfielders .player-position-badge {
-    background-color: #1e88e5 !important; // Azul para centrocampistas
-  }
-
-  .forwards .player-position-badge {
-    background-color: #10b981 !important; // Verde para delanteros
-  }
-
-  // Estadísticas del equipo
-  .team-stats {
-    margin-top: 20px;
-    display: flex;
-    justify-content: space-between;
-    background-color: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
-    padding: 15px;
-
-    .stat-item {
-      text-align: center;
-      padding: 0 15px;
-
-      @media (max-width: 768px) {
-        width: 50%;
-        margin-bottom: 15px;
-      }
-    }
-
-    .stat-label {
-      display: block;
-      font-size: 14px;
-      margin-bottom: 8px;
-      color: rgba(255, 255, 255, 0.8);
-    }
-
-    .stat-value {
-      font-size: 20px;
-      font-weight: bold;
+    select {
+      appearance: none;
+      padding: 8px 36px 8px 12px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background-color: rgba(0, 0, 0, 0.3);
       color: white;
-    }
-  }
+      font-size: 14px;
+      cursor: pointer;
+      width: 100px;
 
-  // Historial de puntos
-  .points-history {
-    margin-top: 20px;
-    background-color: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
-    padding: 15px;
-
-    h3 {
-      margin-top: 0;
-      color: $text-light;
-      font-size: 18px;
-      margin-bottom: 15px;
-    }
-
-    .history-table {
-      width: 100%;
-      border-collapse: collapse;
-
-      th, td {
-        padding: 10px;
-        text-align: left;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      }
-
-      th {
-        color: rgba(255, 255, 255, 0.8);
-        font-weight: 600;
-      }
-
-      tr:last-child td {
-        border-bottom: none;
-      }
-    }
-  }
-
-  // Estados de carga y sin datos
-  .loading-container, .no-data {
-    background-color: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
-    padding: 30px;
-    text-align: center;
-    margin-top: 20px;
-
-    p {
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 16px;
-    }
-  }
-
-  // Ajustes responsivos
-  @media (max-width: 768px) {
-    .header {
-      flex-direction: column;
-      align-items: flex-start;
-
-      .total-points {
-        width: 100%;
-        margin-top: 10px;
+      &:focus {
+        outline: none;
+        border-color: #ff3e3e;
+        box-shadow: 0 0 0 2px rgba(255, 62, 62, 0.25);
       }
     }
 
-    .formation-view {
-      padding: 10px;
-      height: auto;
-      min-height: 600px;
-
-      .pitch {
-        gap: 10px;
-      }
-
-      .player-card {
-        width: 80px;
-        height: 130px;
-        padding: 3px;
-        margin: 0 3px;
-
-        .player-image-container {
-          width: 40px;
-          height: 40px;
-        }
-
-        .player-info-container {
-          padding: 3px;
-
-          .player-name {
-            font-size: 10px;
-          }
-
-          .player-points {
-            font-size: 12px;
-          }
-        }
-      }
-    }
-
-    .team-stats {
-      flex-wrap: wrap;
-
-      .stat-item {
-        width: 50%;
-        margin-bottom: 10px;
-      }
+    svg {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: white;
     }
   }
 }
 
-// Estilos globales para asegurar que los colores de las posiciones se apliquen
-:host ::ng-deep {
-  .goalkeepers .player-position-badge {
-    background-color: #ffcc00 !important;
+
+// Error message
+.error-message {
+  padding: 12px 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffebee;
+  color: #c62828;
+  border-left: 4px solid #c62828;
+
+  p {
+    margin: 0;
   }
 
-  .defenders .player-position-badge {
-    background-color: #ff3e3e !important;
+  button {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.7;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+// Football pitch
+.formation-view {
+  background: linear-gradient(to bottom,
+    darken($pitch-bg-color, 5%) 0%,
+    $pitch-bg-color 20%,
+    $pitch-bg-color 80%,
+    darken($pitch-bg-color, 5%) 100%);
+  border-radius: 8px;
+  padding: 90px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.3);
+  height: 700px;
+
+  // Campo de fútbol
+  &:before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: $pitch-lines-color;
+  }
+}
+
+.formation-label {
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 8px 16px;
+  border-radius: 30px;
+  display: inline-block;
+  position: relative;
+  left: 52%;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+
+// Áreas de portería
+.goal-area {
+  position: absolute;
+  width: 40%;
+  height: 15%;
+  border: 2px solid $pitch-lines-color;
+  left: 30%;
+
+  &.top {
+    top: 0;
+    border-top: none;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
   }
 
-  .midfielders .player-position-badge {
-    background-color: #1e88e5 !important;
+  &.bottom {
+    bottom: 0;
+    border-bottom: none;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+  }
+}
+
+// Círculo central
+.center-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px;
+  height: 60px;
+  border: 2px solid $pitch-lines-color;
+  border-radius: 50%;
+}
+
+.pitch {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+// Filas de posiciones
+.position-row {
+  position: absolute;
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  padding: 0 20px;
+
+  &.goalkeepers {
+    justify-content: center;
   }
 
-  .forwards .player-position-badge {
-    background-color: #10b981 !important;
+  &.defenders {
+    top: 27%;
+  }
+
+  &.midfielders {
+    top: 54%;
+  }
+
+  &.forwards {
+    top: 80%;
+  }
+}
+
+// Player cards
+.player-card {
+  background-color: $card-background;
+  border-radius: 8px;
+  padding: 5px;
+  width: 100px;
+  height: 150px;
+  text-align: center;
+  color: $text-dark;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  // Escudo del equipo
+  .team-badge {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: 20px;
+    height: 20px;
+    z-index: 5;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+
+  .player-image-container {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 5px;
+    z-index: 2;
+
+    img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #eee;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .player-position-badge {
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: bold;
+      border: 2px solid white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+
+      // Colores diferentes por posición
+      .goalkeepers & {
+        background-color: #ffcc00; // Amarillo para porteros
+      }
+
+      .defenders & {
+        background-color: #ff3e3e; // Rojo para defensas
+      }
+
+      .midfielders & {
+        background-color: #1e88e5; // Azul para centrocampistas
+      }
+
+      .forwards & {
+        background-color: #10b981; // Verde para delanteros
+      }
+    }
+  }
+
+  .player-info-container {
+    display: flex;
+    flex-direction: column;
+    padding: 0 5px;
+    z-index: 2;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 4px;
+    margin: 0 2px;
+  }
+
+  .player-name {
+    font-weight: bold;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 2px 0;
+  }
+
+  .player-points {
+    font-weight: bold;
+    color: $team-secondary-color;
+    font-size: 14px;
+    padding: 2px 0;
+  }
+}
+
+// Ajustes para posiciones específicas
+.position-row {
+  &.goalkeepers .player-card {
+    border-bottom: 3px solid #ffcc00;
+  }
+
+  &.defenders .player-card {
+    border-bottom: 3px solid #ff3e3e;
+  }
+
+  &.midfielders .player-card {
+    border-bottom: 3px solid #1e88e5;
+  }
+
+  &.forwards .player-card {
+    border-bottom: 3px solid #10b981;
+  }
+}
+
+// Team stats
+.team-stats {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-around;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  .stat-item {
+    text-align: center;
+
+    .stat-label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 5px;
+      color: #ffffff;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 600;
+      color: $text-light;
+    }
+  }
+}
+
+// Pantalla de carga
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+
+  p {
+    font-size: 18px;
+    color: #757575;
+    position: relative;
+    padding-left: 30px;
+
+    &:before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid $team-secondary-color;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+  }
+}
+
+@keyframes spin {
+  0% { transform: translateY(-50%) rotate(0deg); }
+  100% { transform: translateY(-50%) rotate(360deg); }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .team-header {
+    flex-direction: column;
+    align-items: flex-start;
+
+    h2 {
+      margin-bottom: 15px;
+    }
+  }
+
+  .player-card {
+    width: 90px;
+    height: 130px;
+
+    .player-image-container {
+      height: 40px;
+      width: 40px;
+    }
+
+    .player-info-container {
+      .player-name {
+        font-size: 11px;
+      }
+
+      .player-points {
+        font-size: 12px;
+      }
+    }
+  }
+
+  .team-stats {
+    flex-direction: column;
+
+    .stat-item {
+      margin-bottom: 15px;
+    }
   }
 }

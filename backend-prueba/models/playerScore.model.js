@@ -1,10 +1,11 @@
+// playerScore.model.js
 const mongoose = require('mongoose');
 
 const playerScoreSchema = new mongoose.Schema({
-  player: { type: String }, // ID externo del jugador de la API
-  matchday: { type: Number, required: true },
-  points: { type: Number, default: 0 },
-  stats: { type: Object, default: {} },
+  player: { type: String }, // ID del jugador de la API externa
+  matchday: { type: Number, required: true }, // Jornada
+  points: { type: Number, default: 0 }, // Puntos en esa jornada
+  stats: { type: Object, default: {} }, // Estadísticas detalladas (opcional)
   createdAt: { type: Date, default: Date.now }
 });
 

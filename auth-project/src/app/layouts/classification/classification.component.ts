@@ -63,12 +63,7 @@ export class ClassificationComponent implements OnInit {
       this.leagueUsers = users;
     });
 
-    this.pointsService.getLeagueStandingsByPoints(this.leagueId).subscribe(response => {
-      console.log('Datos recibidos:', response); // Añade este log para depurar
-      if (response.success) {
-        this.pointsStandings = response.data;
-      }
-    });
+
   }
 
   showInviteModal(): void {

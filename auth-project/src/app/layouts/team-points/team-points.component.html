@@ -1,36 +1,41 @@
-<div class="team-points-container">
-  <div class="header">
+<div class="team-container">
+  <div class="team-header">
     <h2>Puntos del Equipo</h2>
     <div class="matchday-selector">
-      <label for="matchday">Jornada:</label>
-      <select id="matchday" [(ngModel)]="matchday" (change)="changeMatchday(matchday)">
-        <option *ngFor="let md of availableMatchdays" [value]="md">{{ md }}</option>
-      </select>
+      <label for="matchdaySelect">Jornada:</label>
+      <div class="select-wrapper">
+        <select id="matchdaySelect" [(ngModel)]="selectedMatchday" (change)="onMatchdayChange($event)">
+          <option *ngFor="let i of [].constructor(38); let idx = index" [value]="idx + 1">
+            {{ idx + 1 }}
+          </option>
+        </select>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </div>
     </div>
-    <div class="total-points">
-      <h3>Puntos en la jornada {{ matchday }}</h3>
-      <p>{{ getMatchdayPoints(matchday) }}</p>
-    </div>
+
   </div>
 
   <div *ngIf="errorMessage" class="error-message">
     <p>{{ errorMessage }}</p>
-    <button (click)="clearMessages()">×</button>
+    <button (click)="errorMessage = ''">×</button>
   </div>
 
-  <div *ngIf="successMessage" class="success-message">
-    <p>{{ successMessage }}</p>
-    <button (click)="clearMessages()">×</button>
-  </div>
-
-  <div class="formation-view" style="height: 700px;" *ngIf="!loading">
+  <div class="formation-view" style="height: 700px;">
     <div class="formation-label">Formación: {{ getFormationString() }}</div>
 
-    <!-- Campo de fútbol con jugadores -->
+    <!-- Elementos del campo -->
+    <div class="goal-area top"></div>
+    <div class="goal-area bottom"></div>
+    <div class="center-circle"></div>
+
+    <!-- Campo de juego -->
     <div class="pitch">
-      <!-- Portero -->
+      <!-- Porteros -->
       <div class="position-row goalkeepers">
-        <div class="player-card" *ngFor="let player of goalkeepers">
+        <div *ngFor="let player of goalkeepers"
+             class="player-card">
           <div class="team-badge" *ngIf="player.team">
             <img [src]="player.team.badge || player.team.badgeColor || 'assets/img/team-placeholder.png'" alt="Escudo">
           </div>
@@ -40,14 +45,15 @@
           </div>
           <div class="player-info-container">
             <div class="player-name">{{ player.nickname }}</div>
-            <div class="player-points">{{ player.matchdayPoints || 0 }} pts</div>
+            <div class="player-points">{{ player.points || 0 }} pts</div>
           </div>
         </div>
       </div>
 
       <!-- Defensas -->
       <div class="position-row defenders">
-        <div class="player-card" *ngFor="let player of defenders">
+        <div *ngFor="let player of defenders"
+             class="player-card">
           <div class="team-badge" *ngIf="player.team">
             <img [src]="player.team.badge || player.team.badgeColor || 'assets/img/team-placeholder.png'" alt="Escudo">
           </div>
@@ -57,31 +63,33 @@
           </div>
           <div class="player-info-container">
             <div class="player-name">{{ player.nickname }}</div>
-            <div class="player-points">{{ player.matchdayPoints || 0 }} pts</div>
+            <div class="player-points">{{ player.points || 0 }} pts</div>
           </div>
         </div>
       </div>
 
       <!-- Centrocampistas -->
       <div class="position-row midfielders">
-        <div class="player-card" *ngFor="let player of midfielders">
+        <div *ngFor="let player of midfielders"
+             class="player-card">
           <div class="team-badge" *ngIf="player.team">
             <img [src]="player.team.badge || player.team.badgeColor || 'assets/img/team-placeholder.png'" alt="Escudo">
           </div>
           <div class="player-image-container">
             <img [src]="player?.images?.transparent?.['256x256'] || 'assets/img/player-placeholder.png'" alt="{{ player.nickname }}">
-            <span class="player-position-badge">MID</span>
+            <span class="player-position-badge">MED</span>
           </div>
           <div class="player-info-container">
             <div class="player-name">{{ player.nickname }}</div>
-            <div class="player-points">{{ player.matchdayPoints || 0 }} pts</div>
+            <div class="player-points">{{ player.points || 0 }} pts</div>
           </div>
         </div>
       </div>
 
       <!-- Delanteros -->
       <div class="position-row forwards">
-        <div class="player-card" *ngFor="let player of forwards">
+        <div *ngFor="let player of forwards"
+             class="player-card">
           <div class="team-badge" *ngIf="player.team">
             <img [src]="player.team.badge || player.team.badgeColor || 'assets/img/team-placeholder.png'" alt="Escudo">
           </div>
@@ -91,61 +99,25 @@
           </div>
           <div class="player-info-container">
             <div class="player-name">{{ player.nickname }}</div>
-            <div class="player-points">{{ player.matchdayPoints || 0 }} pts</div>
+            <div class="player-points">{{ player.points || 0 }} pts</div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Estadísticas del equipo -->
-  <div class="team-stats" *ngIf="!loading">
+  <div class="team-stats">
     <div class="stat-item">
       <span class="stat-label">Puntos Totales</span>
-      <span class="stat-value">{{ totalPoints }}</span>
+      <span class="stat-value">{{ getTotalPoints() }}</span>
     </div>
     <div class="stat-item">
-      <span class="stat-label">Jornada Actual</span>
-      <span class="stat-value">{{ matchday }}</span>
+      <span class="stat-label">Jornada</span>
+      <span class="stat-value">{{ selectedMatchday }}</span>
     </div>
-    <div class="stat-item">
-      <span class="stat-label">Puntos en Jornada</span>
-      <span class="stat-value">{{ getMatchdayPoints(matchday) }}</span>
-    </div>
-  </div>
-
-  <!-- Historial de puntos por jornada -->
-  <div class="points-history" *ngIf="!loading && pointsHistory.length > 0">
-    <h3>Historial de Puntos</h3>
-    <table class="history-table">
-      <thead>
-        <tr>
-          <th>Jornada</th>
-          <th>Fecha</th>
-          <th>Puntos</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let history of pointsHistory">
-          <td>{{ history.matchday }}</td>
-          <td>{{ history.date | date:'dd/MM/yyyy' }}</td>
-          <td>{{ history.total_points }}</td>
-        </tr>
-      </tbody>
-    </table>
   </div>
 
   <div *ngIf="loading" class="loading-container">
     <p>Cargando puntos...</p>
-  </div>
-
-  <!-- Modificado para mostrar el mensaje solo cuando no hay jugadores ni puntos -->
-  <div *ngIf="!loading && playerPoints.length === 0 && goalkeepers.length === 0 && defenders.length === 0 && midfielders.length === 0 && forwards.length === 0" class="no-data">
-    <p>Aún no hay datos de puntos disponibles. Los puntos se actualizarán después de cada jornada.</p>
-  </div>
-
-  <!-- Mensaje informativo cuando hay jugadores pero no hay puntos -->
-  <div *ngIf="!loading && playerPoints.length === 0 && (goalkeepers.length > 0 || defenders.length > 0 || midfielders.length > 0 || forwards.length > 0)" class="info-message">
-    <p>Mostrando alineación actual. Los puntos se actualizarán después de cada jornada.</p>
   </div>
 </div>
