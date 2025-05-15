@@ -5,6 +5,7 @@ import { Player } from "../../player.interface"
 import { FormationService } from "../../services/formation.service"
 import { PlayerBadgeService } from "../../services/player-badge.service"
 import { PlaceholderPlayerService } from "../../services/placeholder-player.service"
+import { PointsService } from "../../services/points.service"
 
 @Component({
   selector: "app-my-team",
@@ -55,6 +56,13 @@ export class MyTeamComponent implements OnInit {
   draggedPlayer: Player | null = null
   dropTarget = ""
 
+  // Propiedades para jornada
+  currentMatchday!: number;
+  matchdayStarted: boolean = false;
+  matchdayEnded: boolean = false;
+  matchdayLocked: boolean = false;
+  matchdayStatusMessage: string = "";
+
   // Mapeo de posiciones de la API a nuestras categorías
   private positionMap = {
     "1": "GK",
@@ -68,6 +76,7 @@ export class MyTeamComponent implements OnInit {
     private leagueService: LeagueService,
     private formationService: FormationService,
     private playerBadgeService: PlayerBadgeService,
+    private pointsService: PointsService,
     private placeholderService: PlaceholderPlayerService, // Añadir este servicio
   ) {}
 
@@ -75,7 +84,78 @@ export class MyTeamComponent implements OnInit {
     this.route.params.subscribe((params) => {
       this.leagueId = params["leagueId"]
       this.loadTeam()
+      this.checkMatchdayStatus()
     })
+
+    // Verificar el estado de la jornada cada 5 minutos
+    setInterval(() => {
+      this.checkMatchdayStatus();
+    }, 5 * 60 * 1000);
+  }
+
+  // Método para verificar el estado de la jornada
+  checkMatchdayStatus(): void {
+    // Obtener la jornada actual
+    this.pointsService.getCurrentMatchday().subscribe(
+      (data: any) => {
+        this.currentMatchday = data.data.matchday;
+
+        // Verificar si la jornada ha comenzado
+        this.pointsService.hasMatchdayStarted(this.currentMatchday).subscribe(
+          (startData: any) => {
+            this.matchdayStarted = startData.data.hasStarted;
+
+            // Si la jornada ha comenzado, verificar si ha terminado
+            if (this.matchdayStarted) {
+              this.pointsService.hasMatchdayEnded(this.currentMatchday).subscribe(
+                (endData: any) => {
+                  this.matchdayEnded = endData.data.hasEnded;
+
+                  // Actualizar el estado de bloqueo
+                  // Solo bloqueamos si la jornada ha comenzado pero no ha terminado
+                  this.matchdayLocked = this.matchdayStarted && !this.matchdayEnded;
+
+                  // Actualizar el mensaje de estado
+                  this.updateMatchdayStatusMessage();
+
+                  console.log(`Jornada ${this.currentMatchday}: Comenzada=${this.matchdayStarted}, Terminada=${this.matchdayEnded}, Bloqueada=${this.matchdayLocked}`);
+                  console.log(`Porcentaje de jugadores con puntos: ${endData.data.completionPercentage.toFixed(2)}%`);
+                },
+                (error: any) => {
+                  console.error('Error al verificar si la jornada ha terminado:', error);
+                }
+              );
+            } else {
+              this.matchdayLocked = false;
+              this.matchdayEnded = false;
+              this.updateMatchdayStatusMessage();
+            }
+          },
+          (error: any) => {
+            console.error('Error al verificar si la jornada ha comenzado:', error);
+          }
+        );
+      },
+      (error: any) => {
+        console.error('Error al obtener la jornada actual:', error);
+      }
+    );
+  }
+
+  // Método para actualizar el mensaje de estado de la jornada
+  updateMatchdayStatusMessage(): void {
+    if (this.matchdayStarted && !this.matchdayEnded) {
+      this.matchdayStatusMessage = `Jornada ${this.currentMatchday} en curso - Cambios bloqueados`;
+    } else if (this.matchdayEnded) {
+      this.matchdayStatusMessage = `Jornada ${this.currentMatchday} finalizada - Cambios permitidos`;
+    } else {
+      this.matchdayStatusMessage = `Jornada ${this.currentMatchday} no iniciada - Cambios permitidos`;
+    }
+  }
+
+  // Método para verificar si se pueden realizar cambios
+  canMakeChanges(): boolean {
+    return !this.matchdayLocked;
   }
 
   loadTeam(): void {
@@ -622,7 +702,14 @@ export class MyTeamComponent implements OnInit {
     return this.placeholderService.isPlaceholder(player)
   }
 
+  // Método para guardar cambios en el equipo
   saveTeamChanges(): void {
+    // Verificar si los cambios están bloqueados
+    if (this.matchdayLocked) {
+      this.showSuccessMessage("No se pueden guardar cambios porque la jornada está en curso");
+      return;
+    }
+
     // Recopilar todos los jugadores del 11 inicial, excluyendo los placeholders
     const startingEleven = [
       ...this.startingGoalkeeper,

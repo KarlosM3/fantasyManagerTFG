@@ -70,6 +70,40 @@ $bench-toggle-bg: rgba(0, 0, 0, 0.4);
     font-size: 24px;
     font-weight: 600;
   }
+
+  .matchday-status {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-weight: bold;
+    margin-bottom: 15px;
+  }
+
+  .matchday-status.locked {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+
+  .matchday-status.ended {
+    background-color: #d4edda;
+    color: #155724;
+  }
+
+  .matchday-status.not-started {
+    background-color: #cce5ff;
+    color: #004085;
+  }
+
+  .matchday-status i {
+    margin-right: 8px;
+  }
+
+  /* Estilo para botones deshabilitados */
+  button[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
 .team-actions {

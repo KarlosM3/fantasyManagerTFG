@@ -3,7 +3,50 @@ const axios = require('axios');
 const Team = require('../models/team.model');
 
 // Obtener puntos de todos los jugadores de un equipo para una jornada
-// points.controller.js
+
+// Definir la función auxiliar para obtener la jornada actual
+function getCurrentMatchday(players) {
+  let maxMatchday = 0;
+  
+  players.forEach(player => {
+    if (player.weekPoints && player.weekPoints.length > 0) {
+      player.weekPoints.forEach(wp => {
+        if (wp.weekNumber > maxMatchday) {
+          maxMatchday = wp.weekNumber;
+        }
+      });
+    }
+  });
+  
+  return maxMatchday;
+}
+
+// Luego exporta el controlador que usa esa función
+exports.getCurrentMatchday = async (req, res) => {
+  try {
+    // Obtener datos de jugadores desde la API externa
+    const response = await axios.get('https://api-fantasy.llt-services.com/api/v4/players');
+    const allPlayers = response.data;
+    
+    // Usar la función auxiliar
+    const currentMatchday = getCurrentMatchday(allPlayers);
+    
+    res.status(200).json({
+      success: true,
+      data: {
+        matchday: currentMatchday
+      }
+    });
+  } catch (error) {
+    console.error('Error al obtener la jornada actual:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+
 exports.getTeamPointsForMatchday = async (req, res) => {
   try {
     const { leagueId, matchday } = req.params;
@@ -111,7 +154,6 @@ exports.getTeamPointsForMatchday = async (req, res) => {
 
 
 
-
 // Calcular la clasificación de la liga por puntos
 exports.getLeagueStandingsByPoints = async (req, res) => {
   try {
@@ -178,23 +220,6 @@ exports.getLeagueStandingsByPoints = async (req, res) => {
 
 
 
-
-// Función auxiliar para obtener la jornada actual
-function getCurrentMatchday(players) {
-  let maxMatchday = 0;
-  
-  players.forEach(player => {
-    if (player.weekPoints && player.weekPoints.length > 0) {
-      player.weekPoints.forEach(wp => {
-        if (wp.weekNumber > maxMatchday) {
-          maxMatchday = wp.weekNumber;
-        }
-      });
-    }
-  });
-  
-  return maxMatchday;
-}
 
 // Función auxiliar para calcular puntos de un equipo en una jornada
 function calculateTeamPointsForMatchday(team, playerIds, allPlayers, matchday, creationMatchday) {
@@ -277,5 +302,74 @@ function calculateTeamPointsForMatchday(team, playerIds, allPlayers, matchday, c
 }
 
 
+// Verificar si la jornada ha comenzado
+exports.hasMatchdayStarted = async (req, res) => {
+  try {
+    const matchday = parseInt(req.params.matchday, 10);
+    
+    // Obtener datos de jugadores desde la API externa
+    const response = await axios.get('https://api-fantasy.llt-services.com/api/v4/players');
+    const allPlayers = response.data;
+    
+    // Verificar si al menos un jugador tiene puntos para esta jornada
+    const hasStarted = allPlayers.some(player => 
+      player.weekPoints && player.weekPoints.some(wp => wp.weekNumber === matchday && wp.points !== 0)
+    );
+    
+    res.status(200).json({
+      success: true,
+      data: {
+        matchday: matchday,
+        hasStarted: hasStarted
+      }
+    });
+  } catch (error) {
+    console.error('Error al verificar si la jornada ha comenzado:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
 
+// Verificar si la jornada ha terminado
+exports.hasMatchdayEnded = async (req, res) => {
+  try {
+    const matchday = parseInt(req.params.matchday, 10);
+    
+    // Obtener datos de jugadores desde la API externa
+    const response = await axios.get('https://api-fantasy.llt-services.com/api/v4/players');
+    const allPlayers = response.data;
+    
+    // Filtrar jugadores activos (status = 'ok')
+    const activePlayers = allPlayers.filter(player => player.playerStatus === 'ok');
+    
+    // Contar jugadores que tienen puntos registrados para esta jornada
+    const playersWithPointsInCurrentMatchday = activePlayers.filter(player => 
+      player.weekPoints && player.weekPoints.some(wp => wp.weekNumber === matchday)
+    ).length;
+    
+    // Si un alto porcentaje de jugadores activos ya tiene puntos para esta jornada,
+    // podemos asumir que la jornada ha terminado
+    const completionThreshold = 0.9; // 90% de jugadores con puntos
+    const hasEnded = playersWithPointsInCurrentMatchday / activePlayers.length > completionThreshold;
+    
+    res.status(200).json({
+      success: true,
+      data: {
+        matchday: matchday,
+        hasEnded: hasEnded,
+        playersWithPoints: playersWithPointsInCurrentMatchday,
+        totalActivePlayers: activePlayers.length,
+        completionPercentage: (playersWithPointsInCurrentMatchday / activePlayers.length) * 100
+      }
+    });
+  } catch (error) {
+    console.error('Error al verificar si la jornada ha terminado:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
 

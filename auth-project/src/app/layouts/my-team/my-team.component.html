@@ -1,6 +1,21 @@
 <div class="team-container">
   <div class="team-header">
     <h2>Mi Equipo</h2>
+
+    <!-- Añadir información de estado de la jornada -->
+    <div class="matchday-status" [ngClass]="{
+      'locked': matchdayStarted && !matchdayEnded,
+      'ended': matchdayEnded,
+      'not-started': !matchdayStarted
+    }">
+      <i class="fas" [ngClass]="{
+        'fa-lock': matchdayStarted && !matchdayEnded,
+        'fa-check-circle': matchdayEnded,
+        'fa-unlock': !matchdayStarted
+      }"></i>
+      {{ matchdayStatusMessage }}
+    </div>
+
     <div class="team-actions">
       <button class="primary-btn" (click)="openFormationModal()">
         Cambiar Formación
@@ -8,7 +23,7 @@
       <button class="action-btn" (click)="initiateSellMode()">
         Vender Jugador
       </button>
-      <button class="btn btn-primary" (click)="saveTeamChanges()">
+      <button class="btn btn-primary" (click)="saveTeamChanges()" [disabled]="matchdayLocked">
         Guardar Cambios
       </button>
     </div>

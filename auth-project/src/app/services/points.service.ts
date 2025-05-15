@@ -20,4 +20,20 @@ export class PointsService {
   getLeagueStandingsByPoints(leagueId: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/league/${leagueId}/standings`);
   }
+
+  // Obtener la jornada actual
+  getCurrentMatchday(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/current-matchday`);
+  }
+
+  // Verificar si la jornada ha comenzado
+  hasMatchdayStarted(matchday: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/matchday-started/${matchday}`);
+  }
+
+  // Verificar si la jornada ha terminado
+  hasMatchdayEnded(matchday: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/matchday-ended/${matchday}`);
+  }
+
 }
