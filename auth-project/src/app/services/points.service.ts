@@ -15,4 +15,9 @@ export class PointsService {
   getTeamPointsForMatchday(leagueId: string, matchday: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/league/${leagueId}/matchday/${matchday}`);
   }
+
+  // Añadir este método para obtener la clasificación por puntos
+  getLeagueStandingsByPoints(leagueId: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/league/${leagueId}/standings`);
+  }
 }

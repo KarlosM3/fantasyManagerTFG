@@ -78,22 +78,39 @@
 
     <!-- Clasificación por puntos -->
     <div class="ranking-table" *ngIf="showPointsStandings">
+      <div *ngIf="loading" class="loading-indicator">
+        <div class="spinner"></div>
+        <p>Cargando clasificación...</p>
+      </div>
+
+      <div *ngIf="error" class="error-message">
+        {{ error }}
+      </div>
+
       <div class="ranking-row ranking-header">
         <div class="ranking-pos">Pos</div>
         <div class="ranking-user">Usuario</div>
         <div class="ranking-jornadas">Jornadas</div>
         <div class="ranking-points">Puntos</div>
+        <div class="ranking-avg">Media</div>
       </div>
+
       <div class="ranking-row" *ngFor="let team of pointsStandings; let i = index" [class.current-user]="isCurrentUser(team.user_id)">
         <div class="ranking-pos">{{ i + 1 }}</div>
         <div class="ranking-user">
-        <div class="user-avatar-placeholder">{{ getUserInitials(team.name || '') }}</div>
+          <div class="user-avatar-placeholder">{{ getUserInitials(team.name || '') }}</div>
           <div class="user-name">{{ team.name }}</div>
         </div>
         <div class="ranking-jornadas">{{ team.matchdays_played }}</div>
         <div class="ranking-points">{{ team.total_points }}</div>
+        <div class="ranking-avg">{{ team.avg_points }}</div>
+      </div>
+
+      <div *ngIf="pointsStandings.length === 0 && !loading" class="no-data">
+        No hay datos de clasificación disponibles
       </div>
     </div>
+
 
 
   </div>

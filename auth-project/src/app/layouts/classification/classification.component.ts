@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { LeagueService } from '../../modals/create-league-modal/services/create-league.service';
 import { PointsService } from '../../services/points.service';
@@ -10,7 +10,6 @@ import { ActiveLeagueService } from '../home/services/active-league.service';
   templateUrl: './classification.component.html',
   styleUrls: ['./classification.component.scss']
 })
-
 export class ClassificationComponent implements OnInit {
   leagueId!: string;
   leagueName: string = 'Mi Liga';
@@ -20,6 +19,10 @@ export class ClassificationComponent implements OnInit {
   showInvite: boolean = false;
   inviteLink: string = '';
   ligaActivaId: string | null = null;
+  loading: boolean = false;
+  error: string = '';
+  // Añadir propiedad para almacenar la jornada de creación
+  creationMatchday: number = 1;
 
   constructor(
     private route: ActivatedRoute,
@@ -34,36 +37,66 @@ export class ClassificationComponent implements OnInit {
       this.leagueId = params['leagueId'];
       this.loadLeagueData();
       this.loadClassification();
+      this.loadPointsStandings(); // Cargar la clasificación por puntos
       this.ligaActivaId = this.activeLeagueService.getActiveLeague();
     });
   }
 
   loadLeagueData(): void {
-    this.leagueService.getLeagueById(this.leagueId).subscribe((league: any) => {
-      this.leagueName = league.name;
+    this.leagueService.getLeagueById(this.leagueId).subscribe({
+      next: (league: any) => {
+        this.leagueName = league.name;
+        this.creationMatchday = league.creationMatchday || 1; // Obtener la jornada de creación
 
-      // Si la liga ya tiene un código de invitación, úsalo
-      if (league.inviteCode) {
-        this.inviteLink = `${window.location.origin}/join-league/${league.inviteCode}`;
-      }
-      // Si no tiene código, solicita uno nuevo
-      else {
-        this.leagueService.generateInviteCode(this.leagueId).subscribe(response => {
-          if (response.success) {
-            this.inviteLink = `${window.location.origin}/join-league/${response.inviteCode}`;
-          }
-        });
+        // Si la liga ya tiene un código de invitación, úsalo
+        if (league.inviteCode) {
+          this.inviteLink = `${window.location.origin}/join-league/${league.inviteCode}`;
+        }
+        // Si no tiene código, solicita uno nuevo
+        else {
+          this.leagueService.generateInviteCode(this.leagueId).subscribe(response => {
+            if (response.success) {
+              this.inviteLink = `${window.location.origin}/join-league/${response.inviteCode}`;
+            }
+          });
+        }
+      },
+      error: (err) => {
+        console.error('Error al cargar datos de la liga:', err);
+        this.error = 'No se pudo cargar la información de la liga';
       }
     });
   }
 
-
   loadClassification(): void {
-    this.leagueService.getLeagueClassification(this.leagueId).subscribe(users => {
-      this.leagueUsers = users;
+    this.leagueService.getLeagueClassification(this.leagueId).subscribe({
+      next: (users) => {
+        this.leagueUsers = users;
+      },
+      error: (err) => {
+        console.error('Error al cargar clasificación general:', err);
+      }
     });
+  }
 
-
+  loadPointsStandings(): void {
+    this.loading = true;
+    this.pointsService.getLeagueStandingsByPoints(this.leagueId).subscribe({
+      next: (response: any) => {
+        console.log('Respuesta de clasificación por puntos:', response);
+        if (response.success) {
+          this.pointsStandings = response.data;
+        } else {
+          this.error = 'Error al cargar la clasificación por puntos';
+        }
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar clasificación por puntos:', err);
+        this.error = 'No se pudo cargar la clasificación por puntos';
+        this.loading = false;
+      }
+    });
   }
 
   showInviteModal(): void {
@@ -93,5 +126,11 @@ export class ClassificationComponent implements OnInit {
     }).format(value);
   }
 
-
+  // Método para calcular la media de puntos
+  getAveragePoints(team: any): string {
+    if (!team.matchdays_played || team.matchdays_played === 0) {
+      return '0';
+    }
+    return (team.total_points / team.matchdays_played).toFixed(1);
+  }
 }

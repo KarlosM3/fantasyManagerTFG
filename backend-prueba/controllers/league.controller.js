@@ -9,13 +9,32 @@ exports.createLeague = async (req, res) => {
     const { name, privacy, maxParticipants, initialBudget } = req.body;
     const userId = req.user.id || req.user._id;
 
-    // 1. Crear la liga
+    // Obtener la jornada actual desde la API externa
+    const response = await axios.get('https://api-fantasy.llt-services.com/api/v4/players');
+    const allPlayers = response.data;
+    
+    // Determinar la jornada actual
+    let currentMatchday = 1;
+    allPlayers.forEach(player => {
+      if (player.weekPoints && player.weekPoints.length > 0) {
+        player.weekPoints.forEach(wp => {
+          if (wp.weekNumber > currentMatchday) {
+            currentMatchday = wp.weekNumber;
+          }
+        });
+      }
+    });
+    
+    console.log(`Creando liga en jornada actual: ${currentMatchday}`);
+
+    // 1. Crear la liga con la jornada actual
     const newLeague = new League({
       name,
       privacy: privacy || 'private',
       maxParticipants: maxParticipants || 10,
       initialBudget: initialBudget || 100000000,
       createdBy: userId,
+      creationMatchday: currentMatchday, // Establecer la jornada de creación
       members: [{
         userId,
         role: 'admin',
@@ -35,7 +54,8 @@ exports.createLeague = async (req, res) => {
     res.status(201).json({
       success: true,
       leagueId: newLeague._id,
-      message: 'Liga creada con éxito'
+      message: 'Liga creada con éxito',
+      creationMatchday: currentMatchday
     });
   } catch (error) {
     console.error('Error al crear la liga:', error);
@@ -46,6 +66,7 @@ exports.createLeague = async (req, res) => {
     });
   }
 };
+
 
 // Obtener las ligas de un usuario
 exports.getUserLeagues = async (req, res) => {
@@ -364,6 +385,8 @@ exports.joinLeagueByCode = async (req, res) => {
   try {
     const { inviteCode } = req.body;
     const userId = req.user.id || req.user._id;
+    
+    // Buscar la liga por el código de invitación
     const league = await League.findOne({ inviteCode });
 
     if (!league) {
@@ -393,6 +416,10 @@ exports.joinLeagueByCode = async (req, res) => {
       { $push: { leagues: league._id } },
       { new: true }
     );
+
+    // Obtener la jornada de creación de la liga
+    const creationMatchday = league.creationMatchday || 1;
+    console.log(`Usuario uniéndose a liga ${league.name} creada en jornada ${creationMatchday}`);
 
     try {
       // Obtener todos los equipos existentes en esta liga
@@ -572,21 +599,23 @@ exports.joinLeagueByCode = async (req, res) => {
       console.log('Distribución final por posiciones:', positionCounts);
       console.log(`Valor total del equipo: ${totalSpent} (límite: ${targetTeamValue})`);
 
-      // Crear el equipo con los jugadores seleccionados
+      // Crear el equipo con los jugadores seleccionados y la jornada de creación de la liga
       await Team.create({
         league: league._id,
         user: userId,
         players: [],
-        budget: transferBudget, // Presupuesto para fichajes (no se resta el valor del equipo)
+        budget: transferBudget,
         playersData: selectedPlayers,
-        formation: '4-4-2' // Formación por defecto
+        formation: '4-4-2',
+        matchdaysPlayed: 0 // Inicializar a 0 ya que los puntos se contarán desde la jornada de creación
       });
 
       return res.status(200).json({
         success: true,
         message: 'Te has unido a la liga correctamente',
         leagueId: league._id,
-        team: selectedPlayers
+        team: selectedPlayers,
+        creationMatchday: creationMatchday // Devolver la jornada de creación para información
       });
     } catch (teamError) {
       console.error('Error asignando equipo aleatorio:', teamError);
@@ -603,6 +632,7 @@ exports.joinLeagueByCode = async (req, res) => {
     });
   }
 };
+
 
 
 
