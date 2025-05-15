@@ -16,6 +16,8 @@ export class TeamPointsComponent implements OnInit {
   // Datos del equipo
   teamPlayers: any[] = [];
   formation: string = "4-4-2";
+  captainId: string = '';
+  totalTeamPoints: number = 0;
 
   // Jugadores por posición
   goalkeepers: any[] = [];
@@ -54,6 +56,8 @@ export class TeamPointsComponent implements OnInit {
           if (response.success) {
             this.teamPlayers = response.data.team.players || [];
             this.formation = response.data.team.formation;
+            this.captainId = response.data.team.captainId;
+            this.totalTeamPoints = response.data.team.totalPoints || 0;
 
             console.log('Jugadores recibidos:', this.teamPlayers);
 
@@ -128,10 +132,14 @@ export class TeamPointsComponent implements OnInit {
   }
 
   getTotalPoints(): number {
-    return this.teamPlayers.reduce((sum, player) => sum + (player.points || 0), 0);
+    return this.totalTeamPoints;
   }
 
   getFormationString(): string {
     return this.formation;
+  }
+
+  isPlayerCaptain(playerId: string): boolean {
+    return this.captainId === playerId;
   }
 }

@@ -42,10 +42,13 @@
           <div class="player-image-container">
             <img [src]="player?.images?.transparent?.['256x256'] || 'assets/img/player-placeholder.png'" alt="{{ player.nickname }}">
             <span class="player-position-badge">POR</span>
+            <!-- Añadir indicador de capitán -->
+            <span *ngIf="isPlayerCaptain(player.id)" class="captain-badge">C</span>
           </div>
           <div class="player-info-container">
             <div class="player-name">{{ player.nickname }}</div>
             <div class="player-points">{{ player.points || 0 }} pts</div>
+            <span *ngIf="isPlayerCaptain(player.id)" class="captain-points">(x2)</span>
           </div>
         </div>
       </div>
@@ -60,10 +63,13 @@
           <div class="player-image-container">
             <img [src]="player?.images?.transparent?.['256x256'] || 'assets/img/player-placeholder.png'" alt="{{ player.nickname }}">
             <span class="player-position-badge">DEF</span>
+            <!-- Añadir indicador de capitán -->
+            <span *ngIf="isPlayerCaptain(player.id)" class="captain-badge">C</span>
           </div>
           <div class="player-info-container">
             <div class="player-name">{{ player.nickname }}</div>
             <div class="player-points">{{ player.points || 0 }} pts</div>
+            <span *ngIf="isPlayerCaptain(player.id)" class="captain-points">(x2)</span>
           </div>
         </div>
       </div>
@@ -78,10 +84,13 @@
           <div class="player-image-container">
             <img [src]="player?.images?.transparent?.['256x256'] || 'assets/img/player-placeholder.png'" alt="{{ player.nickname }}">
             <span class="player-position-badge">MED</span>
+            <!-- Añadir indicador de capitán -->
+            <span *ngIf="isPlayerCaptain(player.id)" class="captain-badge">C</span>
           </div>
           <div class="player-info-container">
             <div class="player-name">{{ player.nickname }}</div>
             <div class="player-points">{{ player.points || 0 }} pts</div>
+            <span *ngIf="isPlayerCaptain(player.id)" class="captain-points">(x2)</span>
           </div>
         </div>
       </div>
@@ -96,10 +105,13 @@
           <div class="player-image-container">
             <img [src]="player?.images?.transparent?.['256x256'] || 'assets/img/player-placeholder.png'" alt="{{ player.nickname }}">
             <span class="player-position-badge">DEL</span>
+            <!-- Añadir indicador de capitán -->
+            <span *ngIf="isPlayerCaptain(player.id)" class="captain-badge">C</span>
           </div>
           <div class="player-info-container">
             <div class="player-name">{{ player.nickname }}</div>
             <div class="player-points">{{ player.points || 0 }} pts</div>
+            <span *ngIf="isPlayerCaptain(player.id)" class="captain-points">(x2)</span>
           </div>
         </div>
       </div>
