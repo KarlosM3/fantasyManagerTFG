@@ -2,6 +2,8 @@
 import { Component, OnInit, ChangeDetectorRef } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { PointsService } from "../../services/points.service";
+import { LeagueService } from "../../modals/create-league-modal/services/create-league.service";
+import { ActiveLeagueService } from "../home/services/active-league.service";
 
 @Component({
   selector: "app-team-points",
@@ -31,15 +33,74 @@ export class TeamPointsComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private pointsService: PointsService,
+    private activeLeagueService: ActiveLeagueService,
+    private leagueService: LeagueService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.leagueId = params['leagueId'];
-      this.loadTeamWithPoints();
+
+      if (!this.leagueId) {
+        // Primero verificar si hay una liga activa en el servicio
+        const activeLiga = this.activeLeagueService.getActiveLeague();
+
+        if (activeLiga) {
+          // Si hay una liga activa, usar esa
+          this.leagueId = activeLiga;
+          this.loadCurrentMatchdayAndData();
+        } else {
+          // Si no hay liga activa, intentar obtener el equipo más reciente
+          this.leagueService.getUserTeams().subscribe({
+            next: (response: any) => {
+              if (response && response.teams && response.teams.length > 0) {
+                this.leagueId = response.teams[0].leagueId;
+                this.loadCurrentMatchdayAndData();
+              } else {
+                this.loading = false;
+                this.errorMessage = "No tienes ningún equipo. Por favor, únete a una liga desde la página 'Mis Ligas'.";
+              }
+            },
+            error: (error) => {
+              console.error("Error al obtener equipos del usuario:", error);
+              this.loading = false;
+              this.errorMessage = "Error al cargar tus equipos";
+            }
+          });
+        }
+      } else {
+        // Si hay leagueId en la URL, usarlo y actualizar la liga activa
+        this.activeLeagueService.setActiveLeague(this.leagueId);
+        this.loadCurrentMatchdayAndData();
+      }
     });
   }
+
+
+
+  // Método para obtener la jornada actual y cargar datos
+  loadCurrentMatchdayAndData(): void {
+    // Usar el endpoint existente para obtener la jornada actual
+    this.pointsService.getCurrentMatchday().subscribe({
+      next: (response: any) => {
+        if (response.success && response.data) {
+          this.selectedMatchday = response.data.matchday;
+          // Actualizar también el array de jornadas disponibles hasta la actual
+          this.availableMatchdays = Array.from({length: this.selectedMatchday}, (_, i) => i + 1);
+          console.log(`Jornada actual establecida: ${this.selectedMatchday}`);
+        }
+        // Cargar los puntos del equipo para la jornada seleccionada
+        this.loadTeamWithPoints();
+      },
+      error: (error) => {
+        console.error('Error al obtener la jornada actual:', error);
+        // Si falla, usar la jornada 1 como respaldo
+        this.loadTeamWithPoints();
+      }
+    });
+  }
+
 
   // team-points.component.ts
   loadTeamWithPoints(): void {

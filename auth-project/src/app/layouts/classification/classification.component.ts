@@ -35,12 +35,51 @@ export class ClassificationComponent implements OnInit {
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.leagueId = params['leagueId'];
-      this.loadLeagueData();
-      this.loadClassification();
-      this.loadPointsStandings(); // Cargar la clasificación por puntos
+
+      if (!this.leagueId) {
+        // Primero verificar si hay una liga activa en el servicio
+        const activeLiga = this.activeLeagueService.getActiveLeague();
+
+        if (activeLiga) {
+          // Si hay una liga activa, usar esa
+          this.leagueId = activeLiga;
+          this.loadClassificationData();
+        } else {
+          // Si no hay liga activa, intentar obtener el equipo más reciente
+          this.leagueService.getUserTeams().subscribe({
+            next: (response: any) => {
+              if (response && response.teams && response.teams.length > 0) {
+                this.leagueId = response.teams[0].leagueId;
+                this.loadClassificationData();
+              } else {
+                this.error = "No tienes ningún equipo. Por favor, únete a una liga desde la página 'Mis Ligas'.";
+              }
+            },
+            error: (error) => {
+              console.error("Error al obtener equipos del usuario:", error);
+              this.error = "Error al cargar tus equipos";
+            }
+          });
+        }
+      } else {
+        // Si hay leagueId en la URL, usarlo y actualizar la liga activa
+        this.activeLeagueService.setActiveLeague(this.leagueId);
+        this.loadClassificationData();
+      }
+
+      // Actualizar la propiedad ligaActivaId para el menú lateral
       this.ligaActivaId = this.activeLeagueService.getActiveLeague();
     });
   }
+
+
+  // Método para cargar todos los datos de clasificación
+  loadClassificationData(): void {
+    this.loadLeagueData();
+    this.loadClassification();
+    this.loadPointsStandings();
+  }
+
 
   loadLeagueData(): void {
     this.leagueService.getLeagueById(this.leagueId).subscribe({

@@ -5,8 +5,8 @@
       <label for="matchdaySelect">Jornada:</label>
       <div class="select-wrapper">
         <select id="matchdaySelect" [(ngModel)]="selectedMatchday" (change)="onMatchdayChange($event)">
-          <option *ngFor="let i of [].constructor(38); let idx = index" [value]="idx + 1">
-            {{ idx + 1 }}
+          <option *ngFor="let matchday of availableMatchdays" [value]="matchday">
+            {{ matchday }}
           </option>
         </select>
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

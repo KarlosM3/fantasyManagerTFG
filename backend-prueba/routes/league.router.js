@@ -10,6 +10,9 @@ router.use(authMiddleware);
 // Crear liga
 router.post('/', leagueController.createLeague);
 
+// Obtener todos los equipos del usuario en todas las ligas
+router.get('/my-teams', leagueController.getUserTeams);
+
 // Obtener ligas del usuario autenticado
 router.get('/mine', leagueController.getUserLeagues);
 
@@ -48,5 +51,7 @@ router.post("/:leagueId/market/sell", authMiddleware, marketController.listPlaye
 
 // Obtener una liga por ID
 router.get('/:leagueId', leagueController.getLeagueById);
+
+
 
 module.exports = router;

@@ -28,11 +28,12 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.userName = this.authService.getUserName();
-    this.loadUserLeagues();
 
-    // Inicializa la liga activa si ya hay una guardada
+    // Verificar si hay una liga activa guardada
     this.ligaActivaId = this.activeLeagueService.getActiveLeague();
 
+    // Cargar las ligas del usuario
+    this.loadUserLeagues();
   }
 
 
@@ -48,16 +49,27 @@ export class HomeComponent implements OnInit {
   loadUserLeagues(): void {
     this.leagueService.getUserLeagues().subscribe(leagues => {
       this.userLeagues = leagues;
-      // Si no hay liga activa, selecciona la primera por defecto
-      if (leagues.length > 0 && !this.activeLeagueService.getActiveLeague()) {
-        this.activeLeagueService.setActiveLeague(leagues[0]._id);
-        this.ligaActivaId = leagues[0]._id;
-      } else if (leagues.length > 0) {
-        // Si ya hay una liga activa, actualiza la propiedad local
-        this.ligaActivaId = this.activeLeagueService.getActiveLeague();
+
+      if (leagues.length > 0) {
+        // Si no hay liga activa, seleccionar la primera por defecto
+        if (!this.ligaActivaId) {
+          this.ligaActivaId = leagues[0]._id;
+          this.activeLeagueService.setActiveLeague(this.ligaActivaId);
+        }
+        // Verificar que la liga activa existe entre las ligas del usuario
+        else if (!leagues.some((league: any) => league._id === this.ligaActivaId)) {
+          // Si la liga activa no existe en las ligas del usuario, usar la primera
+          this.ligaActivaId = leagues[0]._id;
+          this.activeLeagueService.setActiveLeague(this.ligaActivaId);
+        }
+      } else {
+        // Si no hay ligas, asegurarse de que no haya liga activa
+        this.ligaActivaId = null;
+        this.activeLeagueService.setActiveLeague(null);
       }
     });
   }
+
 
   openCreateLeagueModal() {
     this.isCreateLeagueModalOpen = true;

@@ -351,7 +351,7 @@ exports.hasMatchdayEnded = async (req, res) => {
     
     // Si un alto porcentaje de jugadores activos ya tiene puntos para esta jornada,
     // podemos asumir que la jornada ha terminado
-    const completionThreshold = 0.9; // 90% de jugadores con puntos
+    const completionThreshold = 0.73; // 90% de jugadores con puntos
     const hasEnded = playersWithPointsInCurrentMatchday / activePlayers.length > completionThreshold;
     
     res.status(200).json({

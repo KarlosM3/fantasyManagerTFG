@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { PlayerService, Player } from './services/player.service';
 import { Router } from '@angular/router';
 import { ActiveLeagueService } from '../home/services/active-league.service';
+import { LeagueService } from '../../modals/create-league-modal/services/create-league.service';
 
 @Component({
   selector: 'app-players',
@@ -20,13 +21,56 @@ export class PlayersComponent implements OnInit {
   constructor(
     private playerService: PlayerService,
     private router: Router,
-    private activeLeagueService: ActiveLeagueService
+    private activeLeagueService: ActiveLeagueService,
+    private leagueService: LeagueService
   ) { }
 
   ngOnInit(): void {
     this.cargarJugadores();
+
+    // Obtener la liga activa del servicio
     this.ligaActivaId = this.activeLeagueService.getActiveLeague();
+
+    // Si no hay liga activa, intentar obtener la más reciente
+    if (!this.ligaActivaId) {
+      this.getRecentLeague();
+    }
   }
+
+  getRecentLeague(): void {
+    this.leagueService.getUserTeams().subscribe({
+      next: (response: any) => {
+        if (response && response.teams && response.teams.length > 0) {
+          // Usar el primer equipo de la lista (el más reciente)
+          this.ligaActivaId = response.teams[0].leagueId;
+
+          // Actualizar la liga activa en el servicio
+          if (this.ligaActivaId) {
+            this.activeLeagueService.setActiveLeague(this.ligaActivaId);
+            console.log('Liga activa establecida:', this.ligaActivaId);
+          }
+        } else {
+          console.log('El usuario no tiene equipos en ninguna liga');
+        }
+      },
+      error: (error) => {
+        console.error("Error al obtener equipos del usuario:", error);
+      }
+    });
+  }
+
+  // Método para navegar a una ruta específica con la liga activa
+  navigateWithActiveLeague(route: string): void {
+    if (this.ligaActivaId) {
+      this.router.navigate(['/layouts/' + route, this.ligaActivaId]);
+    } else {
+      // Si no hay liga activa, navegar a la ruta sin parámetro
+      this.router.navigate(['/layouts/' + route]);
+    }
+  }
+
+
+
 
   cargarJugadores() {
     this.cargando = true;
@@ -156,7 +200,13 @@ export class PlayersComponent implements OnInit {
 
   // Métodos para navegación
   navigateTo(route: string) {
-    this.router.navigate(['/layouts/' + route]);
+    // Para rutas que requieren leagueId
+    if (['my-team', 'classification', 'team-points', 'offers'].includes(route)) {
+      this.navigateWithActiveLeague(route);
+    } else {
+      // Para rutas que no requieren leagueId
+      this.router.navigate(['/layouts/' + route]);
+    }
   }
 
   cerrarSesion() {

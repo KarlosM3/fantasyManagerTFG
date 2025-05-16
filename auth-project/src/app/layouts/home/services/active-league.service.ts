@@ -4,8 +4,12 @@ import { Injectable } from '@angular/core';
 export class ActiveLeagueService {
   private readonly STORAGE_KEY = 'ligaActiva';
 
-  setActiveLeague(id: string) {
-    localStorage.setItem(this.STORAGE_KEY, id);
+  setActiveLeague(id: string | null) {
+    if (id === null) {
+      localStorage.removeItem(this.STORAGE_KEY);
+    } else {
+      localStorage.setItem(this.STORAGE_KEY, id);
+    }
   }
 
   getActiveLeague(): string | null {

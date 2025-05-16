@@ -8,6 +8,7 @@ import { MyTeamComponent } from './my-team/my-team.component';
 import { MarketComponent } from './market/market.component';
 import { OffersComponent } from './offers/offers.component';
 import { TeamPointsComponent } from './team-points/team-points.component';
+import { LeagueGuard } from '../auth/guards/league.guard';
 
 const routes: Routes = [
   {
@@ -21,29 +22,44 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'classification',
+    component: ClassificationComponent,
+    canActivate: [AuthGuard, LeagueGuard]
+  },
+  {
     path: 'classification/:leagueId',
     component: ClassificationComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, LeagueGuard]
+  },
+  {
+    path: 'my-team',
+    component: MyTeamComponent,
+    canActivate: [AuthGuard, LeagueGuard]
   },
   {
     path: 'my-team/:leagueId',
     component: MyTeamComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, LeagueGuard]
   },
   {
     path: 'market',
     component: MarketComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, LeagueGuard]
   },
   {
     path: 'offers',
     component: OffersComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, LeagueGuard]
+  },
+  {
+    path: 'team-points',
+    component: TeamPointsComponent,
+    canActivate: [AuthGuard, LeagueGuard]
   },
   {
     path: 'team-points/:leagueId',
     component: TeamPointsComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, LeagueGuard]
   }
 
 

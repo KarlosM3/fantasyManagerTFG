@@ -14,31 +14,45 @@
   <div class="main-content">
     <!-- Menú lateral izquierdo -->
     <div class="sidebar">
-      <div class="menu-item active" routerLink="/layouts/home" routerLinkActive="active">Mis Ligas</div>
+      <div class="menu-item" routerLink="/layouts/home" routerLinkActive="active">Mis Ligas</div>
       <div class="menu-item" routerLink="/layouts/players" routerLinkActive="active">Jugadores</div>
       <div
         class="menu-item"
         [routerLink]="ligaActivaId ? ['/layouts/classification', ligaActivaId] : null"
-        routerLinkActive="active" [class.disabled]="!ligaActivaId">Clasificación
+        routerLinkActive="active"
+        [class.disabled]="!ligaActivaId"
+        [title]="!ligaActivaId ? 'Debes crear o unirte a una liga primero' : ''">Clasificación
       </div>
       <div
         class="menu-item"
         [routerLink]="ligaActivaId ? ['/layouts/my-team', ligaActivaId] : null"
-        routerLinkActive="active" [class.disabled]="!ligaActivaId">Mi Equipo
+        routerLinkActive="active"
+        [class.disabled]="!ligaActivaId"
+        [title]="!ligaActivaId ? 'Debes crear o unirte a una liga primero' : ''">Mi Equipo
       </div>
-      <div class="menu-item" routerLink="/layouts/market" routerLinkActive="active">Mercado</div>
       <div
-        class="menu-item" routerLink="/layouts/offers" routerLinkActive="active"
-        [class.disabled]="!ligaActivaId">Ofertas
+        class="menu-item"
+        routerLink="/layouts/market"
+        routerLinkActive="active"
+        [class.disabled]="!ligaActivaId"
+        [title]="!ligaActivaId ? 'Debes crear o unirte a una liga primero' : ''">Mercado
+      </div>
+      <div
+        class="menu-item"
+        routerLink="/layouts/offers"
+        routerLinkActive="active"
+        [class.disabled]="!ligaActivaId"
+        [title]="!ligaActivaId ? 'Debes crear o unirte a una liga primero' : ''">Ofertas
       </div>
       <div
         class="menu-item"
         [routerLink]="ligaActivaId ? ['/layouts/team-points', ligaActivaId] : null"
         routerLinkActive="active"
-        [class.disabled]="!ligaActivaId">Puntos del Equipo
+        [class.disabled]="!ligaActivaId"
+        [title]="!ligaActivaId ? 'Debes crear o unirte a una liga primero' : ''">Puntos del Equipo
       </div>
-      <div class="menu-item">Más</div>
     </div>
+
 
 
 

@@ -881,3 +881,43 @@ exports.getLeagueById = async (req, res) => {
   }
 };
 
+
+// Obtener todos los equipos del usuario en todas las ligas
+exports.getUserTeams = async (req, res) => {
+  try {
+    const userId = req.user.id || req.user._id;
+    
+    // Buscar todos los equipos del usuario y ordenarlos por fecha de creación (descendente)
+    const teams = await Team.find({ user: userId })
+                            .sort({ createdAt: -1 }) // Ordenar por fecha de creación descendente
+                            .populate('league', 'name');
+    
+    if (!teams || teams.length === 0) {
+      return res.status(200).json({ 
+        success: true, 
+        teams: [],
+        message: 'No tienes equipos en ninguna liga' 
+      });
+    }
+    
+    // Formatear la respuesta para incluir solo la información necesaria
+    const formattedTeams = teams.map(team => ({
+      teamId: team._id,
+      leagueId: team.league._id,
+      leagueName: team.league.name
+    }));
+    
+    res.status(200).json({
+      success: true,
+      teams: formattedTeams
+    });
+  } catch (error) {
+    console.error('Error al obtener equipos del usuario:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener tus equipos',
+      error: error.message
+    });
+  }
+};
+

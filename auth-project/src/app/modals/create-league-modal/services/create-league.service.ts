@@ -84,4 +84,9 @@ export class LeagueService {
     return this.http.get(`${this.apiUrl}/${leagueId}`);
   }
 
+  //Obtener liga sin leagueId (caso especial)
+  getUserTeams(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/my-teams`);
+  }
+
 }

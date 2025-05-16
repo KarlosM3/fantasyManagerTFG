@@ -97,6 +97,14 @@ $card-bg: #333333;
       border-left: 3px solid $accent-color;
       color: $accent-color;
     }
+
+
+  }
+
+  .menu-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
   }
 }
 
