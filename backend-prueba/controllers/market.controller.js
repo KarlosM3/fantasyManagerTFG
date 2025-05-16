@@ -72,22 +72,41 @@ async function refreshMarket(leagueId) {
     // Procesar pujas existentes antes de actualizar el mercado
     await exports.processBids(leagueId);
     
-    // Obtener todos los jugadores de la API
+    // 1. Obtener todos los equipos de la liga
+    const teams = await Team.find({ league: leagueId });
+    
+    // 2. Recopilar todos los IDs de jugadores que ya están en equipos
+    const usedPlayerIds = new Set();
+    teams.forEach(team => {
+      team.playersData.forEach(player => {
+        if (player.id) {
+          usedPlayerIds.add(player.id);
+        }
+      });
+    });
+    
+    // 3. Obtener todos los jugadores de la API
     const response = await axios.get("https://api-fantasy.llt-services.com/api/v3/players");
     const allPlayers = response.data;
     
-    // Seleccionar 12 jugadores aleatorios
-    const marketPlayers = [];
+    // 4. Filtrar jugadores que ya están en equipos y los que están fuera de liga
+    const availablePlayers = allPlayers.filter(player => 
+      !usedPlayerIds.has(player.id) && player.playerStatus !== 'out_of_league'
+    );
     
-    // Asegurar distribución por posiciones
+    // 5. Seleccionar jugadores aleatorios por posición
+    const marketPlayers = [];
     const positionCounts = { "1": 2, "2": 4, "3": 4, "4": 2 };
     
     for (const positionId in positionCounts) {
-      const positionPlayers = allPlayers.filter(p => p.positionId === positionId);
+      const positionPlayers = availablePlayers.filter(p => p.positionId === positionId);
       const count = positionCounts[positionId];
       
+      // Si no hay suficientes jugadores disponibles en esta posición, usar los que haya
+      const availableCount = Math.min(count, positionPlayers.length);
+      
       // Seleccionar jugadores aleatorios de esta posición
-      for (let i = 0; i < count; i++) {
+      for (let i = 0; i < availableCount; i++) {
         if (positionPlayers.length > 0) {
           const randomIndex = Math.floor(Math.random() * positionPlayers.length);
           marketPlayers.push(positionPlayers[randomIndex]);
@@ -96,11 +115,11 @@ async function refreshMarket(leagueId) {
       }
     }
     
-    // Calcular próxima actualización (24 horas después)
+    // 6. Calcular próxima actualización (24 horas después)
     const nextUpdate = new Date();
     nextUpdate.setHours(nextUpdate.getHours() + 24);
     
-    // Guardar el nuevo mercado para esta liga específica
+    // 7. Guardar el nuevo mercado para esta liga específica
     const newMarket = await Market.findOneAndUpdate(
       { league: leagueId },
       {
@@ -117,6 +136,7 @@ async function refreshMarket(leagueId) {
     throw error;
   }
 }
+
 
 
 
