@@ -1,6 +1,7 @@
 const League = require('../models/league.model');
 const User = require('../models/user.model');
 const Team = require('../models/team.model');
+const Market = require('../models/market.model');
 const axios = require('axios');
 
 // Crear una nueva liga y asociarla al usuario
@@ -921,4 +922,115 @@ exports.getUserTeams = async (req, res) => {
     });
   }
 };
+
+
+exports.deleteLeague = async (req, res) => {
+  try {
+    const { leagueId } = req.params;
+    const userId = req.user.id;
+
+    // Buscar la liga
+    const league = await League.findById(leagueId);
+    
+    if (!league) {
+      return res.status(404).json({ success: false, message: 'Liga no encontrada' });
+    }
+    
+    // Verificar si el usuario es el administrador de la liga
+    const adminMember = league.members.find(member => 
+      member.userId.toString() === userId && member.role === 'admin'
+    );
+    
+    if (!adminMember) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Solo el administrador puede eliminar la liga' 
+      });
+    }
+    
+    // Eliminar todos los equipos asociados a la liga
+    await Team.deleteMany({ league: leagueId });
+    
+    // Eliminar el mercado asociado a la liga
+    await Market.deleteMany({ league: leagueId });
+    
+    // Eliminar la liga
+    await League.findByIdAndDelete(leagueId);
+    
+    res.status(200).json({ 
+      success: true, 
+      message: 'Liga eliminada correctamente' 
+    });
+  } catch (error) {
+    console.error('Error al eliminar la liga:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error al eliminar la liga', 
+      error: error.message 
+    });
+  }
+};
+
+
+// Método auxiliar para verificar si un usuario es administrador de una liga
+async function isUserLeagueAdmin(userId, leagueId) {
+  try {
+    const league = await League.findById(leagueId);
+    
+    if (!league) {
+      return { success: false, message: 'Liga no encontrada' };
+    }
+    
+    // Verificar si el usuario es el creador de la liga
+    if (league.createdBy.toString() === userId.toString()) {
+      return { success: true, isAdmin: true };
+    }
+    
+    // Verificar si el usuario tiene rol de admin en la liga
+    const adminMember = league.members.find(member => 
+      member.userId.toString() === userId.toString() && member.role === 'admin'
+    );
+    
+    return { 
+      success: true, 
+      isAdmin: !!adminMember 
+    };
+  } catch (error) {
+    return { 
+      success: false, 
+      message: 'Error al verificar permisos', 
+      error: error.message 
+    };
+  }
+}
+
+// Verificar si el usuario actual es administrador de una liga
+exports.checkIsLeagueAdmin = async (req, res) => {
+  try {
+    const { leagueId } = req.params;
+    const userId = req.user.id || req.user._id;
+    
+    const result = await isUserLeagueAdmin(userId, leagueId);
+    
+    if (!result.success) {
+      return res.status(404).json({ 
+        success: false, 
+        message: result.message 
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      isAdmin: result.isAdmin
+    });
+  } catch (error) {
+    console.error('Error al verificar permisos:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error al verificar permisos', 
+      error: error.message 
+    });
+  }
+};
+
 

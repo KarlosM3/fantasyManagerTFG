@@ -89,4 +89,14 @@ export class LeagueService {
     return this.http.get(`${this.apiUrl}/my-teams`);
   }
 
+  deleteLeague(leagueId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${leagueId}`);
+  }
+
+  // En league.service.ts
+  isLeagueAdmin(leagueId: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${leagueId}/check-admin`);
+  }
+
+
 }

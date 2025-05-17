@@ -94,18 +94,61 @@
         </div>
 
         <!-- Mostrar lista de ligas si existen -->
-        <div *ngIf="userLeagues.length > 0; else emptyState" class="leagues-list">
+        <div *ngIf="userLeagues.length > 0; else emptyState" class="leagues-grid">
           <div
             class="league-card"
             *ngFor="let liga of userLeagues"
-            (click)="navegarAClasificacion(liga._id)"
           >
-            <div class="league-avatar">
-              {{ liga.name.charAt(0) | uppercase }}
+            <div class="league-header">
+              <div class="league-avatar" (click)="navegarAClasificacion(liga._id)">
+                {{ liga.name.charAt(0) | uppercase }}
+              </div>
+              <div class="league-info" (click)="navegarAClasificacion(liga._id)">
+                <div class="league-name">{{ liga.name }}</div>
+                <div class="league-details">
+                  <span class="league-members">{{ liga.members?.length || 0 }}/{{ liga.maxParticipants }} miembros</span>
+                  <span class="league-privacy">{{ liga.privacy === 'private' ? 'Privada' : 'Pública' }}</span>
+                </div>
+              </div>
+              <div class="league-actions" *ngIf="isLeagueAdmin(liga)">
+                <button class="action-btn invite-btn" (click)="showInviteModal(liga)">
+                  <i class="fas fa-user-plus"></i>
+                </button>
+                <button class="action-btn delete-btn" (click)="confirmDeleteLeague(liga)">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
             </div>
-            <div class="league-info">
-              <div class="league-name">{{ liga.name }}</div>
+            <div class="league-footer">
+              <div class="league-budget">Presupuesto: {{ formatCurrency(liga.initialBudget) }}</div>
+              <div class="league-created">Creada: {{ liga.createdAt | date:'dd/MM/yyyy' }}</div>
             </div>
+          </div>
+        </div>
+
+        <!-- Modal de confirmación para eliminar liga -->
+        <div class="modal" *ngIf="showDeleteConfirmModal">
+          <div class="modal-content">
+            <h3>¿Estás seguro de que deseas eliminar la liga "{{ leagueToDelete?.name }}"?</h3>
+            <p>Esta acción no se puede deshacer y eliminará todos los equipos y datos asociados.</p>
+            <div class="modal-actions">
+              <button class="cancel-btn" (click)="cancelDeleteLeague()">Cancelar</button>
+              <button class="delete-btn" (click)="deleteLeague()">Eliminar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal de invitación -->
+        <div class="modal" *ngIf="showInvite_Modal">
+          <div class="modal-content">
+            <h3>Invitar a "{{ selectedLeague?.name }}"</h3>
+            <div class="invite-link-container">
+              <input type="text" [value]="inviteLink" readonly #inviteLinkInput>
+              <button class="copy-btn" (click)="copyInviteLink(inviteLinkInput)">
+                <i class="fas fa-copy"></i> Copiar
+              </button>
+            </div>
+            <button class="close-btn" (click)="closeInviteModal()">Cerrar</button>
           </div>
         </div>
 

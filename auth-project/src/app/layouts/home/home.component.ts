@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { LeagueService } from '../../modals/create-league-modal/services/create-league.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../../auth/services/auth.service';
@@ -19,11 +19,20 @@ export class HomeComponent implements OnInit {
   randomTeam: any[] = [];
   equipoId: string | null = null;
 
+  showDeleteConfirmModal = false;
+  leagueToDelete: any = null;
+  showInvite_Modal = false;
+  selectedLeague: any = null;
+  inviteLink = '';
+
+  private adminStatusCache: {[key: string]: boolean} = {};
+
   constructor(
     private authService: AuthService,
     private router: Router,
     private leagueService: LeagueService,
-    private activeLeagueService: ActiveLeagueService
+    private activeLeagueService: ActiveLeagueService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -134,6 +143,100 @@ export class HomeComponent implements OnInit {
     this.activeLeagueService.setActiveLeague(leagueId);
     this.ligaActivaId = leagueId;
     this.router.navigate(['/layouts/classification', leagueId]);
+  }
+
+  isLeagueAdmin(liga: any): boolean {
+    // Si ya tenemos el resultado en caché, usarlo
+    if (this.adminStatusCache[liga._id] !== undefined) {
+      return this.adminStatusCache[liga._id];
+    }
+
+    // Si no está en caché, asumir que no es admin por defecto
+    this.adminStatusCache[liga._id] = false;
+
+    // Hacer la llamada al backend para verificar
+    this.leagueService.isLeagueAdmin(liga._id).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.adminStatusCache[liga._id] = response.isAdmin;
+          // Forzar la detección de cambios si es necesario
+          this.cdr.detectChanges();
+        }
+      },
+      error: (err) => {
+        console.error('Error al verificar permisos:', err);
+      }
+    });
+
+    return this.adminStatusCache[liga._id];
+  }
+
+  confirmDeleteLeague(liga: any): void {
+    this.leagueToDelete = liga;
+    this.showDeleteConfirmModal = true;
+  }
+
+  cancelDeleteLeague(): void {
+    this.leagueToDelete = null;
+    this.showDeleteConfirmModal = false;
+  }
+
+  deleteLeague(): void {
+    if (!this.leagueToDelete) return;
+
+    this.leagueService.deleteLeague(this.leagueToDelete._id).subscribe({
+      next: (response) => {
+        // Mostrar mensaje de éxito
+        alert('Liga eliminada correctamente');
+        // Actualizar la lista de ligas
+        this.loadUserLeagues();
+        // Cerrar el modal
+        this.showDeleteConfirmModal = false;
+        this.leagueToDelete = null;
+      },
+      error: (error) => {
+        console.error('Error al eliminar la liga:', error);
+        alert('Error al eliminar la liga: ' + (error.error?.message || 'Inténtalo de nuevo más tarde'));
+      }
+    });
+  }
+
+  showInviteModal(liga: any): void {
+    this.selectedLeague = liga;
+    this.showInvite_Modal = true;
+
+    // Generar enlace de invitación
+    this.leagueService.getInviteLink(liga._id).subscribe({
+      next: (response) => {
+        if (response.inviteCode) {
+          this.inviteLink = `${window.location.origin}/join-league/${response.inviteCode}`;
+        }
+      },
+      error: (error) => {
+        console.error('Error al obtener enlace de invitación:', error);
+      }
+    });
+  }
+
+  closeInviteModal(): void {
+    this.selectedLeague = null;
+    this.showInvite_Modal = false;
+    this.inviteLink = '';
+  }
+
+  copyInviteLink(inputElement: HTMLInputElement): void {
+    inputElement.select();
+    document.execCommand('copy');
+    alert('Enlace copiado al portapapeles');
+  }
+
+  formatCurrency(value: number): string {
+    return new Intl.NumberFormat("es-ES", {
+      style: "currency",
+      currency: "EUR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value);
   }
 
 }

@@ -285,45 +285,203 @@ $card-bg: #333333;
   background-color: #ff3333;
 }
 
-.leagues-list {
+.leagues-grid {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-top: 16px;
+  gap: 15px;
+  margin-top: 20px;
 }
 
 .league-card {
-  cursor: pointer;
-  transition: box-shadow 0.2s;
-  &:hover {
-    box-shadow: 0 4px 16px rgba(255,77,77,0.10);
-  }
+  width: 100%; /* Ancho completo para ocupar todo el contenedor */
+  max-width: none; /* Eliminar cualquier restricción de ancho máximo */
+}
+
+.league-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.league-header {
+  display: flex;
+  padding: 15px;
+  align-items: center;
+  border-bottom: 1px solid #3a3a3a;
 }
 
 .league-avatar {
-  width: 40px;
-  height: 40px;
-  background: #ff4d4d;
-  color: #fff;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
+  background: linear-gradient(135deg, #ff3a3a, #ff3a3a);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: bold;
-  margin-right: 18px;
+  color: white;
+  margin-right: 15px;
+  cursor: pointer;
 }
 
 .league-info {
-  flex: 1;
+  flex-grow: 1;
+  cursor: pointer;
 }
 
 .league-name {
-  font-size: 1.2rem;
+  font-size: 18px;
   font-weight: bold;
-  color: #fff;
-  letter-spacing: 0.5px;
+  margin-bottom: 5px;
+  color: white;
 }
+
+.league-details {
+  display: flex;
+  font-size: 12px;
+  color: #b0b0b0;
+}
+
+.league-members {
+  margin-right: 10px;
+}
+
+.league-privacy {
+  padding: 2px 6px;
+  background: #3a3a3a;
+  border-radius: 4px;
+}
+
+.league-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.invite-btn {
+  background-color: #000000;
+  color: white;
+}
+
+.invite-btn:hover {
+  background-color: #3a80d2;
+}
+
+.delete-btn {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.delete-btn:hover {
+  background-color: #d73c2c;
+}
+
+.league-footer {
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #b0b0b0;
+}
+
+/* Estilos para el modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #2a2a2a;
+  padding: 25px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  color: white;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.cancel-btn {
+  background-color: #555;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.delete-btn {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.invite-link-container {
+  display: flex;
+  margin: 20px 0;
+}
+
+.invite-link-container input {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #3a3a3a;
+  background-color: #222;
+  color: white;
+  border-radius: 4px 0 0 4px;
+}
+
+.copy-btn {
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+}
+
+.close-btn {
+  background-color: #555;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+  width: 100%;
+}
+
 
 
 

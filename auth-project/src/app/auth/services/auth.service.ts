@@ -129,9 +129,6 @@ export class AuthService {
     // Si almacenas el ID de usuario en localStorage
     return localStorage.getItem('userId') || '';
 
-    // Alternativa: si el ID está en el token JWT, podrías decodificarlo aquí
-    // const token = this.getToken();
-    // return token ? this.decodeToken(token).userId : '';
   }
   return '';
 }

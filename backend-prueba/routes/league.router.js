@@ -52,6 +52,11 @@ router.post("/:leagueId/market/sell", authMiddleware, marketController.listPlaye
 // Obtener una liga por ID
 router.get('/:leagueId', leagueController.getLeagueById);
 
+// Borrar una liga
+router.delete('/:leagueId', authMiddleware, leagueController.deleteLeague);
+
+// Verificar si el usuario es administrador de una liga
+router.get('/:leagueId/check-admin', authMiddleware, leagueController.checkIsLeagueAdmin);
 
 
 module.exports = router;
