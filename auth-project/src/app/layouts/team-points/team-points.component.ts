@@ -21,6 +21,10 @@ export class TeamPointsComponent implements OnInit {
   captainId: string = '';
   totalTeamPoints: number = 0;
 
+  // Añadir propiedad para el userId
+  userId: string | null = null;
+  userName: string = 'Mi Equipo'; // Nombre por defecto
+
   // Jugadores por posición
   goalkeepers: any[] = [];
   defenders: any[] = [];
@@ -41,6 +45,7 @@ export class TeamPointsComponent implements OnInit {
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.leagueId = params['leagueId'];
+      this.userId = params['userId']; // Capturar el userId si está presente
 
       if (!this.leagueId) {
         // Primero verificar si hay una liga activa en el servicio
@@ -109,35 +114,62 @@ export class TeamPointsComponent implements OnInit {
 
     console.log('Cargando equipo para jornada:', this.selectedMatchday);
 
-    this.pointsService.getTeamPointsForMatchday(this.leagueId, this.selectedMatchday)
-      .subscribe({
-        next: (response: any) => {
-          console.log('Respuesta completa:', response);
+    // Si hay un userId específico, cargar ese equipo
+    if (this.userId) {
+      this.pointsService.getUserTeamPointsForMatchday(this.leagueId, this.userId, this.selectedMatchday)
+        .subscribe({
+          next: (response: any) => {
+            if (response.success) {
+              this.teamPlayers = response.data.team.players || [];
+              this.formation = response.data.team.formation;
+              this.captainId = response.data.team.captainId;
+              this.totalTeamPoints = response.data.team.totalPoints || 0;
+              this.userName = response.data.user.name; // Actualizar el nombre del usuario
 
-          if (response.success) {
-            this.teamPlayers = response.data.team.players || [];
-            this.formation = response.data.team.formation;
-            this.captainId = response.data.team.captainId;
-            this.totalTeamPoints = response.data.team.totalPoints || 0;
-
-            console.log('Jugadores recibidos:', this.teamPlayers);
-
-            if (this.teamPlayers.length > 0) {
-              this.distributePlayersByPosition();
+              if (this.teamPlayers.length > 0) {
+                this.distributePlayersByPosition();
+              } else {
+                this.errorMessage = 'No hay jugadores en el equipo';
+              }
             } else {
-              this.errorMessage = 'No hay jugadores en el equipo';
+              this.errorMessage = 'Error al cargar los puntos del equipo';
             }
-          } else {
-            this.errorMessage = 'Error al cargar los puntos del equipo';
+            this.loading = false;
+          },
+          error: (error: any) => {
+            console.error('Error completo:', error);
+            this.errorMessage = 'Error al cargar los datos';
+            this.loading = false;
           }
-          this.loading = false;
-        },
-        error: (error: any) => {
-          console.error('Error completo:', error);
-          this.errorMessage = 'Error al cargar los datos';
-          this.loading = false;
-        }
-      });
+        });
+    } else {
+      // Si no hay userId, cargar el equipo del usuario actual
+      this.pointsService.getTeamPointsForMatchday(this.leagueId, this.selectedMatchday)
+        .subscribe({
+          next: (response: any) => {
+            if (response.success) {
+              this.teamPlayers = response.data.team.players || [];
+              this.formation = response.data.team.formation;
+              this.captainId = response.data.team.captainId;
+              this.totalTeamPoints = response.data.team.totalPoints || 0;
+
+              if (this.teamPlayers.length > 0) {
+                this.distributePlayersByPosition();
+              } else {
+                this.errorMessage = 'No hay jugadores en el equipo';
+              }
+            } else {
+              this.errorMessage = 'Error al cargar los puntos del equipo';
+            }
+            this.loading = false;
+          },
+          error: (error: any) => {
+            console.error('Error completo:', error);
+            this.errorMessage = 'Error al cargar los datos';
+            this.loading = false;
+          }
+        });
+    }
   }
 
 

@@ -323,7 +323,7 @@ exports.getLeagueClassification = async (req, res) => {
       const matchdaysPlayed = hasCompleteTeam ? team.matchdaysPlayed || 0 : 0;
       
       return {
-        userId: team.user._id,
+        userId: team.user._id,  // Incluir el ID del usuario
         name: team.user.name,
         points: totalPoints,
         teamValue: teamValue,
@@ -339,6 +339,7 @@ exports.getLeagueClassification = async (req, res) => {
     res.status(500).json({ message: 'Error al obtener clasificación', error: error.message });
   }
 };
+
 
 
 

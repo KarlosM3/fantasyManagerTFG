@@ -60,7 +60,13 @@ const routes: Routes = [
     path: 'team-points/:leagueId',
     component: TeamPointsComponent,
     canActivate: [AuthGuard, LeagueGuard]
+  },
+  {
+    path: 'team-points/:leagueId/user/:userId',
+    component: TeamPointsComponent,
+    canActivate: [AuthGuard, LeagueGuard]
   }
+
 
 
 ];

@@ -373,3 +373,110 @@ exports.hasMatchdayEnded = async (req, res) => {
   }
 };
 
+
+// Obtener puntos de un equipo específico para una jornada
+exports.getUserTeamPointsForMatchday = async (req, res) => {
+  try {
+    const { leagueId, userId, matchday } = req.params;
+    const matchdayNum = parseInt(matchday, 10);
+    
+    console.log(`Obteniendo puntos para liga ${leagueId}, usuario ${userId}, jornada ${matchdayNum}`);
+    
+    // 1. Obtener el equipo del usuario especificado en esa liga
+    const team = await Team.findOne({ 
+      league: leagueId, 
+      user: userId 
+    });
+    
+    if (!team) {
+      return res.status(404).json({
+        success: false,
+        message: 'Equipo no encontrado'
+      });
+    }
+    
+    // 2. Obtener los IDs de jugadores en la alineación (startingEleven)
+    const startingElevenIds = team.startingEleven?.map(player => player.id) || [];
+    
+    // Si no hay alineación, usar todos los jugadores del equipo
+    const playerIds = startingElevenIds.length > 0 
+      ? startingElevenIds 
+      : team.playersData.map(player => player.id);
+    
+    // 3. Obtener datos de jugadores desde la API externa
+    const response = await axios.get('https://api-fantasy.llt-services.com/api/v4/players');
+    const allPlayers = response.data;
+    
+    // 4. Filtrar solo los jugadores alineados
+    const teamPlayers = allPlayers.filter(player => 
+      playerIds.includes(player.id) && !player.id.startsWith('placeholder')
+    );
+    
+    // Obtener el ID del capitán
+    const captainId = team.captain;
+    
+    // 5. Para cada jugador, buscar los puntos de la jornada específica
+    const playersWithPoints = teamPlayers.map(player => {
+      // Buscar la jornada específica en weekPoints
+      const matchdayData = player.weekPoints?.find(wp => wp.weekNumber === matchdayNum);
+      const points = matchdayData ? matchdayData.points : 0;
+      
+      // Marcar si es capitán y calcular puntos con bonificación
+      const isCaptain = captainId === player.id;
+      const effectivePoints = isCaptain ? points * 2 : points;
+      
+      return {
+        ...player,
+        points: points,
+        effectivePoints: effectivePoints,
+        isCaptain: isCaptain
+      };
+    });
+    
+    // Contar posiciones vacías (placeholders)
+    const placeholders = team.startingEleven?.filter(player => 
+      player.id && player.id.startsWith('placeholder')
+    ) || [];
+    const emptyPositions = placeholders.length;
+    
+    // Aplicar penalización por posiciones vacías
+    let penaltyPoints = 0;
+    if (emptyPositions > 0 && emptyPositions < 11) {
+      penaltyPoints = emptyPositions * -4; // -4 puntos por cada posición vacía
+    }
+    
+    // Calcular puntos totales considerando el capitán y las penalizaciones
+    const totalPoints = playersWithPoints.reduce((sum, player) => sum + player.effectivePoints, 0) + penaltyPoints;
+    
+    // Obtener información del usuario
+    const User = require('../models/user.model');
+    const userInfo = await User.findById(userId, 'username name');
+    
+    // 6. Devolver los datos
+    res.status(200).json({
+      success: true,
+      data: {
+        user: {
+          id: userId,
+          name: userInfo.username || userInfo.name || 'Usuario'
+        },
+        team: {
+          id: team._id,
+          formation: team.formation,
+          players: playersWithPoints,
+          captainId: captainId,
+          totalPoints: totalPoints,
+          emptyPositions: emptyPositions,
+          penaltyPoints: penaltyPoints
+        },
+        matchday: matchdayNum
+      }
+    });
+  } catch (error) {
+    console.error('Error al obtener puntos del equipo:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

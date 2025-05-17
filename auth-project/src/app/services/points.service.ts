@@ -36,4 +36,10 @@ export class PointsService {
     return this.http.get(`${this.apiUrl}/matchday-ended/${matchday}`);
   }
 
+  // Obtener puntos de un equipo específico por jornada
+  getUserTeamPointsForMatchday(leagueId: string, userId: string, matchday: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/league/${leagueId}/user/${userId}/matchday/${matchday}`);
+  }
+
+
 }

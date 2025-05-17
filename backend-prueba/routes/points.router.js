@@ -19,4 +19,8 @@ router.get('/matchday-ended/:matchday', authMiddleware, pointsController.hasMatc
 // Obtener la jornada actual
 router.get('/current-matchday', authMiddleware, pointsController.getCurrentMatchday);
 
+// Obtener puntos de un equipo específico por jornada
+router.get('/league/:leagueId/user/:userId/matchday/:matchday', authMiddleware, pointsController.getUserTeamPointsForMatchday);
+
+
 module.exports = router;

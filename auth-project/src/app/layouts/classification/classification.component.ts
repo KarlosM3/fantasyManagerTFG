@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { LeagueService } from '../../modals/create-league-modal/services/create-league.service';
 import { PointsService } from '../../services/points.service';
 import { AuthService } from '../../auth/services/auth.service';
@@ -26,6 +26,7 @@ export class ClassificationComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private leagueService: LeagueService,
     private pointsService: PointsService,
     private authService: AuthService,
@@ -171,5 +172,12 @@ export class ClassificationComponent implements OnInit {
       return '0';
     }
     return (team.total_points / team.matchdays_played).toFixed(1);
+  }
+
+  navigateToUserTeam(userId: string): void {
+    if (this.leagueId && userId) {
+      // Navegar a la página de puntos del equipo del usuario seleccionado
+      this.router.navigate(['/layouts/team-points', this.leagueId, 'user', userId]);
+    }
   }
 }
