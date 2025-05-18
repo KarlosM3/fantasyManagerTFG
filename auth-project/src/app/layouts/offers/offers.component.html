@@ -1,88 +1,123 @@
-<div class="offers-container">
-  <div class="offers-header">
-    <h1>Ofertas Recibidas</h1>
+<div class="page-container">
+
+  <!-- Menú lateral izquierdo -->
+  <div class="sidebar">
+    <div class="menu-item active" routerLink="/layouts/home" routerLinkActive="active">Mis Ligas</div>
+    <div class="menu-item" routerLink="/layouts/players" routerLinkActive="active">Jugadores</div>
+    <div
+      class="menu-item"
+      [routerLink]="activeLeagueId ? ['/layouts/classification', activeLeagueId] : null"
+      routerLinkActive="active"
+      [class.disabled]="!activeLeagueId">Clasificación
+    </div>
+    <div
+      class="menu-item"
+      routerLink="/layouts/my-team"
+      routerLinkActive="active">Mi Equipo
+    </div>
+    <div class="menu-item" routerLink="/layouts/market" routerLinkActive="active">Mercado</div>
+    <div
+      class="menu-item"
+      routerLink="/layouts/offers"
+      routerLinkActive="active"
+      [class.disabled]="!activeLeagueId">Ofertas
+    </div>
+    <div
+      class="menu-item"
+      routerLink="/layouts/team-points"
+      routerLinkActive="active">Puntos del Equipo
+    </div>
   </div>
 
-  <div class="offers-content" *ngIf="activeLeagueId; else noLeague">
-    <div class="loading-state" *ngIf="isLoading">
-      <div class="spinner"></div>
-      <p>Cargando ofertas...</p>
-    </div>
+  <!-- Contenido principal -->
+  <div class="main-content">
+    <div class="offers-container">
+      <div class="offers-header">
+        <h1>Ofertas Recibidas</h1>
+      </div>
 
-    <div class="empty-state" *ngIf="!isLoading && receivedOffers.length === 0">
-      <i class="material-icons">inbox</i>
-      <p>No tienes ofertas pendientes</p>
-      <button class="primary-btn" routerLink="/layouts/market">Ir al mercado</button>
-    </div>
+      <div class="offers-content" *ngIf="activeLeagueId; else noLeague">
+        <div class="loading-state" *ngIf="isLoading">
+          <div class="spinner"></div>
+          <p>Cargando ofertas...</p>
+        </div>
 
-    <div class="offers-list" *ngIf="!isLoading && receivedOffers.length > 0">
-      <div class="offer-group" *ngFor="let group of receivedOffers">
-        <div class="player-card">
-          <div class="player-header">
-            <span class="position-badge" [ngStyle]="{'background-color': getPositionColor(group.listing.player.positionId)}">
-              {{ getPositionName(group.listing.player.positionId) }}
-            </span>
-            <img
-              [src]="group.listing.player.images?.transparent['256x256']"
-              [alt]="group.listing.player.nickname"
-              class="player-image"
-              (error)="group.imageError = true"
-              [ngClass]="{'hidden': group.imageError}"
-            />
-          </div>
-          <div class="player-info">
-            <div class="player-name">{{ group.listing.player.nickname || 'Sin nombre' }}</div>
-            <div class="player-team">{{ group.listing.player.team?.name }}</div>
-            <div class="player-stats">
-              <div class="stat">
-                <div class="stat-value">{{ group.listing.player.points }}</div>
-                <div class="stat-label">Puntos</div>
+        <div class="empty-state" *ngIf="!isLoading && receivedOffers.length === 0">
+          <i class="material-icons">inbox</i>
+          <p>No tienes ofertas pendientes</p>
+          <button class="primary-btn" routerLink="/layouts/market">Ir al mercado</button>
+        </div>
+
+        <div class="offers-list" *ngIf="!isLoading && receivedOffers.length > 0">
+          <div class="offer-group" *ngFor="let group of receivedOffers">
+            <div class="player-card">
+              <div class="player-header">
+                <span class="position-badge" [ngStyle]="{'background-color': getPositionColor(group.listing.player.positionId)}">
+                  {{ getPositionName(group.listing.player.positionId) }}
+                </span>
+                <img
+                  [src]="group.listing.player.images?.transparent['256x256']"
+                  [alt]="group.listing.player.nickname"
+                  class="player-image"
+                  (error)="group.imageError = true"
+                  [ngClass]="{'hidden': group.imageError}"
+                />
               </div>
-              <div class="stat">
-                <div class="stat-value">{{ formatCurrency(group.listing.askingPrice) }}</div>
-                <div class="stat-label">Precio pedido</div>
+              <div class="player-info">
+                <div class="player-name">{{ group.listing.player.nickname || 'Sin nombre' }}</div>
+                <div class="player-team">{{ group.listing.player.team?.name }}</div>
+                <div class="player-stats">
+                  <div class="stat">
+                    <div class="stat-value">{{ group.listing.player.points }}</div>
+                    <div class="stat-label">Puntos</div>
+                  </div>
+                  <div class="stat">
+                    <div class="stat-value">{{ formatCurrency(group.listing.askingPrice) }}</div>
+                    <div class="stat-label">Precio pedido</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="offers-table">
+              <div class="table-header">
+                <div class="col">Comprador</div>
+                <div class="col">Oferta</div>
+                <div class="col">Acciones</div>
+              </div>
+              <div class="table-row" *ngFor="let offer of group.offers">
+                <div class="col">
+                  <span *ngIf="!offer.isAutoOffer">{{ offer.buyer?.name || 'Usuario desconocido' }}</span>
+                  <span *ngIf="offer.isAutoOffer" class="auto-offer-badge">Oferta automática</span>
+                </div>
+                <div class="col offer-amount">{{ formatCurrency(offer.amount) }}</div>
+                <div class="col actions">
+                  <button class="action-btn accept-btn" (click)="acceptOffer(offer._id)">Aceptar</button>
+                  <button class="action-btn reject-btn" (click)="rejectOffer(offer._id)">Rechazar</button>
+                </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="offers-table">
-          <div class="table-header">
-            <div class="col">Comprador</div>
-            <div class="col">Oferta</div>
-            <div class="col">Acciones</div>
-          </div>
-          <div class="table-row" *ngFor="let offer of group.offers">
-            <div class="col">
-              <span *ngIf="!offer.isAutoOffer">{{ offer.buyer?.name || 'Usuario desconocido' }}</span>
-              <span *ngIf="offer.isAutoOffer" class="auto-offer-badge">Oferta automática</span>
-            </div>
-            <div class="col offer-amount">{{ formatCurrency(offer.amount) }}</div>
-            <div class="col actions">
-              <button class="action-btn accept-btn" (click)="acceptOffer(offer._id)">Aceptar</button>
-              <button class="action-btn reject-btn" (click)="rejectOffer(offer._id)">Rechazar</button>
-            </div>
+      <ng-template #noLeague>
+        <div class="no-league-message">
+          <div class="message-content">
+            <i class="material-icons">sports_soccer</i>
+            <p>Necesitas seleccionar una liga para ver tus ofertas.</p>
+            <button class="primary-btn" routerLink="/layouts/home">Ir a mis ligas</button>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
+      </ng-template>
 
-  <ng-template #noLeague>
-    <div class="no-league-message">
-      <div class="message-content">
-        <i class="material-icons">sports_soccer</i>
-        <p>Necesitas seleccionar una liga para ver tus ofertas.</p>
-        <button class="primary-btn" routerLink="/layouts/home">Ir a mis ligas</button>
+      <!-- Sistema de notificaciones -->
+      <div class="notification-container" *ngIf="notification.show">
+        <div class="notification" [ngClass]="notification.type">
+          <span class="notification-message">{{ notification.message }}</span>
+          <button class="notification-close" (click)="hideNotification()">&times;</button>
+        </div>
       </div>
-    </div>
-  </ng-template>
-
-  <!-- Sistema de notificaciones -->
-  <div class="notification-container" *ngIf="notification.show">
-    <div class="notification" [ngClass]="notification.type">
-      <span class="notification-message">{{ notification.message }}</span>
-      <button class="notification-close" (click)="hideNotification()">&times;</button>
     </div>
   </div>
 </div>

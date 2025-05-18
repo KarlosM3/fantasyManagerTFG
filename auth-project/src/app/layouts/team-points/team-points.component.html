@@ -1,166 +1,200 @@
-<div class="team-container">
-  <div class="team-header">
-    <h2>Puntos del Equipo: {{ userName }}</h2>
-    <div class="matchday-selector">
-      <label for="matchdaySelect">Jornada:</label>
-      <div class="select-wrapper">
-        <select id="matchdaySelect" [(ngModel)]="selectedMatchday" (change)="onMatchdayChange($event)">
-          <option *ngFor="let matchday of availableMatchdays" [value]="matchday">
-            {{ matchday }}
-          </option>
-        </select>
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="6 9 12 15 18 9"></polyline>
-        </svg>
+<div class="page-container">
+
+  <!-- Menú lateral izquierdo -->
+    <div class="sidebar">
+      <div class="menu-item active" routerLink="/layouts/home" routerLinkActive="active">Mis Ligas</div>
+      <div class="menu-item" routerLink="/layouts/players" routerLinkActive="active">Jugadores</div>
+      <div
+        class="menu-item"
+        [routerLink]="ligaActivaId ? ['/layouts/classification', ligaActivaId] : null"
+        routerLinkActive="active"
+        [class.disabled]="!ligaActivaId">Clasificación
+      </div>
+      <div
+        class="menu-item"
+        routerLink="/layouts/my-team"
+        routerLinkActive="active">Mi Equipo
+      </div>
+      <div class="menu-item" routerLink="/layouts/market" routerLinkActive="active">Mercado</div>
+      <div
+        class="menu-item"
+        routerLink="/layouts/offers"
+        routerLinkActive="active"
+        [class.disabled]="!ligaActivaId">Ofertas
+      </div>
+      <div
+        class="menu-item"
+        routerLink="/layouts/team-points"
+        routerLinkActive="active">Puntos del Equipo
       </div>
     </div>
 
-  </div>
-
-  <div *ngIf="errorMessage" class="error-message">
-    <p>{{ errorMessage }}</p>
-    <button (click)="errorMessage = ''">×</button>
-  </div>
-
-  <div class="formation-view" style="height: 700px;">
-    <div class="formation-label">Formación: {{ getFormationString() }}</div>
-
-    <!-- Elementos del campo -->
-    <div class="goal-area top"></div>
-    <div class="goal-area bottom"></div>
-    <div class="center-circle"></div>
-
-    <!-- Campo de juego -->
-    <div class="pitch">
-      <!-- Porteros -->
-      <div class="position-row goalkeepers">
-        <div *ngFor="let player of goalkeepers"
-            class="player-card">
-          <!-- Badge de estado con icono -->
-          <div *ngIf="player.playerStatus && player.playerStatus.toLowerCase() !== 'ok'"
-              class="player-status-badge"
-              [ngClass]="getStatusClass(player)"
-              [title]="getPlayerStatus(player)">
-            <i class="fa" [ngClass]="playerBadgeService.getStatusIcon(playerBadgeService.getPlayerStatus(player))" aria-hidden="true"></i>
+  <div class="main-content">
+    <div class="team-container">
+      <div class="team-header">
+        <h2>Puntos del Equipo: {{ userName }}</h2>
+        <div class="matchday-selector">
+          <label for="matchdaySelect">Jornada:</label>
+          <div class="select-wrapper">
+            <select id="matchdaySelect" [(ngModel)]="selectedMatchday" (change)="onMatchdayChange($event)">
+              <option *ngFor="let matchday of availableMatchdays" [value]="matchday">
+                {{ matchday }}
+              </option>
+            </select>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
           </div>
-          <div class="team-badge" *ngIf="player.team">
-            <img [src]="player.team.badge || player.team.badgeColor || 'assets/img/team-placeholder.png'" alt="Escudo">
+        </div>
+
+      </div>
+
+      <div *ngIf="errorMessage" class="error-message">
+        <p>{{ errorMessage }}</p>
+        <button (click)="errorMessage = ''">×</button>
+      </div>
+
+      <div class="formation-view" style="height: 700px;">
+        <div class="formation-label">Formación: {{ getFormationString() }}</div>
+
+        <!-- Elementos del campo -->
+        <div class="goal-area top"></div>
+        <div class="goal-area bottom"></div>
+        <div class="center-circle"></div>
+
+        <!-- Campo de juego -->
+        <div class="pitch">
+          <!-- Porteros -->
+          <div class="position-row goalkeepers">
+            <div *ngFor="let player of goalkeepers"
+                class="player-card">
+              <!-- Badge de estado con icono -->
+              <div *ngIf="player.playerStatus && player.playerStatus.toLowerCase() !== 'ok'"
+                  class="player-status-badge"
+                  [ngClass]="getStatusClass(player)"
+                  [title]="getPlayerStatus(player)">
+                <i class="fa" [ngClass]="playerBadgeService.getStatusIcon(playerBadgeService.getPlayerStatus(player))" aria-hidden="true"></i>
+              </div>
+              <div class="team-badge" *ngIf="player.team">
+                <img [src]="player.team.badge || player.team.badgeColor || 'assets/img/team-placeholder.png'" alt="Escudo">
+              </div>
+              <div class="player-image-container">
+                <img [src]="player?.images?.transparent?.['256x256'] || 'assets/img/player-placeholder.png'" alt="{{ player.nickname }}">
+                <span class="player-position-badge">POR</span>
+                <!-- Añadir indicador de capitán -->
+                <span *ngIf="isPlayerCaptain(player.id)" class="captain-badge">C</span>
+              </div>
+              <div class="player-info-container">
+                <div class="player-name">{{ player.nickname }}</div>
+                <div class="player-points">{{ player.points || 0 }} pts</div>
+                <span *ngIf="isPlayerCaptain(player.id)" class="captain-points">(x2)</span>
+              </div>
+            </div>
           </div>
-          <div class="player-image-container">
-            <img [src]="player?.images?.transparent?.['256x256'] || 'assets/img/player-placeholder.png'" alt="{{ player.nickname }}">
-            <span class="player-position-badge">POR</span>
-            <!-- Añadir indicador de capitán -->
-            <span *ngIf="isPlayerCaptain(player.id)" class="captain-badge">C</span>
+
+
+          <!-- Defensas -->
+          <div class="position-row defenders">
+            <div *ngFor="let player of defenders"
+                class="player-card">
+              <!-- Badge de estado (solo se muestra si no es "ok") -->
+              <div *ngIf="player.playerStatus && player.playerStatus.toLowerCase() !== 'ok'"
+                  class="player-status-badge"
+                  [ngClass]="getStatusClass(player)"
+                  [title]="getPlayerStatus(player)">
+                <i class="fa" [ngClass]="playerBadgeService.getStatusIcon(playerBadgeService.getPlayerStatus(player))" aria-hidden="true"></i>
+              </div>
+              <div class="team-badge" *ngIf="player.team">
+                <img [src]="player.team.badge || player.team.badgeColor || 'assets/img/team-placeholder.png'" alt="Escudo">
+              </div>
+              <div class="player-image-container">
+                <img [src]="player?.images?.transparent?.['256x256'] || 'assets/img/player-placeholder.png'" alt="{{ player.nickname }}">
+                <span class="player-position-badge">DEF</span>
+                <!-- Añadir indicador de capitán -->
+                <span *ngIf="isPlayerCaptain(player.id)" class="captain-badge">C</span>
+              </div>
+              <div class="player-info-container">
+                <div class="player-name">{{ player.nickname }}</div>
+                <div class="player-points">{{ player.points || 0 }} pts</div>
+                <span *ngIf="isPlayerCaptain(player.id)" class="captain-points">(x2)</span>
+              </div>
+            </div>
           </div>
-          <div class="player-info-container">
-            <div class="player-name">{{ player.nickname }}</div>
-            <div class="player-points">{{ player.points || 0 }} pts</div>
-            <span *ngIf="isPlayerCaptain(player.id)" class="captain-points">(x2)</span>
+
+          <!-- Centrocampistas -->
+          <div class="position-row midfielders">
+            <div *ngFor="let player of midfielders"
+                class="player-card">
+              <!-- Badge de estado (solo se muestra si no es "ok") -->
+              <div *ngIf="player.playerStatus && player.playerStatus.toLowerCase() !== 'ok'"
+                  class="player-status-badge"
+                  [ngClass]="getStatusClass(player)"
+                  [title]="getPlayerStatus(player)">
+                <i class="fa" [ngClass]="playerBadgeService.getStatusIcon(playerBadgeService.getPlayerStatus(player))" aria-hidden="true"></i>
+              </div>
+              <div class="team-badge" *ngIf="player.team">
+                <img [src]="player.team.badge || player.team.badgeColor || 'assets/img/team-placeholder.png'" alt="Escudo">
+              </div>
+              <div class="player-image-container">
+                <img [src]="player?.images?.transparent?.['256x256'] || 'assets/img/player-placeholder.png'" alt="{{ player.nickname }}">
+                <span class="player-position-badge">MED</span>
+                <!-- Añadir indicador de capitán -->
+                <span *ngIf="isPlayerCaptain(player.id)" class="captain-badge">C</span>
+              </div>
+              <div class="player-info-container">
+                <div class="player-name">{{ player.nickname }}</div>
+                <div class="player-points">{{ player.points || 0 }} pts</div>
+                <span *ngIf="isPlayerCaptain(player.id)" class="captain-points">(x2)</span>
+              </div>
+            </div>
           </div>
+
+
+          <!-- Delanteros -->
+          <div class="position-row forwards">
+            <div *ngFor="let player of forwards"
+                class="player-card">
+              <!-- Badge de estado (solo se muestra si no es "ok") -->
+              <div *ngIf="player.playerStatus && player.playerStatus.toLowerCase() !== 'ok'"
+                  class="player-status-badge"
+                  [ngClass]="getStatusClass(player)"
+                  [title]="getPlayerStatus(player)">
+                <i class="fa" [ngClass]="playerBadgeService.getStatusIcon(playerBadgeService.getPlayerStatus(player))" aria-hidden="true"></i>
+              </div>
+              <div class="team-badge" *ngIf="player.team">
+                <img [src]="player.team.badge || player.team.badgeColor || 'assets/img/team-placeholder.png'" alt="Escudo">
+              </div>
+              <div class="player-image-container">
+                <img [src]="player?.images?.transparent?.['256x256'] || 'assets/img/player-placeholder.png'" alt="{{ player.nickname }}">
+                <span class="player-position-badge">DEL</span>
+                <!-- Añadir indicador de capitán -->
+                <span *ngIf="isPlayerCaptain(player.id)" class="captain-badge">C</span>
+              </div>
+              <div class="player-info-container">
+                <div class="player-name">{{ player.nickname }}</div>
+                <div class="player-points">{{ player.points || 0 }} pts</div>
+                <span *ngIf="isPlayerCaptain(player.id)" class="captain-points">(x2)</span>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
-
-      <!-- Defensas -->
-      <div class="position-row defenders">
-        <div *ngFor="let player of defenders"
-            class="player-card">
-          <!-- Badge de estado (solo se muestra si no es "ok") -->
-          <div *ngIf="player.playerStatus && player.playerStatus.toLowerCase() !== 'ok'"
-              class="player-status-badge"
-              [ngClass]="getStatusClass(player)"
-              [title]="getPlayerStatus(player)">
-            <i class="fa" [ngClass]="playerBadgeService.getStatusIcon(playerBadgeService.getPlayerStatus(player))" aria-hidden="true"></i>
-          </div>
-          <div class="team-badge" *ngIf="player.team">
-            <img [src]="player.team.badge || player.team.badgeColor || 'assets/img/team-placeholder.png'" alt="Escudo">
-          </div>
-          <div class="player-image-container">
-            <img [src]="player?.images?.transparent?.['256x256'] || 'assets/img/player-placeholder.png'" alt="{{ player.nickname }}">
-            <span class="player-position-badge">DEF</span>
-            <!-- Añadir indicador de capitán -->
-            <span *ngIf="isPlayerCaptain(player.id)" class="captain-badge">C</span>
-          </div>
-          <div class="player-info-container">
-            <div class="player-name">{{ player.nickname }}</div>
-            <div class="player-points">{{ player.points || 0 }} pts</div>
-            <span *ngIf="isPlayerCaptain(player.id)" class="captain-points">(x2)</span>
-          </div>
+      <div class="team-stats">
+        <div class="stat-item">
+          <span class="stat-label">Puntos Totales</span>
+          <span class="stat-value">{{ getTotalPoints() }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Jornada</span>
+          <span class="stat-value">{{ selectedMatchday }}</span>
         </div>
       </div>
 
-      <!-- Centrocampistas -->
-      <div class="position-row midfielders">
-        <div *ngFor="let player of midfielders"
-            class="player-card">
-          <!-- Badge de estado (solo se muestra si no es "ok") -->
-          <div *ngIf="player.playerStatus && player.playerStatus.toLowerCase() !== 'ok'"
-              class="player-status-badge"
-              [ngClass]="getStatusClass(player)"
-              [title]="getPlayerStatus(player)">
-            <i class="fa" [ngClass]="playerBadgeService.getStatusIcon(playerBadgeService.getPlayerStatus(player))" aria-hidden="true"></i>
-          </div>
-          <div class="team-badge" *ngIf="player.team">
-            <img [src]="player.team.badge || player.team.badgeColor || 'assets/img/team-placeholder.png'" alt="Escudo">
-          </div>
-          <div class="player-image-container">
-            <img [src]="player?.images?.transparent?.['256x256'] || 'assets/img/player-placeholder.png'" alt="{{ player.nickname }}">
-            <span class="player-position-badge">MED</span>
-            <!-- Añadir indicador de capitán -->
-            <span *ngIf="isPlayerCaptain(player.id)" class="captain-badge">C</span>
-          </div>
-          <div class="player-info-container">
-            <div class="player-name">{{ player.nickname }}</div>
-            <div class="player-points">{{ player.points || 0 }} pts</div>
-            <span *ngIf="isPlayerCaptain(player.id)" class="captain-points">(x2)</span>
-          </div>
-        </div>
+      <div *ngIf="loading" class="loading-container">
+        <p>Cargando puntos...</p>
       </div>
-
-
-      <!-- Delanteros -->
-      <div class="position-row forwards">
-        <div *ngFor="let player of forwards"
-            class="player-card">
-          <!-- Badge de estado (solo se muestra si no es "ok") -->
-          <div *ngIf="player.playerStatus && player.playerStatus.toLowerCase() !== 'ok'"
-              class="player-status-badge"
-              [ngClass]="getStatusClass(player)"
-              [title]="getPlayerStatus(player)">
-            <i class="fa" [ngClass]="playerBadgeService.getStatusIcon(playerBadgeService.getPlayerStatus(player))" aria-hidden="true"></i>
-          </div>
-          <div class="team-badge" *ngIf="player.team">
-            <img [src]="player.team.badge || player.team.badgeColor || 'assets/img/team-placeholder.png'" alt="Escudo">
-          </div>
-          <div class="player-image-container">
-            <img [src]="player?.images?.transparent?.['256x256'] || 'assets/img/player-placeholder.png'" alt="{{ player.nickname }}">
-            <span class="player-position-badge">DEL</span>
-            <!-- Añadir indicador de capitán -->
-            <span *ngIf="isPlayerCaptain(player.id)" class="captain-badge">C</span>
-          </div>
-          <div class="player-info-container">
-            <div class="player-name">{{ player.nickname }}</div>
-            <div class="player-points">{{ player.points || 0 }} pts</div>
-            <span *ngIf="isPlayerCaptain(player.id)" class="captain-points">(x2)</span>
-          </div>
-        </div>
-      </div>
-
     </div>
-  </div>
-
-  <div class="team-stats">
-    <div class="stat-item">
-      <span class="stat-label">Puntos Totales</span>
-      <span class="stat-value">{{ getTotalPoints() }}</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">Jornada</span>
-      <span class="stat-value">{{ selectedMatchday }}</span>
-    </div>
-  </div>
-
-  <div *ngIf="loading" class="loading-container">
-    <p>Cargando puntos...</p>
   </div>
 </div>

@@ -8,16 +8,69 @@ $pitch-bg-color: #2e7d32; // Campo verde
 $pitch-lines-color: rgba(255, 255, 255, 0.7);
 $text-light: #ffffff;
 $text-dark: #333333;
+$sidebar-bg: #222222;
+$sidebar-active: #333333;
+$text-color: #ffffff;
+$accent-color: #ff3a3a;
 
-// Main container
+
+// Layout con menú lateral
+.page-container {
+  display: flex;
+  min-height: calc(100vh - 60px); // Ajusta según la altura de tu header
+}
+
+// Sidebar
+.sidebar {
+  width: 250px;
+  background-color: $sidebar-bg;
+  min-height: calc(100vh - 60px);
+
+  .menu-item {
+    padding: 15px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    color: $text-color;
+
+    &:hover {
+      background-color: lighten($sidebar-bg, 5%);
+    }
+
+    &.active {
+      background-color: $sidebar-active;
+      border-left: 3px solid $accent-color;
+      color: $accent-color;
+    }
+
+
+  }
+
+  .menu-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+// Contenedor principal
+.main-content {
+  flex: 1;
+  padding: 20px;
+  background-color: #121212;
+  overflow-y: auto;
+}
+
+// Main container - Ajusta este estilo existente
 .team-container {
   padding: 20px;
-  background-color: $team-background;
+  background-color: transparent; // Cambiado de $team-background a transparent
   max-width: 1200px;
   margin: 0 auto;
   color: $text-light;
   position: relative;
 }
+
+
 
 // Header
 .team-header {
@@ -479,6 +532,22 @@ $text-dark: #333333;
 
     h2 {
       margin-bottom: 15px;
+    }
+  }
+
+  .page-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-height: auto;
+    display: flex;
+    overflow-x: auto;
+
+    .menu-item {
+      padding: 15px;
+      white-space: nowrap;
     }
   }
 

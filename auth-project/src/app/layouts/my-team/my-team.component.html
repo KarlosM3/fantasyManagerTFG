@@ -1,383 +1,415 @@
-<div class="team-container">
-  <div class="team-header">
-    <h2>Mi Equipo</h2>
+<div class="page-container">
 
-    <div class="team-actions-row">
-      <!-- Estado de la jornada a la izquierda -->
-      <div class="matchday-status" [ngClass]="{
-        'locked': matchdayStarted && !matchdayEnded,
-        'ended': matchdayEnded,
-        'not-started': !matchdayStarted
-      }">
-        <i class="fas" [ngClass]="{
-          'fa-lock': matchdayStarted && !matchdayEnded,
-          'fa-check-circle': matchdayEnded,
-          'fa-unlock': !matchdayStarted
-        }"></i>
-        <span>{{ matchdayStatusMessage }}</span>
+  <!-- Menú lateral izquierdo -->
+    <div class="sidebar">
+      <div class="menu-item active" routerLink="/layouts/home" routerLinkActive="active">Mis Ligas</div>
+      <div class="menu-item" routerLink="/layouts/players" routerLinkActive="active">Jugadores</div>
+      <div
+        class="menu-item"
+        [routerLink]="ligaActivaId ? ['/layouts/classification', ligaActivaId] : null"
+        routerLinkActive="active"
+        [class.disabled]="!ligaActivaId">Clasificación
       </div>
-
-      <!-- Botones a la derecha -->
-      <div class="team-actions">
-        <button class="action-btn formation-btn" (click)="openFormationModal()">
-          <i class="fas fa-tactics"></i>
-          <span>Cambiar Formación</span>
-        </button>
-
-        <button class="action-btn sell-btn" (click)="initiateSellMode()">
-          <i class="fas fa-money-bill-wave"></i>
-          <span>Vender Jugador</span>
-        </button>
-
-        <button class="action-btn save-btn" (click)="saveTeamChanges()" [disabled]="matchdayLocked">
-          <i class="fas fa-save"></i>
-          <span>Guardar Cambios</span>
-        </button>
+      <div
+        class="menu-item"
+        routerLink="/layouts/my-team"
+        routerLinkActive="active">Mi Equipo
+      </div>
+      <div class="menu-item" routerLink="/layouts/market" routerLinkActive="active">Mercado</div>
+      <div
+        class="menu-item"
+        routerLink="/layouts/offers"
+        routerLinkActive="active"
+        [class.disabled]="!ligaActivaId">Ofertas
+      </div>
+      <div
+        class="menu-item"
+        routerLink="/layouts/team-points"
+        routerLinkActive="active">Puntos del Equipo
       </div>
     </div>
-  </div>
+  <!-- Contenido principal -->
+  <div class="main-content">
+    <div class="team-header">
+      <h2>Mi Equipo</h2>
 
-   <!-- Mensaje de modo venta -->
-  <div class="mode-message" *ngIf="sellMode">
-    {{ sellModeMessage }}
-    <button class="cancel-btn" (click)="sellMode = false; sellModeMessage = ''">Cancelar</button>
-  </div>
-
-  <div class="formation-view" style="height: 700px">
-    <div class="formation-label">Formación: {{currentFormation}}</div>
-
-    <!-- Elementos del campo -->
-    <div class="goal-area top"></div>
-    <div class="goal-area bottom"></div>
-    <div class="center-circle"></div>
-
-    <!-- Campo de juego -->
-    <div class="pitch" [class.exchange-mode]="exchangeMode">
-      <!-- Porteros -->
-      <div class="position-row goalkeepers">
-        <div *ngFor="let player of startingGoalkeeper"
-            class="player-card"
-            [class.captain]="player.isCaptain"
-            [class.vice-captain]="player.isViceCaptain"
-            [class.selected]="selectedPlayer === player"
-            [class.placeholder-card]="isPlaceholderPlayer(player)"
-            (click)="selectPlayer(player)">
-
-          <!-- Badge de estado (solo se muestra si no es "ok") -->
-          <div *ngIf="!isPlaceholderPlayer(player) && playerBadgeService.shouldShowBadge(player)"
-              class="player-status-badge"
-              [ngClass]="playerBadgeService.getStatusClass(playerBadgeService.getPlayerStatus(player))"
-              [title]="playerBadgeService.getPlayerStatus(player)">
-            <i class="fa" [ngClass]="playerBadgeService.getStatusIcon(playerBadgeService.getPlayerStatus(player))" aria-hidden="true"></i>
-          </div>
-
-          <div class="team-badge" *ngIf="player.team?.badgeColor">
-            <img [src]="player.team?.badgeColor" alt="{{player.team?.name}} badge">
-          </div>
-          <div class="player-image-container">
-            <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.nickname}}">
-            <span class="player-position-badge">POR</span>
-          </div>
-          <div class="player-info-container">
-            <div class="player-name">{{player.nickname}}</div>
-            <div class="player-points">{{player.points || 0}} pts</div>
-          </div>
-          <div class="player-actions">
-            <button class="icon-btn captain-btn" (click)="setCaptain(player); $event.stopPropagation();" title="Nombrar Capitán">C</button>
-            <button class="icon-btn vice-captain-btn" (click)="setViceCaptain(player); $event.stopPropagation();" title="Nombrar Vice-Capitán">VC</button>
-            <button class="icon-btn change-btn" (click)="initiateExchange(player); $event.stopPropagation();" title="Cambiar">
-              <i class="fas fa-exchange-alt"></i>
-            </button>
-          </div>
+      <div class="team-actions-row">
+        <!-- Estado de la jornada a la izquierda -->
+        <div class="matchday-status" [ngClass]="{
+          'locked': matchdayStarted && !matchdayEnded,
+          'ended': matchdayEnded,
+          'not-started': !matchdayStarted
+        }">
+          <i class="fas" [ngClass]="{
+            'fa-lock': matchdayStarted && !matchdayEnded,
+            'fa-check-circle': matchdayEnded,
+            'fa-unlock': !matchdayStarted
+          }"></i>
+          <span>{{ matchdayStatusMessage }}</span>
         </div>
-      </div>
 
-      <!-- Defensas -->
-      <div class="position-row defenders">
-        <div *ngFor="let player of startingDefenders"
-             class="player-card"
-             [class.captain]="player.isCaptain"
-             [class.vice-captain]="player.isViceCaptain"
-             [class.selected]="selectedPlayer === player"
-             [class.placeholder-card]="isPlaceholderPlayer(player)"
-             (click)="selectPlayer(player)">
+        <!-- Botones a la derecha -->
+        <div class="team-actions">
+          <button class="action-btn formation-btn" (click)="openFormationModal()">
+            <i class="fas fa-tactics"></i>
+            <span>Cambiar Formación</span>
+          </button>
 
-          <!-- Badge de estado (solo se muestra si no es "ok") -->
-          <div *ngIf="!isPlaceholderPlayer(player) && playerBadgeService.shouldShowBadge(player)"
-              class="player-status-badge"
-              [ngClass]="playerBadgeService.getStatusClass(playerBadgeService.getPlayerStatus(player))"
-              [title]="playerBadgeService.getPlayerStatus(player)">
-            <i class="fa" [ngClass]="playerBadgeService.getStatusIcon(playerBadgeService.getPlayerStatus(player))" aria-hidden="true"></i>
-          </div>
+          <button class="action-btn sell-btn" (click)="initiateSellMode()">
+            <i class="fas fa-money-bill-wave"></i>
+            <span>Vender Jugador</span>
+          </button>
 
-          <div class="team-badge" *ngIf="player.team?.badgeColor">
-            <img [src]="player.team?.badgeColor" alt="{{player.team?.name}} badge">
-          </div>
-          <div class="player-image-container">
-            <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.nickname}}">
-            <span class="player-position-badge">DEF</span>
-          </div>
-          <div class="player-info-container">
-            <div class="player-name">{{player.nickname}}</div>
-            <div class="player-points">{{player.points || 0}} pts</div>
-          </div>
-          <div class="player-actions">
-            <button class="icon-btn captain-btn" (click)="setCaptain(player); $event.stopPropagation();" title="Nombrar Capitán">C</button>
-            <button class="icon-btn vice-captain-btn" (click)="setViceCaptain(player); $event.stopPropagation();" title="Nombrar Vice-Capitán">VC</button>
-            <button class="icon-btn change-btn" (click)="initiateExchange(player); $event.stopPropagation();" title="Cambiar">
-              <i class="fas fa-exchange-alt"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Centrocampistas -->
-      <div class="position-row midfielders">
-        <div *ngFor="let player of startingMidfielders"
-             class="player-card"
-             [class.captain]="player.isCaptain"
-             [class.vice-captain]="player.isViceCaptain"
-             [class.selected]="selectedPlayer === player"
-             [class.placeholder-card]="isPlaceholderPlayer(player)"
-             (click)="selectPlayer(player)">
-
-          <!-- Badge de estado (solo se muestra si no es "ok") -->
-          <div *ngIf="!isPlaceholderPlayer(player) && playerBadgeService.shouldShowBadge(player)"
-              class="player-status-badge"
-              [ngClass]="playerBadgeService.getStatusClass(playerBadgeService.getPlayerStatus(player))"
-              [title]="playerBadgeService.getPlayerStatus(player)">
-            <i class="fa" [ngClass]="playerBadgeService.getStatusIcon(playerBadgeService.getPlayerStatus(player))" aria-hidden="true"></i>
-          </div>
-
-          <div class="team-badge" *ngIf="player.team?.badgeColor">
-            <img [src]="player.team?.badgeColor" alt="{{player.team?.name}} badge">
-          </div>
-          <div class="player-image-container">
-            <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.nickname}}">
-            <span class="player-position-badge">MED</span>
-          </div>
-          <div class="player-info-container">
-            <div class="player-name">{{player.nickname}}</div>
-            <div class="player-points">{{player.points || 0}} pts</div>
-          </div>
-          <div class="player-actions">
-            <button class="icon-btn captain-btn" (click)="setCaptain(player); $event.stopPropagation();" title="Nombrar Capitán">C</button>
-            <button class="icon-btn vice-captain-btn" (click)="setViceCaptain(player); $event.stopPropagation();" title="Nombrar Vice-Capitán">VC</button>
-            <button class="icon-btn change-btn" (click)="initiateExchange(player); $event.stopPropagation();" title="Cambiar">
-              <i class="fas fa-exchange-alt"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Delanteros -->
-      <div class="position-row forwards">
-        <div *ngFor="let player of startingForwards"
-             class="player-card"
-             [class.captain]="player.isCaptain"
-             [class.vice-captain]="player.isViceCaptain"
-             [class.selected]="selectedPlayer === player"
-             [class.placeholder-card]="isPlaceholderPlayer(player)"
-             (click)="selectPlayer(player)">
-
-          <!-- Badge de estado (solo se muestra si no es "ok") -->
-          <div *ngIf="!isPlaceholderPlayer(player) && playerBadgeService.shouldShowBadge(player)"
-              class="player-status-badge"
-              [ngClass]="playerBadgeService.getStatusClass(playerBadgeService.getPlayerStatus(player))"
-              [title]="playerBadgeService.getPlayerStatus(player)">
-            <i class="fa" [ngClass]="playerBadgeService.getStatusIcon(playerBadgeService.getPlayerStatus(player))" aria-hidden="true"></i>
-          </div>
-
-          <div class="team-badge" *ngIf="player.team?.badgeColor">
-            <img [src]="player.team?.badgeColor" alt="{{player.team?.name}} badge">
-          </div>
-          <div class="player-image-container">
-            <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.nickname}}">
-            <span class="player-position-badge">DEL</span>
-          </div>
-          <div class="player-info-container">
-            <div class="player-name">{{player.nickname}}</div>
-            <div class="player-points">{{player.points || 0}} pts</div>
-          </div>
-          <div class="player-actions">
-            <button class="icon-btn captain-btn" (click)="setCaptain(player); $event.stopPropagation();" title="Nombrar Capitán">C</button>
-            <button class="icon-btn vice-captain-btn" (click)="setViceCaptain(player); $event.stopPropagation();" title="Nombrar Vice-Capitán">VC</button>
-            <button class="icon-btn change-btn" (click)="initiateExchange(player); $event.stopPropagation();" title="Cambiar">
-              <i class="fas fa-exchange-alt"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="team-stats">
-    <div class="stat-item">
-      <span class="stat-label">Puntos Totales:</span>
-      <span class="stat-value">{{totalPoints}}</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">Valor del Equipo:</span>
-      <span class="stat-value">{{formatCurrency(teamValue)}}</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">Presupuesto Disponible:</span>
-      <span class="stat-value">{{formatCurrency(availableBudget)}}</span>
-    </div>
-  </div>
-
-  <!-- Banquillo Colapsable -->
-  <div class="bench-container" [class.collapsed]="!showBench">
-    <div class="bench-header" (click)="toggleBench()">
-      <h3>Banquillo</h3>
-      <span class="bench-toggle">{{ showBench ? '▼' : '▲' }}</span>
-    </div>
-
-    <div class="bench-content" *ngIf="showBench">
-      <div class="bench-players">
-        <div *ngFor="let player of benchPlayers"
-             class="bench-player-card"
-             [class.selected]="selectedPlayer === player"
-             [class.compatible]="isCompatibleExchange(player)"
-             [class.incompatible]="exchangeMode && !isCompatibleExchange(player)"
-             (click)="selectPlayer(player)">
-          <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.nickname}}">
-          <div class="player-info">
-            <div class="player-name">{{player.nickname}}</div>
-          </div>
-          <div class="player-points">{{player.points || 0}} pts</div>
-          <button *ngIf="exchangeMode && isCompatibleExchange(player)"
-                  class="exchange-btn"
-                  (click)="completeExchange(player); $event.stopPropagation();">
-            Cambiar
+          <button class="action-btn save-btn" (click)="saveTeamChanges()" [disabled]="matchdayLocked">
+            <i class="fas fa-save"></i>
+            <span>Guardar Cambios</span>
           </button>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Barra de notificación de intercambio -->
-  <div class="exchange-notification" *ngIf="exchangeMode">
-    <div class="exchange-message">
-      <strong>Modo de Cambio:</strong> {{exchangeModeMessage}}
-    </div>
-    <button class="cancel-btn" (click)="cancelExchange()">Cancelar</button>
-  </div>
-
-  <!-- Modal de Formación -->
-  <div class="modal-overlay" *ngIf="showFormationModal">
-    <div class="modal-content formation-modal">
-      <div class="modal-header">
-        <h3>Cambiar Formación</h3>
-        <button class="close-btn" (click)="closeFormationModal()">&times;</button>
-      </div>
-
-      <div class="formations-grid">
-        <div *ngFor="let formation of validFormations"
-             class="formation-card"
-             [class.active]="formation === currentFormation"
-             (click)="changeFormation(formation)">
-          <div class="formation-name">{{formation}}</div>
-
-          <div class="mini-pitch">
-
-            <!-- Defensas -->
-            <div class="mini-row def-row">
-              <div class="mini-player def"
-                   *ngFor="let i of [].constructor(+formation.split('-')[0])"></div>
-            </div>
-
-            <!-- Mediocampistas -->
-            <div class="mini-row mid-row">
-              <div class="mini-player mid"
-                   *ngFor="let i of [].constructor(+formation.split('-')[1])"></div>
-            </div>
-
-            <!-- Delanteros -->
-            <div class="mini-row fwd-row">
-              <div class="mini-player fwd"
-                   *ngFor="let i of [].constructor(+formation.split('-')[2])"></div>
-            </div>
-          </div>
-
-          <div class="formation-stats">
-            <div class="stat">
-              <span class="label">DEF</span>
-              <span class="value">{{formation.split('-')[0]}}</span>
-            </div>
-            <div class="stat">
-              <span class="label">MED</span>
-              <span class="value">{{formation.split('-')[1]}}</span>
-            </div>
-            <div class="stat">
-              <span class="label">DEL</span>
-              <span class="value">{{formation.split('-')[2]}}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="placeholder-info">
-        <p>Si no tienes suficientes jugadores para una formación, se usarán posiciones vacantes que puedes completar después con transferencias.</p>
-      </div>
-
-      <div class="modal-actions">
-        <button class="primary-btn" (click)="closeFormationModal()">Cerrar</button>
-      </div>
+    <!-- Mensaje de modo venta -->
+    <div class="mode-message" *ngIf="sellMode">
+      {{ sellModeMessage }}
+      <button class="cancel-btn" (click)="sellMode = false; sellModeMessage = ''">Cancelar</button>
     </div>
 
-    <!-- Mensaje de error/advertencia
-    <div *ngIf="showFormationErrorMessage" class="formation-error">
-      <p>{{ formationErrorMessage }}</p>
-      <button *ngIf="formationErrorMessage.includes('Faltan')"
-              class="quick-transfer-btn"
-              (click)="openTransfersModal(); closeFormationModal()">
-        Buscar jugadores
-      </button>
-    </div>-->
-  </div>
+    <div class="formation-view" style="height: 700px">
+      <div class="formation-label">Formación: {{currentFormation}}</div>
 
-  <!-- Modal de Venta -->
-  <div class="modal-overlay" *ngIf="showSellModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>Vender jugador</h3>
-        <button class="close-btn" (click)="closeSellModal()">&times;</button>
-      </div>
-      <div class="modal-body" *ngIf="playerToSell">
-        <div class="player-preview">
-          <img [src]="playerToSell.image" [alt]="playerToSell.nickname" class="player-image">
-          <div class="player-details">
-            <h4>{{ playerToSell.nickname }}</h4>
-            <p>{{ playerToSell.team?.name }}</p>
-            <p class="position-badge">{{ getReadablePosition(playerToSell.position || '') }}</p>
-            <p class="player-value">Valor actual: {{ formatCurrency(playerToSell.marketValue || 0) }}</p>
+      <!-- Elementos del campo -->
+      <div class="goal-area top"></div>
+      <div class="goal-area bottom"></div>
+      <div class="center-circle"></div>
+
+      <!-- Campo de juego -->
+      <div class="pitch" [class.exchange-mode]="exchangeMode">
+        <!-- Porteros -->
+        <div class="position-row goalkeepers">
+          <div *ngFor="let player of startingGoalkeeper"
+              class="player-card"
+              [class.captain]="player.isCaptain"
+              [class.vice-captain]="player.isViceCaptain"
+              [class.selected]="selectedPlayer === player"
+              [class.placeholder-card]="isPlaceholderPlayer(player)"
+              (click)="selectPlayer(player)">
+
+            <!-- Badge de estado (solo se muestra si no es "ok") -->
+            <div *ngIf="!isPlaceholderPlayer(player) && playerBadgeService.shouldShowBadge(player)"
+                class="player-status-badge"
+                [ngClass]="playerBadgeService.getStatusClass(playerBadgeService.getPlayerStatus(player))"
+                [title]="playerBadgeService.getPlayerStatus(player)">
+              <i class="fa" [ngClass]="playerBadgeService.getStatusIcon(playerBadgeService.getPlayerStatus(player))" aria-hidden="true"></i>
+            </div>
+
+            <div class="team-badge" *ngIf="player.team?.badgeColor">
+              <img [src]="player.team?.badgeColor" alt="{{player.team?.name}} badge">
+            </div>
+            <div class="player-image-container">
+              <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.nickname}}">
+              <span class="player-position-badge">POR</span>
+            </div>
+            <div class="player-info-container">
+              <div class="player-name">{{player.nickname}}</div>
+              <div class="player-points">{{player.points || 0}} pts</div>
+            </div>
+            <div class="player-actions">
+              <button class="icon-btn captain-btn" (click)="setCaptain(player); $event.stopPropagation();" title="Nombrar Capitán">C</button>
+              <button class="icon-btn vice-captain-btn" (click)="setViceCaptain(player); $event.stopPropagation();" title="Nombrar Vice-Capitán">VC</button>
+              <button class="icon-btn change-btn" (click)="initiateExchange(player); $event.stopPropagation();" title="Cambiar">
+                <i class="fas fa-exchange-alt"></i>
+              </button>
+            </div>
           </div>
         </div>
 
-        <div class="sell-options">
-          <div class="price-input-group">
-            <label for="askingPrice">Precio de venta:</label>
-            <input
-              type="number"
-              id="askingPrice"
-              [(ngModel)]="askingPrice"
-              [min]="minAskingPrice"
-              step="100000"
-            >
-            <span class="currency">€</span>
-          </div>
+        <!-- Defensas -->
+        <div class="position-row defenders">
+          <div *ngFor="let player of startingDefenders"
+              class="player-card"
+              [class.captain]="player.isCaptain"
+              [class.vice-captain]="player.isViceCaptain"
+              [class.selected]="selectedPlayer === player"
+              [class.placeholder-card]="isPlaceholderPlayer(player)"
+              (click)="selectPlayer(player)">
 
-          <div class="price-info">
-            <p>Precio mínimo: {{ formatCurrency(minAskingPrice) }}</p>
-            <p>Las ofertas estarán disponibles por 3 días</p>
+            <!-- Badge de estado (solo se muestra si no es "ok") -->
+            <div *ngIf="!isPlaceholderPlayer(player) && playerBadgeService.shouldShowBadge(player)"
+                class="player-status-badge"
+                [ngClass]="playerBadgeService.getStatusClass(playerBadgeService.getPlayerStatus(player))"
+                [title]="playerBadgeService.getPlayerStatus(player)">
+              <i class="fa" [ngClass]="playerBadgeService.getStatusIcon(playerBadgeService.getPlayerStatus(player))" aria-hidden="true"></i>
+            </div>
+
+            <div class="team-badge" *ngIf="player.team?.badgeColor">
+              <img [src]="player.team?.badgeColor" alt="{{player.team?.name}} badge">
+            </div>
+            <div class="player-image-container">
+              <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.nickname}}">
+              <span class="player-position-badge">DEF</span>
+            </div>
+            <div class="player-info-container">
+              <div class="player-name">{{player.nickname}}</div>
+              <div class="player-points">{{player.points || 0}} pts</div>
+            </div>
+            <div class="player-actions">
+              <button class="icon-btn captain-btn" (click)="setCaptain(player); $event.stopPropagation();" title="Nombrar Capitán">C</button>
+              <button class="icon-btn vice-captain-btn" (click)="setViceCaptain(player); $event.stopPropagation();" title="Nombrar Vice-Capitán">VC</button>
+              <button class="icon-btn change-btn" (click)="initiateExchange(player); $event.stopPropagation();" title="Cambiar">
+                <i class="fas fa-exchange-alt"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Centrocampistas -->
+        <div class="position-row midfielders">
+          <div *ngFor="let player of startingMidfielders"
+              class="player-card"
+              [class.captain]="player.isCaptain"
+              [class.vice-captain]="player.isViceCaptain"
+              [class.selected]="selectedPlayer === player"
+              [class.placeholder-card]="isPlaceholderPlayer(player)"
+              (click)="selectPlayer(player)">
+
+            <!-- Badge de estado (solo se muestra si no es "ok") -->
+            <div *ngIf="!isPlaceholderPlayer(player) && playerBadgeService.shouldShowBadge(player)"
+                class="player-status-badge"
+                [ngClass]="playerBadgeService.getStatusClass(playerBadgeService.getPlayerStatus(player))"
+                [title]="playerBadgeService.getPlayerStatus(player)">
+              <i class="fa" [ngClass]="playerBadgeService.getStatusIcon(playerBadgeService.getPlayerStatus(player))" aria-hidden="true"></i>
+            </div>
+
+            <div class="team-badge" *ngIf="player.team?.badgeColor">
+              <img [src]="player.team?.badgeColor" alt="{{player.team?.name}} badge">
+            </div>
+            <div class="player-image-container">
+              <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.nickname}}">
+              <span class="player-position-badge">MED</span>
+            </div>
+            <div class="player-info-container">
+              <div class="player-name">{{player.nickname}}</div>
+              <div class="player-points">{{player.points || 0}} pts</div>
+            </div>
+            <div class="player-actions">
+              <button class="icon-btn captain-btn" (click)="setCaptain(player); $event.stopPropagation();" title="Nombrar Capitán">C</button>
+              <button class="icon-btn vice-captain-btn" (click)="setViceCaptain(player); $event.stopPropagation();" title="Nombrar Vice-Capitán">VC</button>
+              <button class="icon-btn change-btn" (click)="initiateExchange(player); $event.stopPropagation();" title="Cambiar">
+                <i class="fas fa-exchange-alt"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delanteros -->
+        <div class="position-row forwards">
+          <div *ngFor="let player of startingForwards"
+              class="player-card"
+              [class.captain]="player.isCaptain"
+              [class.vice-captain]="player.isViceCaptain"
+              [class.selected]="selectedPlayer === player"
+              [class.placeholder-card]="isPlaceholderPlayer(player)"
+              (click)="selectPlayer(player)">
+
+            <!-- Badge de estado (solo se muestra si no es "ok") -->
+            <div *ngIf="!isPlaceholderPlayer(player) && playerBadgeService.shouldShowBadge(player)"
+                class="player-status-badge"
+                [ngClass]="playerBadgeService.getStatusClass(playerBadgeService.getPlayerStatus(player))"
+                [title]="playerBadgeService.getPlayerStatus(player)">
+              <i class="fa" [ngClass]="playerBadgeService.getStatusIcon(playerBadgeService.getPlayerStatus(player))" aria-hidden="true"></i>
+            </div>
+
+            <div class="team-badge" *ngIf="player.team?.badgeColor">
+              <img [src]="player.team?.badgeColor" alt="{{player.team?.name}} badge">
+            </div>
+            <div class="player-image-container">
+              <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.nickname}}">
+              <span class="player-position-badge">DEL</span>
+            </div>
+            <div class="player-info-container">
+              <div class="player-name">{{player.nickname}}</div>
+              <div class="player-points">{{player.points || 0}} pts</div>
+            </div>
+            <div class="player-actions">
+              <button class="icon-btn captain-btn" (click)="setCaptain(player); $event.stopPropagation();" title="Nombrar Capitán">C</button>
+              <button class="icon-btn vice-captain-btn" (click)="setViceCaptain(player); $event.stopPropagation();" title="Nombrar Vice-Capitán">VC</button>
+              <button class="icon-btn change-btn" (click)="initiateExchange(player); $event.stopPropagation();" title="Cambiar">
+                <i class="fas fa-exchange-alt"></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>
-      <div class="modal-footer">
-        <button class="action-btn cancel-btn" (click)="closeSellModal()">Cancelar</button>
-        <button class="action-btn sell-btn" (click)="listPlayerForSale()">Poner a la venta</button>
+
+    </div>
+
+    <div class="team-stats">
+      <div class="stat-item">
+        <span class="stat-label">Puntos Totales:</span>
+        <span class="stat-value">{{totalPoints}}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Valor del Equipo:</span>
+        <span class="stat-value">{{formatCurrency(teamValue)}}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Presupuesto Disponible:</span>
+        <span class="stat-value">{{formatCurrency(availableBudget)}}</span>
+      </div>
+    </div>
+
+    <!-- Banquillo Colapsable -->
+    <div class="bench-container" [class.collapsed]="!showBench">
+      <div class="bench-header" (click)="toggleBench()">
+        <h3>Banquillo</h3>
+        <span class="bench-toggle">{{ showBench ? '▼' : '▲' }}</span>
+      </div>
+
+      <div class="bench-content" *ngIf="showBench">
+        <div class="bench-players">
+          <div *ngFor="let player of benchPlayers"
+              class="bench-player-card"
+              [class.selected]="selectedPlayer === player"
+              [class.compatible]="isCompatibleExchange(player)"
+              [class.incompatible]="exchangeMode && !isCompatibleExchange(player)"
+              (click)="selectPlayer(player)">
+            <img [src]="player.image || 'assets/player-placeholder.png'" alt="{{player.nickname}}">
+            <div class="player-info">
+              <div class="player-name">{{player.nickname}}</div>
+            </div>
+            <div class="player-points">{{player.points || 0}} pts</div>
+            <button *ngIf="exchangeMode && isCompatibleExchange(player)"
+                    class="exchange-btn"
+                    (click)="completeExchange(player); $event.stopPropagation();">
+              Cambiar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Barra de notificación de intercambio -->
+    <div class="exchange-notification" *ngIf="exchangeMode">
+      <div class="exchange-message">
+        <strong>Modo de Cambio:</strong> {{exchangeModeMessage}}
+      </div>
+      <button class="cancel-btn" (click)="cancelExchange()">Cancelar</button>
+    </div>
+
+    <!-- Modal de Formación -->
+    <div class="modal-overlay" *ngIf="showFormationModal">
+      <div class="modal-content formation-modal">
+        <div class="modal-header">
+          <h3>Cambiar Formación</h3>
+          <button class="close-btn" (click)="closeFormationModal()">&times;</button>
+        </div>
+
+        <div class="formations-grid">
+          <div *ngFor="let formation of validFormations"
+              class="formation-card"
+              [class.active]="formation === currentFormation"
+              (click)="changeFormation(formation)">
+            <div class="formation-name">{{formation}}</div>
+
+            <div class="mini-pitch">
+
+              <!-- Defensas -->
+              <div class="mini-row def-row">
+                <div class="mini-player def"
+                    *ngFor="let i of [].constructor(+formation.split('-')[0])"></div>
+              </div>
+
+              <!-- Mediocampistas -->
+              <div class="mini-row mid-row">
+                <div class="mini-player mid"
+                    *ngFor="let i of [].constructor(+formation.split('-')[1])"></div>
+              </div>
+
+              <!-- Delanteros -->
+              <div class="mini-row fwd-row">
+                <div class="mini-player fwd"
+                    *ngFor="let i of [].constructor(+formation.split('-')[2])"></div>
+              </div>
+            </div>
+
+            <div class="formation-stats">
+              <div class="stat">
+                <span class="label">DEF</span>
+                <span class="value">{{formation.split('-')[0]}}</span>
+              </div>
+              <div class="stat">
+                <span class="label">MED</span>
+                <span class="value">{{formation.split('-')[1]}}</span>
+              </div>
+              <div class="stat">
+                <span class="label">DEL</span>
+                <span class="value">{{formation.split('-')[2]}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="placeholder-info">
+          <p>Si no tienes suficientes jugadores para una formación, se usarán posiciones vacantes que puedes completar después con transferencias.</p>
+        </div>
+
+        <div class="modal-actions">
+          <button class="primary-btn" (click)="closeFormationModal()">Cerrar</button>
+        </div>
+      </div>
+
+      <!-- Mensaje de error/advertencia
+      <div *ngIf="showFormationErrorMessage" class="formation-error">
+        <p>{{ formationErrorMessage }}</p>
+        <button *ngIf="formationErrorMessage.includes('Faltan')"
+                class="quick-transfer-btn"
+                (click)="openTransfersModal(); closeFormationModal()">
+          Buscar jugadores
+        </button>
+      </div>-->
+    </div>
+
+    <!-- Modal de Venta -->
+    <div class="modal-overlay" *ngIf="showSellModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Vender jugador</h3>
+          <button class="close-btn" (click)="closeSellModal()">&times;</button>
+        </div>
+        <div class="modal-body" *ngIf="playerToSell">
+          <div class="player-preview">
+            <img [src]="playerToSell.image" [alt]="playerToSell.nickname" class="player-image">
+            <div class="player-details">
+              <h4>{{ playerToSell.nickname }}</h4>
+              <p>{{ playerToSell.team?.name }}</p>
+              <p class="position-badge">{{ getReadablePosition(playerToSell.position || '') }}</p>
+              <p class="player-value">Valor actual: {{ formatCurrency(playerToSell.marketValue || 0) }}</p>
+            </div>
+          </div>
+
+          <div class="sell-options">
+            <div class="price-input-group">
+              <label for="askingPrice">Precio de venta:</label>
+              <input
+                type="number"
+                id="askingPrice"
+                [(ngModel)]="askingPrice"
+                [min]="minAskingPrice"
+                step="100000"
+              >
+              <span class="currency">€</span>
+            </div>
+
+            <div class="price-info">
+              <p>Precio mínimo: {{ formatCurrency(minAskingPrice) }}</p>
+              <p>Las ofertas estarán disponibles por 3 días</p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="action-btn cancel-btn" (click)="closeSellModal()">Cancelar</button>
+          <button class="action-btn sell-btn" (click)="listPlayerForSale()">Poner a la venta</button>
+        </div>
       </div>
     </div>
   </div>

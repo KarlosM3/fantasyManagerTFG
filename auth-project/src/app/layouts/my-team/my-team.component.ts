@@ -1,5 +1,5 @@
 import { Component, type OnInit } from "@angular/core"
-import { ActivatedRoute } from "@angular/router"
+import { ActivatedRoute, Router } from "@angular/router"
 import { LeagueService } from "../../modals/create-league-modal/services/create-league.service"
 import { Player } from "../../player.interface"
 import { FormationService } from "../../services/formation.service"
@@ -25,6 +25,7 @@ export class MyTeamComponent implements OnInit {
   defenders: Player[] = []
   midfielders: Player[] = []
   forwards: Player[] = []
+  ligaActivaId: string | null = null;
 
   // Formaciones válidas para fútbol (siempre suman 10 jugadores de campo)
   validFormations: string[] = ["4-4-2", "4-3-3", "3-5-2", "5-3-2", "5-4-1", "3-4-3"]
@@ -74,6 +75,7 @@ export class MyTeamComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private leagueService: LeagueService,
     private formationService: FormationService,
     public playerBadgeService: PlayerBadgeService,
@@ -119,6 +121,9 @@ export class MyTeamComponent implements OnInit {
         this.loadTeam();
         this.checkMatchdayStatus();
       }
+
+       // Actualizar la propiedad ligaActivaId para el menú lateral
+      this.ligaActivaId = this.activeLeagueService.getActiveLeague();
     });
 
     // Verificar el estado de la jornada cada 5 minutos

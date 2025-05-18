@@ -34,6 +34,7 @@ export class TeamPointsComponent implements OnInit {
 
   loading: boolean = true;
   errorMessage: string = '';
+  ligaActivaId: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -81,6 +82,9 @@ export class TeamPointsComponent implements OnInit {
         this.activeLeagueService.setActiveLeague(this.leagueId);
         this.loadCurrentMatchdayAndData();
       }
+
+      // Actualizar la propiedad ligaActivaId para el menú lateral
+      this.ligaActivaId = this.activeLeagueService.getActiveLeague();
     });
   }
 

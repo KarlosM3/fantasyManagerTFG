@@ -267,10 +267,14 @@ body, .main-content {
   }
   .sidebar {
     width: 100%;
-    min-height: unset;
+    min-height: auto;
     display: flex;
-    flex-direction: row;
-    justify-content: space-around;
+    overflow-x: auto;
+
+    .menu-item {
+      padding: 15px;
+      white-space: nowrap;
+    }
   }
   .clasificacion-container {
     margin: 24px 8px 0 8px;
