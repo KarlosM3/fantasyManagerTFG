@@ -56,54 +56,168 @@ $bench-toggle-bg: rgba(0, 0, 0, 0.4);
 }
 
 // Header
+/* Estilos para el encabezado del equipo */
 .team-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 15px;
   margin-bottom: 24px;
   padding-bottom: 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
 
-  h2 {
-    margin: 0;
-    color: $text-light;
-    font-size: 24px;
-    font-weight: 600;
-  }
+.team-header h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 600;
+}
 
-  .matchday-status {
-    display: flex;
-    align-items: center;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-weight: bold;
-    margin-bottom: 15px;
-  }
+/* Estilos para el estado de la jornada */
+.matchday-status {
+  display: flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 0; /* Eliminar el margen inferior */
+  flex-grow: 0; /* No crecer */
+  flex-shrink: 0; /* No encogerse */
+}
 
-  .matchday-status.locked {
-    background-color: #f8d7da;
-    color: #721c24;
-  }
+.matchday-status i {
+  margin-right: 8px;
+  font-size: 16px;
+}
 
-  .matchday-status.ended {
-    background-color: #d4edda;
-    color: #155724;
-  }
+.matchday-status.locked {
+  background-color: #f8d7da;
+  color: #721c24;
+  border-left: 4px solid #dc3545;
+}
 
-  .matchday-status.not-started {
-    background-color: #cce5ff;
-    color: #004085;
-  }
+.matchday-status.ended {
+  background-color: #d4edda;
+  color: #155724;
+  border-left: 4px solid #28a745;
+}
 
-  .matchday-status i {
-    margin-right: 8px;
-  }
+.matchday-status.not-started {
+  background-color: #cce5ff;
+  color: #004085;
+  border-left: 4px solid #007bff;
+}
 
-  /* Estilo para botones deshabilitados */
-  button[disabled] {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+/* Estilos para los botones de acción */
+.team-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.team-actions-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.action-btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.action-btn i {
+  font-size: 16px;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+}
+
+.action-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.action-btn[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Estilos específicos para cada tipo de botón */
+.formation-btn {
+  background-color: #1e88e5;
+  color: white;
+}
+
+.formation-btn:hover {
+  background-color: #1976d2;
+}
+
+.sell-btn {
+  background-color: #ff9800;
+  color: white;
+}
+
+.sell-btn:hover {
+  background-color: #f57c00;
+}
+
+.save-btn {
+  background-color: #4caf50;
+  color: white;
+}
+
+.save-btn:hover {
+  background-color: #43a047;
+}
+
+.save-btn[disabled] {
+  background-color: #a5d6a7;
+}
+
+/* Estilos para el banner de jornada finalizada */
+.matchday-banner {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 10px 16px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.matchday-banner i {
+  margin-right: 10px;
+  font-size: 18px;
+  color: #28a745;
+}
+
+/* Estilo para botones deshabilitados */
+button[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .team-actions {
@@ -1030,11 +1144,26 @@ $bench-toggle-bg: rgba(0, 0, 0, 0.4);
     gap: 15px;
   }
 
+  .team-actions-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .matchday-status {
+    width: 100%;
+    margin-bottom: 15px; /* Añadir margen en móvil */
+  }
+
   .team-actions {
     width: 100%;
-    justify-content: space-between;
-    flex-wrap: wrap;
+    justify-content: center;
   }
+
+  .action-btn {
+    flex: 1;
+    min-width: 120px;
+  }
+
 
   .pitch {
     height: auto;

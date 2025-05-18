@@ -23,7 +23,6 @@
           <label for="privacy">Tipo de Liga*</label>
           <select id="privacy" formControlName="privacy">
             <option value="private">Privada (solo por invitación)</option>
-            <option value="public">Pública (cualquiera puede unirse)</option>
           </select>
         </div>
 
@@ -34,7 +33,7 @@
             id="maxParticipants"
             formControlName="maxParticipants"
             min="2"
-            max="20"
+            max="16"
           />
         </div>
 
@@ -47,6 +46,11 @@
               <button type="button" (click)="setBudget(150000000)" [class.active]="leagueForm.get('initialBudget')?.value === 150000000">150M</button>
               <button type="button" (click)="setBudget(200000000)" [class.active]="leagueForm.get('initialBudget')?.value === 200000000">200M</button>
             </div>
+
+            <!-- Valor del presupuesto ahora encima del slider -->
+            <div class="budget-display">{{ formatBudget(leagueForm.get('initialBudget')?.value) }}</div>
+
+            <!-- Slider debajo del valor del presupuesto -->
             <input
               type="range"
               id="initialBudget"
@@ -55,12 +59,14 @@
               max="200000000"
               step="10000000"
             >
-            <div class="budget-display">{{ formatBudget(leagueForm.get('initialBudget')?.value) }}</div>
           </div>
           <div class="budget-description">
+            <i class="fa fa-info-circle" aria-hidden="true"></i>
             El presupuesto inicial determina cuánto dinero tendrán todos los managers para fichar jugadores al inicio de la liga.
           </div>
         </div>
+
+
 
 
         <div class="form-actions">

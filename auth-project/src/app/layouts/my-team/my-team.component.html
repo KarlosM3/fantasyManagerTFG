@@ -2,30 +2,38 @@
   <div class="team-header">
     <h2>Mi Equipo</h2>
 
-    <!-- Añadir información de estado de la jornada -->
-    <div class="matchday-status" [ngClass]="{
-      'locked': matchdayStarted && !matchdayEnded,
-      'ended': matchdayEnded,
-      'not-started': !matchdayStarted
-    }">
-      <i class="fas" [ngClass]="{
-        'fa-lock': matchdayStarted && !matchdayEnded,
-        'fa-check-circle': matchdayEnded,
-        'fa-unlock': !matchdayStarted
-      }"></i>
-      {{ matchdayStatusMessage }}
-    </div>
+    <div class="team-actions-row">
+      <!-- Estado de la jornada a la izquierda -->
+      <div class="matchday-status" [ngClass]="{
+        'locked': matchdayStarted && !matchdayEnded,
+        'ended': matchdayEnded,
+        'not-started': !matchdayStarted
+      }">
+        <i class="fas" [ngClass]="{
+          'fa-lock': matchdayStarted && !matchdayEnded,
+          'fa-check-circle': matchdayEnded,
+          'fa-unlock': !matchdayStarted
+        }"></i>
+        <span>{{ matchdayStatusMessage }}</span>
+      </div>
 
-    <div class="team-actions">
-      <button class="primary-btn" (click)="openFormationModal()">
-        Cambiar Formación
-      </button>
-      <button class="action-btn" (click)="initiateSellMode()">
-        Vender Jugador
-      </button>
-      <button class="btn btn-primary" (click)="saveTeamChanges()" [disabled]="matchdayLocked">
-        Guardar Cambios
-      </button>
+      <!-- Botones a la derecha -->
+      <div class="team-actions">
+        <button class="action-btn formation-btn" (click)="openFormationModal()">
+          <i class="fas fa-tactics"></i>
+          <span>Cambiar Formación</span>
+        </button>
+
+        <button class="action-btn sell-btn" (click)="initiateSellMode()">
+          <i class="fas fa-money-bill-wave"></i>
+          <span>Vender Jugador</span>
+        </button>
+
+        <button class="action-btn save-btn" (click)="saveTeamChanges()" [disabled]="matchdayLocked">
+          <i class="fas fa-save"></i>
+          <span>Guardar Cambios</span>
+        </button>
+      </div>
     </div>
   </div>
 
