@@ -35,7 +35,14 @@
       <!-- Porteros -->
       <div class="position-row goalkeepers">
         <div *ngFor="let player of goalkeepers"
-             class="player-card">
+            class="player-card">
+          <!-- Badge de estado con icono -->
+          <div *ngIf="player.playerStatus && player.playerStatus.toLowerCase() !== 'ok'"
+              class="player-status-badge"
+              [ngClass]="getStatusClass(player)"
+              [title]="getPlayerStatus(player)">
+            <i class="fa" [ngClass]="playerBadgeService.getStatusIcon(playerBadgeService.getPlayerStatus(player))" aria-hidden="true"></i>
+          </div>
           <div class="team-badge" *ngIf="player.team">
             <img [src]="player.team.badge || player.team.badgeColor || 'assets/img/team-placeholder.png'" alt="Escudo">
           </div>
@@ -53,10 +60,18 @@
         </div>
       </div>
 
+
       <!-- Defensas -->
       <div class="position-row defenders">
         <div *ngFor="let player of defenders"
-             class="player-card">
+            class="player-card">
+          <!-- Badge de estado (solo se muestra si no es "ok") -->
+          <div *ngIf="player.playerStatus && player.playerStatus.toLowerCase() !== 'ok'"
+              class="player-status-badge"
+              [ngClass]="getStatusClass(player)"
+              [title]="getPlayerStatus(player)">
+            <i class="fa" [ngClass]="playerBadgeService.getStatusIcon(playerBadgeService.getPlayerStatus(player))" aria-hidden="true"></i>
+          </div>
           <div class="team-badge" *ngIf="player.team">
             <img [src]="player.team.badge || player.team.badgeColor || 'assets/img/team-placeholder.png'" alt="Escudo">
           </div>
@@ -77,7 +92,14 @@
       <!-- Centrocampistas -->
       <div class="position-row midfielders">
         <div *ngFor="let player of midfielders"
-             class="player-card">
+            class="player-card">
+          <!-- Badge de estado (solo se muestra si no es "ok") -->
+          <div *ngIf="player.playerStatus && player.playerStatus.toLowerCase() !== 'ok'"
+              class="player-status-badge"
+              [ngClass]="getStatusClass(player)"
+              [title]="getPlayerStatus(player)">
+            <i class="fa" [ngClass]="playerBadgeService.getStatusIcon(playerBadgeService.getPlayerStatus(player))" aria-hidden="true"></i>
+          </div>
           <div class="team-badge" *ngIf="player.team">
             <img [src]="player.team.badge || player.team.badgeColor || 'assets/img/team-placeholder.png'" alt="Escudo">
           </div>
@@ -95,10 +117,18 @@
         </div>
       </div>
 
+
       <!-- Delanteros -->
       <div class="position-row forwards">
         <div *ngFor="let player of forwards"
-             class="player-card">
+            class="player-card">
+          <!-- Badge de estado (solo se muestra si no es "ok") -->
+          <div *ngIf="player.playerStatus && player.playerStatus.toLowerCase() !== 'ok'"
+              class="player-status-badge"
+              [ngClass]="getStatusClass(player)"
+              [title]="getPlayerStatus(player)">
+            <i class="fa" [ngClass]="playerBadgeService.getStatusIcon(playerBadgeService.getPlayerStatus(player))" aria-hidden="true"></i>
+          </div>
           <div class="team-badge" *ngIf="player.team">
             <img [src]="player.team.badge || player.team.badgeColor || 'assets/img/team-placeholder.png'" alt="Escudo">
           </div>
@@ -115,6 +145,7 @@
           </div>
         </div>
       </div>
+
     </div>
   </div>
 

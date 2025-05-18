@@ -76,7 +76,7 @@ export class MyTeamComponent implements OnInit {
     private route: ActivatedRoute,
     private leagueService: LeagueService,
     private formationService: FormationService,
-    private playerBadgeService: PlayerBadgeService,
+    public playerBadgeService: PlayerBadgeService,
     private pointsService: PointsService,
     private activeLeagueService: ActiveLeagueService,
     private placeholderService: PlaceholderPlayerService, // Añadir este servicio

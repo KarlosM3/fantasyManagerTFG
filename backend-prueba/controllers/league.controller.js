@@ -7,8 +7,11 @@ const axios = require('axios');
 // Crear una nueva liga y asociarla al usuario
 exports.createLeague = async (req, res) => {
   try {
-    const { name, privacy, maxParticipants, initialBudget } = req.body;
+    const { name, privacy, initialBudget } = req.body;
     const userId = req.user.id || req.user._id;
+    
+    // Forzar el límite máximo de participantes a 16
+    const maxParticipants = 16; // Siempre usar 16 independientemente de lo que envíe el cliente
 
     // Obtener la jornada actual desde la API externa
     const response = await axios.get('https://api-fantasy.llt-services.com/api/v4/players');
@@ -28,11 +31,11 @@ exports.createLeague = async (req, res) => {
     
     console.log(`Creando liga en jornada actual: ${currentMatchday}`);
 
-    // 1. Crear la liga con la jornada actual
+    // 1. Crear la liga con la jornada actual y máximo 16 participantes
     const newLeague = new League({
       name,
       privacy: privacy || 'private',
-      maxParticipants: maxParticipants || 10,
+      maxParticipants: maxParticipants, // Siempre 16
       initialBudget: initialBudget || 100000000,
       createdBy: userId,
       creationMatchday: currentMatchday, // Establecer la jornada de creación
@@ -67,6 +70,7 @@ exports.createLeague = async (req, res) => {
     });
   }
 };
+
 
 
 // Obtener las ligas de un usuario
@@ -402,6 +406,14 @@ exports.joinLeagueByCode = async (req, res) => {
 
     if (isMember) {
       return res.status(400).json({ message: 'Ya eres miembro de esta liga' });
+    }
+
+    // Verificar si la liga ha alcanzado el límite de 16 participantes
+    if (league.members.length >= 16) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'La liga ha alcanzado el límite máximo de 16 participantes' 
+      });
     }
 
     // Añadir usuario a la liga

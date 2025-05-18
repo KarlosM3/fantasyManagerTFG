@@ -4,6 +4,7 @@ import { ActivatedRoute } from "@angular/router";
 import { PointsService } from "../../services/points.service";
 import { LeagueService } from "../../modals/create-league-modal/services/create-league.service";
 import { ActiveLeagueService } from "../home/services/active-league.service";
+import { PlayerBadgeService } from "../../services/player-badge.service";
 
 @Component({
   selector: "app-team-points",
@@ -39,6 +40,7 @@ export class TeamPointsComponent implements OnInit {
     private pointsService: PointsService,
     private activeLeagueService: ActiveLeagueService,
     private leagueService: LeagueService,
+    public playerBadgeService: PlayerBadgeService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -234,5 +236,15 @@ export class TeamPointsComponent implements OnInit {
 
   isPlayerCaptain(playerId: string): boolean {
     return this.captainId === playerId;
+  }
+
+  // Métodos para manejar el estado del jugador
+  getPlayerStatus(player: any): string {
+    return this.playerBadgeService.getPlayerStatus(player);
+  }
+
+  getStatusClass(player: any): string {
+    const status = this.getPlayerStatus(player);
+    return this.playerBadgeService.getStatusClass(status);
   }
 }

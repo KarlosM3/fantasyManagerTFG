@@ -255,6 +255,7 @@ $bench-toggle-bg: rgba(0, 0, 0, 0.4);
 
 // Player cards
 .player-card {
+  position:relative;
   background-color: $card-background;
   border-radius: 8px;
   padding: 5px;
@@ -317,6 +318,45 @@ $bench-toggle-bg: rgba(0, 0, 0, 0.4);
       z-index: 1;
     }
   }
+
+  .player-status-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .disponible {
+    background-color: #10b981;
+  }
+
+  .duda i {
+    color: #f28543; /* Color más oscuro para el icono */
+    font-size: 23px; /* Tamaño ligeramente mayor */
+    font-weight: bold; /* Hacer el icono más grueso */
+  }
+
+  .lesionado {
+    background-color: #c05151;
+  }
+
+  .sancionado {
+    background-color: #ff0000;
+  }
+
+  .sancionado i.fa-square {
+    color: red;
+    font-size: 14px;
+  }
+
 
   // Estilos mejorados para vice-capitán
   &.vice-captain {
@@ -1021,6 +1061,15 @@ $bench-toggle-bg: rgba(0, 0, 0, 0.4);
 
     .player-points {
       font-size: 12px;
+    }
+  }
+
+  .player-status-badge {
+    padding: 4px;
+    border-radius: 50%;
+
+    .status-text {
+      display: none;
     }
   }
 

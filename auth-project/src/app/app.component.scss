@@ -1,69 +1,182 @@
+/* Estilos generales */
+body {
+  font-family: 'Poppins', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+}
+
+/* Contenedor principal */
 .app-container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
 
+/* Header y Navbar */
 .app-header {
-  background-color: #333;
-  color: white;
-  padding: 10px 0;
+  background-color: #1a1a25; /* Un poco más oscuro */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
-
-.logo a {
-  color: white;
-  text-decoration: none;
-  font-size: 1.5rem;
-  font-weight: bold;
-}
-
-.nav-links a {
-  color: white;
-  text-decoration: none;
-  margin-left: 20px;
-  padding: 5px 10px;
-  border-radius: 4px;
-}
-
-.nav-links a.active {
-  background-color: #555;
-}
-
-.logout-btn {
-  background-color: #d9534f;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  margin-left: 20px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.logout-btn:hover {
-  background-color: #c9302c;
-}
-
-.app-content {
-  flex: 1;
-  padding: 20px;
+  padding: 0.6rem 2rem; /* Un poco más compacto */
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
 }
 
-.app-footer {
-  background-color: #333;
+/* Logo */
+.logo a {
+  text-decoration: none;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+}
+
+.logo h3 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.fantasy-text {
+  color: #ff6b6b;
+  font-style: italic;
+  margin-left: 4px;
+}
+
+/* Enlaces de navegación */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.nav-link {
+  color: #e0e0e0;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.nav-link.active {
+  background-color: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+}
+
+/* Botón de inicio */
+.home-link {
+  background-color: #2d2d3a; /* Color más oscuro como en la imagen */
   color: white;
+  padding: 0.5rem 1.2rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.home-link:hover {
+  background-color: #3a3a4a;
+  transform: translateY(-1px);
+}
+
+.home-link.active {
+  background-color: #3a3a4a;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.home-link i {
+  color: #ff6b6b; /* Icono en color para destacar */
+  font-size: 1.1rem;
+}
+
+/* Botón de cerrar sesión */
+.logout-btn {
+  background-color: #ff4757; /* Un rojo más intenso como en la imagen */
+  color: white;
+  border: none;
+  padding: 0.5rem 1.2rem;
+  border-radius: 6px; /* Bordes más redondeados */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(255, 71, 87, 0.3); /* Sombra sutil */
+}
+
+.logout-btn:hover {
+  background-color: #ff3748;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(255, 71, 87, 0.4);
+}
+
+.logout-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(255, 71, 87, 0.4);
+}
+
+.logout-btn i {
+  font-size: 1rem;
+}
+
+
+/* Contenido principal */
+.app-content {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Footer */
+.app-footer {
+  background-color: #1a1a25;
+  color: #e0e0e0;
   text-align: center;
-  padding: 10px 0;
+  padding: 1rem;
   margin-top: auto;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    padding: 1rem;
+  }
+
+  .logo {
+    margin-bottom: 1rem;
+  }
+
+  .nav-links {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .link-text {
+    display: none;
+  }
+
+  .home-link {
+    padding: 0.5rem;
+  }
 }

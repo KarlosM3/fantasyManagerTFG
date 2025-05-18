@@ -20,7 +20,7 @@ const leagueSchema = new mongoose.Schema({
     type: Number,
     default: 10,
     min: 2,
-    max: 20
+    max: 16
   },
   initialBudget: {
     type: Number,

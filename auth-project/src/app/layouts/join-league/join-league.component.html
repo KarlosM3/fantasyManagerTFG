@@ -20,19 +20,33 @@
         </button>
       </div>
 
-      <div *ngIf="errorMessage && errorMessage.includes('Ya eres miembro')" class="member-options">
-        <p>Ya eres miembro de esta liga</p>
-        <div class="buttons-container">
-          <button class="primary-btn" (click)="goToClassification()">Ver clasificación</button>
-          <button class="secondary-btn" (click)="goToMyTeam()">Ver mi equipo</button>
-        </div>
-      </div>
-
-      <div *ngIf="errorMessage && !errorMessage.includes('Ya eres miembro')" class="error-message">
+      <!-- Mensaje de error con diferentes opciones según el tipo de error -->
+      <div *ngIf="errorMessage" class="error-message"
+           [class.league-full-error]="errorMessage.includes('liga ya está llena')">
         <p>{{ errorMessage }}</p>
-        <button class="retry-button" (click)="joinLeague()">
-          Intentar de nuevo
-        </button>
+
+        <!-- Si ya es miembro de la liga -->
+        <ng-container *ngIf="errorMessage.includes('Ya eres miembro')">
+          <div class="buttons-container">
+            <button class="primary-btn" (click)="goToClassification()">Ver clasificación</button>
+            <button class="secondary-btn" (click)="goToMyTeam()">Ver mi equipo</button>
+          </div>
+        </ng-container>
+
+        <!-- Si la liga está llena -->
+        <ng-container *ngIf="errorMessage.includes('liga ya está llena')">
+          <p class="info-text">Puedes crear tu propia liga o buscar otra invitación.</p>
+          <div class="buttons-container">
+            <button class="primary-btn" routerLink="/layouts/home">Ir a Mis Ligas</button>
+          </div>
+        </ng-container>
+
+        <!-- Para otros tipos de errores -->
+        <ng-container *ngIf="!errorMessage.includes('Ya eres miembro') && !errorMessage.includes('liga ya está llena')">
+          <button class="retry-button" (click)="joinLeague()">
+            Intentar de nuevo
+          </button>
+        </ng-container>
       </div>
     </div>
 
@@ -43,9 +57,9 @@
 
   <!-- Modal de equipo aleatorio -->
   <app-team-modal
-  [isOpen]="isTeamModalOpen"
-  [team]="randomTeam"
-  [leagueId]="leagueId"
-  (close)="closeTeamModalAndGoToClassification(leagueId)">
-</app-team-modal>
+    [isOpen]="isTeamModalOpen"
+    [team]="randomTeam"
+    [leagueId]="leagueId"
+    (close)="closeTeamModalAndGoToClassification(leagueId)">
+  </app-team-modal>
 </div>

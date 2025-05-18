@@ -13,4 +13,5 @@ export interface Player {
   image?: string;
   isCaptain?: boolean;
   isViceCaptain?: boolean;
+  playerStatus?: string;
 }

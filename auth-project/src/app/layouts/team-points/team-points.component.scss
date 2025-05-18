@@ -217,6 +217,7 @@ $text-dark: #333333;
 
 // Player cards
 .player-card {
+  position: relative;
   background-color: $card-background;
   border-radius: 8px;
   padding: 5px;
@@ -354,6 +355,39 @@ $text-dark: #333333;
     font-size: 14px;
     padding: 2px 0;
   }
+}
+
+.player-status-badge {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.disponible {
+  background-color: #10b981;
+}
+
+.duda i {
+  color: #f28543; /* Color más oscuro para el icono */
+  font-size: 23px; /* Tamaño ligeramente mayor */
+  font-weight: bold; /* Hacer el icono más grueso */
+}
+
+.lesionado {
+  background-color: #c05151;
+}
+
+.sancionado {
+  background-color: #ff0000;
 }
 
 // Ajustes para posiciones específicas

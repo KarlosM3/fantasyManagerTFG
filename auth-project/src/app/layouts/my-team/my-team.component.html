@@ -48,12 +48,21 @@
       <!-- Porteros -->
       <div class="position-row goalkeepers">
         <div *ngFor="let player of startingGoalkeeper"
-             class="player-card"
-             [class.captain]="player.isCaptain"
-             [class.vice-captain]="player.isViceCaptain"
-             [class.selected]="selectedPlayer === player"
-             [class.placeholder-card]="isPlaceholderPlayer(player)"
-             (click)="selectPlayer(player)">
+            class="player-card"
+            [class.captain]="player.isCaptain"
+            [class.vice-captain]="player.isViceCaptain"
+            [class.selected]="selectedPlayer === player"
+            [class.placeholder-card]="isPlaceholderPlayer(player)"
+            (click)="selectPlayer(player)">
+
+          <!-- Badge de estado (solo se muestra si no es "ok") -->
+          <div *ngIf="!isPlaceholderPlayer(player) && playerBadgeService.shouldShowBadge(player)"
+              class="player-status-badge"
+              [ngClass]="playerBadgeService.getStatusClass(playerBadgeService.getPlayerStatus(player))"
+              [title]="playerBadgeService.getPlayerStatus(player)">
+            <i class="fa" [ngClass]="playerBadgeService.getStatusIcon(playerBadgeService.getPlayerStatus(player))" aria-hidden="true"></i>
+          </div>
+
           <div class="team-badge" *ngIf="player.team?.badgeColor">
             <img [src]="player.team?.badgeColor" alt="{{player.team?.name}} badge">
           </div>
@@ -84,6 +93,15 @@
              [class.selected]="selectedPlayer === player"
              [class.placeholder-card]="isPlaceholderPlayer(player)"
              (click)="selectPlayer(player)">
+
+          <!-- Badge de estado (solo se muestra si no es "ok") -->
+          <div *ngIf="!isPlaceholderPlayer(player) && playerBadgeService.shouldShowBadge(player)"
+              class="player-status-badge"
+              [ngClass]="playerBadgeService.getStatusClass(playerBadgeService.getPlayerStatus(player))"
+              [title]="playerBadgeService.getPlayerStatus(player)">
+            <i class="fa" [ngClass]="playerBadgeService.getStatusIcon(playerBadgeService.getPlayerStatus(player))" aria-hidden="true"></i>
+          </div>
+
           <div class="team-badge" *ngIf="player.team?.badgeColor">
             <img [src]="player.team?.badgeColor" alt="{{player.team?.name}} badge">
           </div>
@@ -114,6 +132,15 @@
              [class.selected]="selectedPlayer === player"
              [class.placeholder-card]="isPlaceholderPlayer(player)"
              (click)="selectPlayer(player)">
+
+          <!-- Badge de estado (solo se muestra si no es "ok") -->
+          <div *ngIf="!isPlaceholderPlayer(player) && playerBadgeService.shouldShowBadge(player)"
+              class="player-status-badge"
+              [ngClass]="playerBadgeService.getStatusClass(playerBadgeService.getPlayerStatus(player))"
+              [title]="playerBadgeService.getPlayerStatus(player)">
+            <i class="fa" [ngClass]="playerBadgeService.getStatusIcon(playerBadgeService.getPlayerStatus(player))" aria-hidden="true"></i>
+          </div>
+
           <div class="team-badge" *ngIf="player.team?.badgeColor">
             <img [src]="player.team?.badgeColor" alt="{{player.team?.name}} badge">
           </div>
@@ -144,6 +171,15 @@
              [class.selected]="selectedPlayer === player"
              [class.placeholder-card]="isPlaceholderPlayer(player)"
              (click)="selectPlayer(player)">
+
+          <!-- Badge de estado (solo se muestra si no es "ok") -->
+          <div *ngIf="!isPlaceholderPlayer(player) && playerBadgeService.shouldShowBadge(player)"
+              class="player-status-badge"
+              [ngClass]="playerBadgeService.getStatusClass(playerBadgeService.getPlayerStatus(player))"
+              [title]="playerBadgeService.getPlayerStatus(player)">
+            <i class="fa" [ngClass]="playerBadgeService.getStatusIcon(playerBadgeService.getPlayerStatus(player))" aria-hidden="true"></i>
+          </div>
+
           <div class="team-badge" *ngIf="player.team?.badgeColor">
             <img [src]="player.team?.badgeColor" alt="{{player.team?.name}} badge">
           </div>

@@ -62,10 +62,17 @@ export class JoinLeagueComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = err.error?.message || 'Error al unirse a la liga';
+
+        // Manejar específicamente el error de liga llena
+        if (err.error && err.error.message === 'La liga ha alcanzado el límite máximo de 16 participantes') {
+          this.errorMessage = 'Esta liga ya está llena (máximo 16 participantes)';
+        } else {
+          this.errorMessage = err.error?.message || 'Error al unirse a la liga';
+        }
       }
     });
   }
+
 
   // Método para cerrar el modal y navegar a clasificación
   closeTeamModalAndGoToClassification(leagueId: string) {
