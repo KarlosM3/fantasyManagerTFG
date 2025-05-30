@@ -4,11 +4,11 @@ import { HttpClientModule, HTTP_INTERCEPTORS, provideHttpClient, withFetch, with
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { TokenInterceptor } from './auth/interceptors/token.interceptor';
+import { PlayerApiMonitorService } from './services/player-api-monitor.service';
 
 @NgModule({
   declarations: [
     AppComponent
-
   ],
   imports: [
     BrowserModule,
@@ -18,7 +18,8 @@ import { TokenInterceptor } from './auth/interceptors/token.interceptor';
   providers: [
     provideClientHydration(),
     provideHttpClient(withFetch(), withInterceptorsFromDi()),
-    { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true }
+    { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
+    PlayerApiMonitorService // Añadir el servicio de monitoreo
   ],
   bootstrap: [AppComponent]
 })

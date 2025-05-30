@@ -5,7 +5,8 @@ import { RouterModule } from '@angular/router';
 
 @NgModule({
   declarations: [
-    TeamModalComponent
+    TeamModalComponent,
+
   ],
   imports: [
     CommonModule,

@@ -1,0 +1,127 @@
+// src/app/shared/team-data-status/team-data-status.component.scss
+.team-data-status {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  border-left: 4px solid transparent;
+
+  &.fresh { border-left-color: #4caf50; }
+  &.stale { border-left-color: #ff9800; }
+  &.outdated { border-left-color: #f44336; }
+}
+
+.status-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-indicator {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.fresh {
+    background-color: #4caf50;
+    color: white;
+  }
+
+  &.stale {
+    background-color: #ff9800;
+    color: white;
+  }
+
+  &.outdated {
+    background-color: #f44336;
+    color: white;
+  }
+}
+
+.status-info {
+  flex: 1;
+
+  .status-text {
+    display: block;
+    font-weight: 600;
+    color: #ffffff;
+  }
+
+  .status-detail {
+    color: #aaa;
+    font-size: 12px;
+  }
+}
+
+.refresh-btn {
+  background: none;
+  border: 1px solid #444;
+  color: #fff;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+
+  .spinning {
+    animation: spin 1s linear infinite;
+  }
+}
+
+.status-details {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #333;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 12px;
+
+  .label { color: #aaa; }
+  .value { color: #fff; font-weight: 500; }
+}
+
+.toggle-details {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 11px;
+  cursor: pointer;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.update-notification {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 300px;
+
+  &.matchday-update {
+    background-color: #4caf50;
+    color: white;
+  }
+
+  &.data-freshness {
+    background-color: #2196f3;
+    color: white;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

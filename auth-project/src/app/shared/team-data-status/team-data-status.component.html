@@ -1,0 +1,49 @@
+<!-- src/app/shared/team-data-status/team-data-status.component.html -->
+<div class="team-data-status" *ngIf="apiStatus" [ngClass]="getStatusClass()">
+  <!-- Indicador principal -->
+  <div class="status-header">
+    <div class="status-indicator" [ngClass]="getStatusClass()">
+      <i class="fas" [ngClass]="getStatusIcon()"></i>
+    </div>
+    <div class="status-info">
+      <span class="status-text">{{ getStatusText() }}</span>
+      <small class="status-detail">{{ getStatusDetail() }}</small>
+    </div>
+    <button class="refresh-btn" (click)="refreshData()" [disabled]="isRefreshing">
+      <i class="fas fa-sync-alt" [ngClass]="{'spinning': isRefreshing}"></i>
+    </button>
+  </div>
+
+  <!-- Información detallada -->
+  <div class="status-details" *ngIf="showDetails">
+    <div class="detail-row">
+      <span class="label">Jornada actual:</span>
+      <span class="value">{{ apiStatus.currentMatchday }}</span>
+    </div>
+    <div class="detail-row">
+      <span class="label">Jugadores actualizados:</span>
+      <span class="value">{{ apiStatus.playersUpdated }}</span>
+    </div>
+    <div class="detail-row">
+      <span class="label">Tiempo de respuesta:</span>
+      <span class="value">{{ apiStatus.apiResponseTime }}ms</span>
+    </div>
+    <div class="detail-row">
+      <span class="label">Última verificación:</span>
+      <span class="value">{{ formatTime(apiStatus.lastCheck) }}</span>
+    </div>
+  </div>
+
+  <!-- Toggle para detalles -->
+  <button class="toggle-details" (click)="showDetails = !showDetails">
+    <i class="fas" [ngClass]="showDetails ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+    {{ showDetails ? 'Ocultar detalles' : 'Ver detalles' }}
+  </button>
+</div>
+
+<!-- Notificación -->
+<div class="update-notification" *ngIf="notification?.show" [ngClass]="notification.type">
+  <i class="fas fa-info-circle"></i>
+  <span>{{ notification.message }}</span>
+  <button class="close-btn" (click)="hideNotification()">×</button>
+</div>

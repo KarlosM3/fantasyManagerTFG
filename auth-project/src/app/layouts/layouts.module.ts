@@ -1,3 +1,4 @@
+// src/app/layouts/layouts.module.ts
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
@@ -13,7 +14,7 @@ import { MarketComponent } from './market/market.component';
 import { FormsModule } from '@angular/forms';
 import { OffersComponent } from './offers/offers.component';
 import { TeamPointsComponent } from './team-points/team-points.component';
-
+import { TeamDataStatusComponent } from '../shared/team-data-status/team-data-status.component';
 
 @NgModule({
   declarations: [
@@ -24,8 +25,9 @@ import { TeamPointsComponent } from './team-points/team-points.component';
     MyTeamComponent,
     MarketComponent,
     OffersComponent,
-    TeamPointsComponent
-    ],
+    TeamPointsComponent,
+    TeamDataStatusComponent // Añadir el nuevo componente
+  ],
   imports: [
     CommonModule,
     HttpClientModule,
