@@ -4,13 +4,7 @@ import { ActiveLeagueService } from "../home/services/active-league.service"
 import { LeagueService } from "../../modals/create-league-modal/services/create-league.service"
 import { forkJoin } from "rxjs"
 import { AuthService } from "../../auth/services/auth.service"
-
-interface Notification {
-  show: boolean;
-  message: string;
-  type: 'success' | 'error' | 'warning';
-  timeout?: any;
-}
+import { NotificationService } from "../../services/notification.service"
 
 @Component({
   selector: "app-market",
@@ -66,7 +60,8 @@ export class MarketComponent implements OnInit {
     private marketService: MarketService,
     private activeLeagueService: ActiveLeagueService,
     private leagueservice: LeagueService,
-    private authService: AuthService
+    private authService: AuthService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -410,44 +405,34 @@ export class MarketComponent implements OnInit {
     return colors[positionId] || "#9E9E9E"
   }
 
-  notification: Notification = {
-  show: false,
-  message: '',
-  type: 'success',
-  timeout: null
-};
 
-showSuccessMessage(message: string): void {
-  this.showNotification(message, 'success');
-}
 
-showErrorMessage(message: string): void {
-  this.showNotification(message, 'error');
-}
-
-// Añade estos métodos para manejar notificaciones
-showNotification(message: string, type: 'success' | 'error' | 'warning'): void {
-  // Limpiar timeout anterior si existe
-  if (this.notification.timeout) {
-    clearTimeout(this.notification.timeout);
+  showSuccessMessage(message: string): void {
+    this.notificationService.showSuccess(message);
   }
 
-  // Mostrar nueva notificación
-  this.notification = {
-    show: true,
-    message,
-    type,
-    timeout: setTimeout(() => {
-      this.hideNotification();
-    }, 3000) // Desaparece después de 3 segundos
-  };
-}
+  showErrorMessage(message: string): void {
+    this.notificationService.showError(message);
+  }
 
-hideNotification(): void {
-  this.notification.show = false;
-  if (this.notification.timeout) {
-    clearTimeout(this.notification.timeout);
+  // Reemplazar el método showNotification existente
+  showNotification(message: string, type: 'success' | 'error' | 'warning' | 'info'): void {
+  switch(type) {
+    case 'success':
+      this.notificationService.showSuccess(message);
+      break;
+    case 'error':
+      this.notificationService.showError(message);
+      break;
+    case 'warning':
+      this.notificationService.showWarning(message);
+      break;
+    case 'info':
+      this.notificationService.showInfo(message);
+      break;
   }
 }
+
+
 
 }

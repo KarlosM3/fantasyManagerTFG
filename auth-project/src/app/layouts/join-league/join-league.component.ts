@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LeagueService } from '../../modals/create-league-modal/services/create-league.service';
 import { AuthService } from '../../auth/services/auth.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-join-league',
@@ -23,105 +24,115 @@ export class JoinLeagueComponent implements OnInit {
     private router: Router,
     private leagueService: LeagueService,
     private authService: AuthService,
+    private notificationService: NotificationService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit() {
-    // Verificar si el usuario está autenticado
     this.isAuthenticated = this.authService.isLoggedIn();
-
-    // Obtener el código de invitación de la URL
     this.inviteCode = this.route.snapshot.paramMap.get('code');
 
-    // Si el usuario está autenticado, intentar unirse automáticamente
     if (this.inviteCode && this.isAuthenticated) {
       this.joinLeague();
     } else if (!this.isAuthenticated) {
-      // Si no está autenticado, guardar el código y redirigir al login
       if (isPlatformBrowser(this.platformId)) {
         localStorage.setItem('pendingInviteCode', this.inviteCode || '');
       }
       this.errorMessage = 'Debes iniciar sesión para unirte a una liga';
+      this.notificationService.showWarning('Debes iniciar sesión para unirte a una liga');
     }
   }
 
   joinLeague() {
-    if (!this.inviteCode) return;
+    if (!this.inviteCode) {
+      this.notificationService.showError('Código de invitación no válido');
+      return;
+    }
 
     this.isLoading = true;
     this.errorMessage = null;
+    this.notificationService.showInfo('Uniéndose a la liga...');
 
     this.leagueService.joinLeagueByCode(this.inviteCode).subscribe({
       next: (res: any) => {
         this.isLoading = false;
-        // Guardar el equipo y mostrar modal
         this.randomTeam = res.team;
         this.isTeamModalOpen = true;
         this.leagueId = res.leagueId;
-        // No navegamos inmediatamente a clasificación
+        this.notificationService.showSuccess('¡Te has unido a la liga exitosamente!');
       },
       error: (err) => {
         this.isLoading = false;
 
-        // Manejar específicamente el error de liga llena
         if (err.error && err.error.message === 'La liga ha alcanzado el límite máximo de 16 participantes') {
           this.errorMessage = 'Esta liga ya está llena (máximo 16 participantes)';
+          this.notificationService.showWarning('Liga llena: máximo 16 participantes');
+        } else if (err.error && err.error.message === 'Ya eres miembro de esta liga') {
+          this.errorMessage = 'Ya eres miembro de esta liga';
+          this.notificationService.showInfo('Ya eres miembro de esta liga');
         } else {
           this.errorMessage = err.error?.message || 'Error al unirse a la liga';
+          this.notificationService.showError(err.error?.message || 'Error al unirse a la liga');
         }
       }
     });
   }
 
 
-  // Método para cerrar el modal y navegar a clasificación
   closeTeamModalAndGoToClassification(leagueId: string) {
     this.isTeamModalOpen = false;
+    this.notificationService.showSuccess('¡Bienvenido a tu nueva liga!');
     this.router.navigate(['/layouts/classification', leagueId]);
   }
 
   goToLogin() {
     if (isPlatformBrowser(this.platformId)) {
-      // Guardar el código de invitación antes de redirigir
       localStorage.setItem('pendingInviteCode', this.inviteCode || '');
-
-      // Guardar la URL completa para redirección
       const currentUrl = this.router.url;
       this.authService.setRedirectUrl(currentUrl);
     }
-
+    this.notificationService.showInfo('Redirigiendo al inicio de sesión...');
     this.router.navigate(['/auth/login']);
   }
 
   goToClassification() {
-    if (!this.inviteCode) return;
+    if (!this.inviteCode) {
+      this.notificationService.showError('Código de invitación no válido');
+      return;
+    }
 
     this.isLoading = true;
     this.leagueService.getLeagueByInviteCode(this.inviteCode).subscribe({
       next: (res: any) => {
         this.isLoading = false;
+        this.notificationService.showInfo('Navegando a la clasificación...');
         this.router.navigate(['/layouts/classification', res.leagueId]);
       },
       error: (err) => {
         this.isLoading = false;
         this.errorMessage = 'Error al obtener información de la liga';
+        this.notificationService.showError('Error al obtener información de la liga');
       }
     });
   }
 
   goToMyTeam() {
-    if (!this.inviteCode) return;
+    if (!this.inviteCode) {
+      this.notificationService.showError('Código de invitación no válido');
+      return;
+    }
 
     this.isLoading = true;
     this.leagueService.getLeagueByInviteCode(this.inviteCode).subscribe({
       next: (res: any) => {
         this.isLoading = false;
-        // Aquí puedes navegar a la vista de tu equipo cuando la implementes
+        this.notificationService.showInfo('Navegando a tu equipo...');
         this.router.navigate(['/layouts/my-team', res.leagueId]);
       },
       error: (err) => {
         this.isLoading = false;
         this.errorMessage = 'Error al obtener información de la liga';
+        this.notificationService.showError('Error al obtener información de la liga');
       }
     });
   }

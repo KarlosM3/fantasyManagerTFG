@@ -1,13 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { MarketService } from '../../services/market.service';
 import { ActiveLeagueService } from '../home/services/active-league.service';
+import { NotificationService } from '../../services/notification.service';
 
-interface Notification {
-  show: boolean;
-  message: string;
-  type: 'success' | 'error' | 'warning';
-  timeout?: any;
-}
 
 @Component({
   selector: 'app-offers',
@@ -19,16 +14,11 @@ export class OffersComponent implements OnInit {
   receivedOffers: any[] = [];
   isLoading = true;
 
-  notification: Notification = {
-    show: false,
-    message: '',
-    type: 'success',
-    timeout: null
-  };
 
   constructor(
     private marketService: MarketService,
-    private activeLeagueService: ActiveLeagueService
+    private activeLeagueService: ActiveLeagueService,
+    private notificationService: NotificationService
   ) { }
 
   ngOnInit(): void {
@@ -115,27 +105,20 @@ export class OffersComponent implements OnInit {
   }
 
 
-  showNotification(message: string, type: 'success' | 'error' | 'warning'): void {
-    // Limpiar timeout anterior si existe
-    if (this.notification.timeout) {
-      clearTimeout(this.notification.timeout);
-    }
-
-    // Mostrar nueva notificación
-    this.notification = {
-      show: true,
-      message,
-      type,
-      timeout: setTimeout(() => {
-        this.hideNotification();
-      }, 3000) // Desaparece después de 3 segundos
-    };
+  showNotification(message: string, type: 'success' | 'error' | 'warning' | 'info'): void {
+  switch(type) {
+    case 'success':
+      this.notificationService.showSuccess(message);
+      break;
+    case 'error':
+      this.notificationService.showError(message);
+      break;
+    case 'warning':
+      this.notificationService.showWarning(message);
+      break;
+    case 'info':
+      this.notificationService.showInfo(message);
+      break;
   }
-
-  hideNotification(): void {
-    this.notification.show = false;
-    if (this.notification.timeout) {
-      clearTimeout(this.notification.timeout);
-    }
-  }
+}
 }

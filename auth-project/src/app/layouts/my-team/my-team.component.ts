@@ -7,6 +7,7 @@ import { PlayerBadgeService } from "../../services/player-badge.service"
 import { PlaceholderPlayerService } from "../../services/placeholder-player.service"
 import { PointsService } from "../../services/points.service"
 import { ActiveLeagueService } from "../home/services/active-league.service"
+import { NotificationService } from "../../services/notification.service"
 
 @Component({
   selector: "app-my-team",
@@ -81,6 +82,7 @@ export class MyTeamComponent implements OnInit {
     public playerBadgeService: PlayerBadgeService,
     private pointsService: PointsService,
     private activeLeagueService: ActiveLeagueService,
+    private notificationService: NotificationService,
     private placeholderService: PlaceholderPlayerService, // Añadir este servicio
   ) {}
 
@@ -750,7 +752,7 @@ export class MyTeamComponent implements OnInit {
   saveTeamChanges(): void {
     // Verificar si los cambios están bloqueados
     if (this.matchdayLocked) {
-      this.showSuccessMessage("No se pueden guardar cambios porque la jornada está en curso");
+      this.showWarningMessage("No se pueden guardar cambios porque la jornada está en curso");
       return;
     }
 
@@ -790,16 +792,16 @@ export class MyTeamComponent implements OnInit {
       });
   }
 
-  // Método auxiliar para mostrar mensaje de éxito
   private showSuccessMessage(message: string): void {
-    // Implementar lógica para mostrar notificación
-    // Por ejemplo, podrías usar un servicio de notificaciones o un simple alert
-    alert(message);
+    this.notificationService.showSuccess(message);
   }
 
-  // Método auxiliar para mostrar mensaje de error
   private showErrorMessage(message: string): void {
-    // Implementar lógica para mostrar notificación de error
-    alert(message);
+    this.notificationService.showError(message);
+  }
+
+  // Añadir método para warnings
+  private showWarningMessage(message: string): void {
+    this.notificationService.showWarning(message);
   }
 }

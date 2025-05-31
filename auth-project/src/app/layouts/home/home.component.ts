@@ -3,6 +3,7 @@ import { LeagueService } from '../../modals/create-league-modal/services/create-
 import { Router } from '@angular/router';
 import { AuthService } from '../../auth/services/auth.service';
 import { ActiveLeagueService } from './services/active-league.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-home',
@@ -32,7 +33,8 @@ export class HomeComponent implements OnInit {
     private router: Router,
     private leagueService: LeagueService,
     private activeLeagueService: ActiveLeagueService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -56,25 +58,25 @@ export class HomeComponent implements OnInit {
   }
 
   loadUserLeagues(): void {
-    this.leagueService.getUserLeagues().subscribe(leagues => {
-      this.userLeagues = leagues;
-
-      if (leagues.length > 0) {
-        // Si no hay liga activa, seleccionar la primera por defecto
-        if (!this.ligaActivaId) {
-          this.ligaActivaId = leagues[0]._id;
-          this.activeLeagueService.setActiveLeague(this.ligaActivaId);
+    this.leagueService.getUserLeagues().subscribe({
+      next: (leagues) => {
+        this.userLeagues = leagues;
+        if (leagues.length > 0) {
+          if (!this.ligaActivaId) {
+            this.ligaActivaId = leagues[0]._id;
+            this.activeLeagueService.setActiveLeague(this.ligaActivaId);
+          } else if (!leagues.some((league: any) => league._id === this.ligaActivaId)) {
+            this.ligaActivaId = leagues[0]._id;
+            this.activeLeagueService.setActiveLeague(this.ligaActivaId);
+          }
+        } else {
+          this.ligaActivaId = null;
+          this.activeLeagueService.setActiveLeague(null);
         }
-        // Verificar que la liga activa existe entre las ligas del usuario
-        else if (!leagues.some((league: any) => league._id === this.ligaActivaId)) {
-          // Si la liga activa no existe en las ligas del usuario, usar la primera
-          this.ligaActivaId = leagues[0]._id;
-          this.activeLeagueService.setActiveLeague(this.ligaActivaId);
-        }
-      } else {
-        // Si no hay ligas, asegurarse de que no haya liga activa
-        this.ligaActivaId = null;
-        this.activeLeagueService.setActiveLeague(null);
+      },
+      error: (error) => {
+        console.error('Error al cargar ligas:', error);
+        this.notificationService.showError('Error al cargar las ligas');
       }
     });
   }
@@ -95,29 +97,36 @@ export class HomeComponent implements OnInit {
         this.loadUserLeagues();
         this.selectedLeagueId = res.leagueId;
 
-        // Solo llama si selectedLeagueId no es null
+        // Notificación de éxito al crear liga
+        this.notificationService.showSuccess('Liga creada correctamente');
+
         if (this.selectedLeagueId) {
           this.leagueService.assignRandomTeam(this.selectedLeagueId).subscribe({
             next: (team: any[]) => {
               this.randomTeam = team;
               this.isTeamModalOpen = true;
+              this.notificationService.showSuccess('Equipo aleatorio asignado');
             },
             error: (err) => {
               console.error('Error al asignar equipo aleatorio:', err);
+              this.notificationService.showError('Error al asignar equipo aleatorio');
             }
           });
         }
       },
       error: (err) => {
         console.error('Error al crear la liga:', err);
+        this.notificationService.showError('Error al crear la liga');
       }
     });
   }
+
 
   // Nuevo método para cerrar el modal y navegar a clasificación
   closeTeamModalAndGoToClassification() {
     this.isTeamModalOpen = false;
     if (this.selectedLeagueId) {
+      this.notificationService.showSuccess('¡Bienvenido a tu nueva liga!');
       this.router.navigate(['/layouts/classification', this.selectedLeagueId]);
     }
   }
@@ -146,25 +155,22 @@ export class HomeComponent implements OnInit {
   }
 
   isLeagueAdmin(liga: any): boolean {
-    // Si ya tenemos el resultado en caché, usarlo
     if (this.adminStatusCache[liga._id] !== undefined) {
       return this.adminStatusCache[liga._id];
     }
 
-    // Si no está en caché, asumir que no es admin por defecto
     this.adminStatusCache[liga._id] = false;
 
-    // Hacer la llamada al backend para verificar
     this.leagueService.isLeagueAdmin(liga._id).subscribe({
       next: (response) => {
         if (response.success) {
           this.adminStatusCache[liga._id] = response.isAdmin;
-          // Forzar la detección de cambios si es necesario
           this.cdr.detectChanges();
         }
       },
       error: (err) => {
         console.error('Error al verificar permisos:', err);
+        this.notificationService.showWarning('Error al verificar permisos de administrador');
       }
     });
 
@@ -186,17 +192,19 @@ export class HomeComponent implements OnInit {
 
     this.leagueService.deleteLeague(this.leagueToDelete._id).subscribe({
       next: (response) => {
-        // Mostrar mensaje de éxito
-        alert('Liga eliminada correctamente');
-        // Actualizar la lista de ligas
+        // REEMPLAZAR alert() por notificación
+        this.notificationService.showSuccess('Liga eliminada correctamente');
+
         this.loadUserLeagues();
-        // Cerrar el modal
         this.showDeleteConfirmModal = false;
         this.leagueToDelete = null;
       },
       error: (error) => {
         console.error('Error al eliminar la liga:', error);
-        alert('Error al eliminar la liga: ' + (error.error?.message || 'Inténtalo de nuevo más tarde'));
+        // REEMPLAZAR alert() por notificación de error
+        this.notificationService.showError(
+          error.error?.message || 'Error al eliminar la liga. Inténtalo de nuevo más tarde'
+        );
       }
     });
   }
@@ -205,7 +213,6 @@ export class HomeComponent implements OnInit {
     this.selectedLeague = liga;
     this.showInvite_Modal = true;
 
-    // Generar enlace de invitación
     this.leagueService.getInviteLink(liga._id).subscribe({
       next: (response) => {
         if (response.inviteCode) {
@@ -214,6 +221,7 @@ export class HomeComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error al obtener enlace de invitación:', error);
+        this.notificationService.showError('Error al generar enlace de invitación');
       }
     });
   }
@@ -224,10 +232,22 @@ export class HomeComponent implements OnInit {
     this.inviteLink = '';
   }
 
-  copyInviteLink(inputElement: HTMLInputElement): void {
-    inputElement.select();
-    document.execCommand('copy');
-    alert('Enlace copiado al portapapeles');
+  async copyInviteLink(inputElement: HTMLInputElement): Promise<void> {
+    try {
+      // Método moderno para copiar
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(this.inviteLink);
+        this.notificationService.showSuccess('Enlace copiado al portapapeles');
+      } else {
+        // Fallback para navegadores antiguos
+        inputElement.select();
+        document.execCommand('copy');
+        this.notificationService.showSuccess('Enlace copiado al portapapeles');
+      }
+    } catch (error) {
+      console.error('Error al copiar:', error);
+      this.notificationService.showError('Error al copiar el enlace');
+    }
   }
 
   formatCurrency(value: number): string {

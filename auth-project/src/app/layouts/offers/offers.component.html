@@ -110,14 +110,6 @@
           </div>
         </div>
       </ng-template>
-
-      <!-- Sistema de notificaciones -->
-      <div class="notification-container" *ngIf="notification.show">
-        <div class="notification" [ngClass]="notification.type">
-          <span class="notification-message">{{ notification.message }}</span>
-          <button class="notification-close" (click)="hideNotification()">&times;</button>
-        </div>
-      </div>
     </div>
   </div>
 </div>

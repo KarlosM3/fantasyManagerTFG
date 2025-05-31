@@ -4,6 +4,7 @@ import { LeagueService } from '../../modals/create-league-modal/services/create-
 import { PointsService } from '../../services/points.service';
 import { AuthService } from '../../auth/services/auth.service';
 import { ActiveLeagueService } from '../home/services/active-league.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-classification',
@@ -30,7 +31,8 @@ export class ClassificationComponent implements OnInit {
     private leagueService: LeagueService,
     private pointsService: PointsService,
     private authService: AuthService,
-    private activeLeagueService: ActiveLeagueService
+    private activeLeagueService: ActiveLeagueService,
+    private notificationService: NotificationService
   ) { }
 
   ngOnInit(): void {
@@ -38,15 +40,12 @@ export class ClassificationComponent implements OnInit {
       this.leagueId = params['leagueId'];
 
       if (!this.leagueId) {
-        // Primero verificar si hay una liga activa en el servicio
         const activeLiga = this.activeLeagueService.getActiveLeague();
 
         if (activeLiga) {
-          // Si hay una liga activa, usar esa
           this.leagueId = activeLiga;
           this.loadClassificationData();
         } else {
-          // Si no hay liga activa, intentar obtener el equipo más reciente
           this.leagueService.getUserTeams().subscribe({
             next: (response: any) => {
               if (response && response.teams && response.teams.length > 0) {
@@ -54,21 +53,21 @@ export class ClassificationComponent implements OnInit {
                 this.loadClassificationData();
               } else {
                 this.error = "No tienes ningún equipo. Por favor, únete a una liga desde la página 'Mis Ligas'.";
+                this.notificationService.showWarning("No tienes ningún equipo");
               }
             },
             error: (error) => {
               console.error("Error al obtener equipos del usuario:", error);
               this.error = "Error al cargar tus equipos";
+              this.notificationService.showError("Error al cargar tus equipos");
             }
           });
         }
       } else {
-        // Si hay leagueId en la URL, usarlo y actualizar la liga activa
         this.activeLeagueService.setActiveLeague(this.leagueId);
         this.loadClassificationData();
       }
 
-      // Actualizar la propiedad ligaActivaId para el menú lateral
       this.ligaActivaId = this.activeLeagueService.getActiveLeague();
     });
   }
@@ -86,17 +85,19 @@ export class ClassificationComponent implements OnInit {
     this.leagueService.getLeagueById(this.leagueId).subscribe({
       next: (league: any) => {
         this.leagueName = league.name;
-        this.creationMatchday = league.creationMatchday || 1; // Obtener la jornada de creación
+        this.creationMatchday = league.creationMatchday || 1;
 
-        // Si la liga ya tiene un código de invitación, úsalo
         if (league.inviteCode) {
           this.inviteLink = `${window.location.origin}/join-league/${league.inviteCode}`;
-        }
-        // Si no tiene código, solicita uno nuevo
-        else {
-          this.leagueService.generateInviteCode(this.leagueId).subscribe(response => {
-            if (response.success) {
-              this.inviteLink = `${window.location.origin}/join-league/${response.inviteCode}`;
+        } else {
+          this.leagueService.generateInviteCode(this.leagueId).subscribe({
+            next: (response) => {
+              if (response.success) {
+                this.inviteLink = `${window.location.origin}/join-league/${response.inviteCode}`;
+              }
+            },
+            error: (error) => {
+              this.notificationService.showError('Error al generar código de invitación');
             }
           });
         }
@@ -104,6 +105,7 @@ export class ClassificationComponent implements OnInit {
       error: (err) => {
         console.error('Error al cargar datos de la liga:', err);
         this.error = 'No se pudo cargar la información de la liga';
+        this.notificationService.showError('Error al cargar información de la liga');
       }
     });
   }
@@ -112,9 +114,11 @@ export class ClassificationComponent implements OnInit {
     this.leagueService.getLeagueClassification(this.leagueId).subscribe({
       next: (users) => {
         this.leagueUsers = users;
+        this.notificationService.showSuccess('Clasificación general cargada');
       },
       error: (err) => {
         console.error('Error al cargar clasificación general:', err);
+        this.notificationService.showError('Error al cargar clasificación general');
       }
     });
   }
@@ -126,14 +130,17 @@ export class ClassificationComponent implements OnInit {
         console.log('Respuesta de clasificación por puntos:', response);
         if (response.success) {
           this.pointsStandings = response.data;
+          this.notificationService.showSuccess('Clasificación por puntos cargada');
         } else {
           this.error = 'Error al cargar la clasificación por puntos';
+          this.notificationService.showError('Error al cargar clasificación por puntos');
         }
         this.loading = false;
       },
       error: (err) => {
         console.error('Error al cargar clasificación por puntos:', err);
         this.error = 'No se pudo cargar la clasificación por puntos';
+        this.notificationService.showError('No se pudo cargar la clasificación por puntos');
         this.loading = false;
       }
     });
@@ -141,12 +148,25 @@ export class ClassificationComponent implements OnInit {
 
   showInviteModal(): void {
     this.showInvite = !this.showInvite;
+    if (this.showInvite) {
+      this.notificationService.showInfo('Comparte este enlace para invitar jugadores');
+    }
   }
 
-  copyInviteLink(inputElement: HTMLInputElement): void {
-    inputElement.select();
-    document.execCommand('copy');
-    // Mostrar notificación de copiado (opcional)
+  async copyInviteLink(inputElement: HTMLInputElement): Promise<void> {
+    try {
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(this.inviteLink);
+        this.notificationService.showSuccess('Enlace de invitación copiado al portapapeles');
+      } else {
+        inputElement.select();
+        document.execCommand('copy');
+        this.notificationService.showSuccess('Enlace de invitación copiado al portapapeles');
+      }
+    } catch (error) {
+      console.error('Error al copiar:', error);
+      this.notificationService.showError('Error al copiar el enlace');
+    }
   }
 
   getUserInitials(username: string): string {
@@ -176,8 +196,10 @@ export class ClassificationComponent implements OnInit {
 
   navigateToUserTeam(userId: string): void {
     if (this.leagueId && userId) {
-      // Navegar a la página de puntos del equipo del usuario seleccionado
+      this.notificationService.showInfo('Navegando al equipo del usuario');
       this.router.navigate(['/layouts/team-points', this.leagueId, 'user', userId]);
+    } else {
+      this.notificationService.showWarning('No se puede navegar al equipo del usuario');
     }
   }
 }
