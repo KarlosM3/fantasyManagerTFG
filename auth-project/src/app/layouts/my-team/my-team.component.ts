@@ -8,6 +8,7 @@ import { PlaceholderPlayerService } from "../../services/placeholder-player.serv
 import { PointsService } from "../../services/points.service"
 import { ActiveLeagueService } from "../home/services/active-league.service"
 import { NotificationService } from "../../services/notification.service"
+import { TeamFormationService } from "../../services/team-formation.service"
 
 @Component({
   selector: "app-my-team",
@@ -84,6 +85,7 @@ export class MyTeamComponent implements OnInit {
     private activeLeagueService: ActiveLeagueService,
     private notificationService: NotificationService,
     private placeholderService: PlaceholderPlayerService, // Añadir este servicio
+    private teamFormationService: TeamFormationService, // Añadir este servicio
   ) {}
 
   ngOnInit(): void {
@@ -128,12 +130,24 @@ export class MyTeamComponent implements OnInit {
       this.ligaActivaId = this.activeLeagueService.getActiveLeague();
     });
 
+      this.teamFormationService.clearTemporaryFormation();
+
     // Verificar el estado de la jornada cada 5 minutos
     setInterval(() => {
       if (this.leagueId) {
         this.checkMatchdayStatus();
       }
     }, 5 * 60 * 1000);
+
+    // VERIFICAR si venimos de team-points y limpiar estado
+    this.route.queryParams.subscribe(params => {
+      if (params['fromTeamPoints']) {
+        // Limpiar formación temporal si venimos de team-points
+        this.teamFormationService.clearTemporaryFormation();
+        // Recargar datos limpios
+        this.loadTeam();
+      }
+    });
   }
 
 
@@ -371,6 +385,13 @@ export class MyTeamComponent implements OnInit {
     this.defenders = this.players.filter((p) => p.position === "DEF")
     this.midfielders = this.players.filter((p) => p.position === "MID")
     this.forwards = this.players.filter((p) => p.position === "FWD")
+      console.log('Jugadores filtrados por posición:', {
+      goalkeepers: this.goalkeepers.length,
+      defenders: this.defenders.length,
+      midfielders: this.midfielders.length,
+      forwards: this.forwards.length,
+      forwardNames: this.forwards.map(f => f.nickname)
+    });
   }
 
   calculateTeamStats(): void {
@@ -471,53 +492,86 @@ export class MyTeamComponent implements OnInit {
 
   // Añadir este nuevo método para aplicar formación con placeholders
   applyFormationWithPlaceholders(): void {
-    // Extraer números de la formación (ej: "4-4-2" -> [4,4,2])
-    const formationParts = this.currentFormation.split("-").map((part) => Number.parseInt(part))
+    // Limpiar arrays antes de aplicar formación
+    this.startingGoalkeeper = [];
+    this.startingDefenders = [];
+    this.startingMidfielders = [];
+    this.startingForwards = [];
 
-    // Seleccionar 1 portero (siempre 1 en fútbol)
-    this.startingGoalkeeper =
-      this.goalkeepers.length > 0 ? [this.goalkeepers[0]] : [this.placeholderService.getPlaceholder("GK", 0)]
+    const formationParts = this.currentFormation.split("-").map((part) => Number.parseInt(part));
+    const [defCount, midCount, fwdCount] = formationParts;
 
-    // Seleccionar defensas según el primer número de la formación
-    const defCount = formationParts[0]
-    this.startingDefenders = [...this.defenders.slice(0, defCount)]
+    console.log(`Aplicando formación ${this.currentFormation}: ${defCount} DEF, ${midCount} MID, ${fwdCount} FWD`);
 
-    // Añadir placeholders si faltan defensas
-    if (this.startingDefenders.length < defCount) {
-      for (let i = this.startingDefenders.length; i < defCount; i++) {
-        this.startingDefenders.push(this.placeholderService.getPlaceholder("DEF", i))
-      }
+    // PORTEROS
+    this.startingGoalkeeper = this.goalkeepers.length > 0
+      ? [this.goalkeepers[0]]
+      : [this.placeholderService.getPlaceholder("GK", 0)];
+
+    // DEFENSAS - Usar todos los defensas disponibles
+    this.startingDefenders = [...this.defenders.slice(0, defCount)];
+    while (this.startingDefenders.length < defCount) {
+      this.startingDefenders.push(this.placeholderService.getPlaceholder("DEF", this.startingDefenders.length));
     }
 
-    // Seleccionar mediocampistas según el segundo número
-    const midCount = formationParts[1]
-    this.startingMidfielders = [...this.midfielders.slice(0, midCount)]
-
-    // Añadir placeholders si faltan mediocampistas
-    if (this.startingMidfielders.length < midCount) {
-      for (let i = this.startingMidfielders.length; i < midCount; i++) {
-        this.startingMidfielders.push(this.placeholderService.getPlaceholder("MID", i))
-      }
+    // CENTROCAMPISTAS - Usar todos los centrocampistas disponibles
+    this.startingMidfielders = [...this.midfielders.slice(0, midCount)];
+    while (this.startingMidfielders.length < midCount) {
+      this.startingMidfielders.push(this.placeholderService.getPlaceholder("MID", this.startingMidfielders.length));
     }
 
-    // Seleccionar delanteros según el tercer número
-    const fwdCount = formationParts[2]
-    this.startingForwards = [...this.forwards.slice(0, fwdCount)]
+    // DELANTEROS - USAR TODOS LOS DELANTEROS DISPONIBLES
+    console.log(`Formación requiere ${fwdCount} delanteros`);
+    console.log(`Delanteros disponibles en total: ${this.forwards.length}`, this.forwards.map(f => f.nickname));
 
-    // Añadir placeholders si faltan delanteros
-    if (this.startingForwards.length < fwdCount) {
-      for (let i = this.startingForwards.length; i < fwdCount; i++) {
-        this.startingForwards.push(this.placeholderService.getPlaceholder("FWD", i))
-      }
+    // TOMAR TODOS LOS DELANTEROS DISPONIBLES hasta completar la formación
+    this.startingForwards = [...this.forwards.slice(0, fwdCount)];
+
+    console.log(`Delanteros asignados al campo: ${this.startingForwards.length}`, this.startingForwards.map(f => f.nickname));
+
+    // Solo añadir placeholders si realmente no hay suficientes delanteros
+    while (this.startingForwards.length < fwdCount) {
+      console.log(`Añadiendo placeholder para delantero ${this.startingForwards.length}`);
+      this.startingForwards.push(this.placeholderService.getPlaceholder("FWD", this.startingForwards.length));
     }
 
-    // Calcular jugadores del banquillo (todos los que no son titulares ni placeholders)
+    // RECALCULAR BANQUILLO después de asignar titulares
     this.benchPlayers = [
-      ...this.goalkeepers.slice(1),
-      ...this.defenders.slice(defCount),
-      ...this.midfielders.slice(midCount),
-      ...this.forwards.slice(fwdCount),
-    ]
+      ...this.goalkeepers.slice(1), // Porteros suplentes
+      ...this.defenders.slice(defCount), // Defensas que no están en el campo
+      ...this.midfielders.slice(midCount), // Centrocampistas que no están en el campo
+      ...this.forwards.slice(fwdCount) // Delanteros que no están en el campo
+    ];
+
+    console.log('Resultado final:', {
+      formation: this.currentFormation,
+      startingForwards: this.startingForwards.length,
+      forwardsReal: this.startingForwards.filter(p => !this.isPlaceholderPlayer(p)).length,
+      benchForwards: this.benchPlayers.filter(p => p.position === 'FWD').length,
+      benchPlayers: this.benchPlayers.length
+    });
+
+    // Guardar formación temporal
+    const temporaryFormation = {
+      formation: this.currentFormation,
+      goalkeepers: [...this.startingGoalkeeper],
+      defenders: [...this.startingDefenders],
+      midfielders: [...this.startingMidfielders],
+      forwards: [...this.startingForwards],
+      captain: this.players.find(p => p.isCaptain)?.id
+    };
+
+    this.teamFormationService.setTemporaryFormation(temporaryFormation);
+  }
+
+
+
+  onFormationChange(): void {
+    // LIMPIAR formación temporal antes de aplicar nueva
+    this.teamFormationService.clearTemporaryFormation();
+
+    // Aplicar nueva formación
+    this.applyFormationWithPlaceholders();
   }
 
   // Añadir este método para mostrar advertencias
@@ -750,13 +804,11 @@ export class MyTeamComponent implements OnInit {
 
   // Método para guardar cambios en el equipo
   saveTeamChanges(): void {
-    // Verificar si los cambios están bloqueados
     if (this.matchdayLocked) {
       this.showWarningMessage("No se pueden guardar cambios porque la jornada está en curso");
       return;
     }
 
-    // Recopilar todos los jugadores del 11 inicial, excluyendo los placeholders
     const startingEleven = [
       ...this.startingGoalkeeper,
       ...this.startingDefenders,
@@ -764,11 +816,9 @@ export class MyTeamComponent implements OnInit {
       ...this.startingForwards
     ].filter(player => !this.isPlaceholderPlayer(player));
 
-    // Encontrar capitán y vicecapitán
     const captainPlayer = this.players.find(p => p.isCaptain);
     const viceCaptainPlayer = this.players.find(p => p.isViceCaptain);
 
-    // Crear objeto con todos los cambios
     const teamChanges = {
       formation: this.currentFormation,
       players: startingEleven,
@@ -776,17 +826,17 @@ export class MyTeamComponent implements OnInit {
       viceCaptainId: viceCaptainPlayer?.id
     };
 
-    // Enviar al servidor
     this.leagueService.saveTeamChanges(this.leagueId, teamChanges)
       .subscribe({
         next: (response) => {
           console.log("Cambios guardados con éxito");
-          // Mostrar notificación de éxito
           this.showSuccessMessage("Cambios guardados correctamente");
+
+          // AÑADIR ESTA LÍNEA
+          this.teamFormationService.clearTemporaryFormation();
         },
         error: (error) => {
           console.error("Error al guardar los cambios:", error);
-          // Mostrar notificación de error
           this.showErrorMessage("Error al guardar los cambios");
         }
       });

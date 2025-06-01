@@ -6,8 +6,8 @@ const Team = require('../models/team.model');
 
 // Definir la función auxiliar para obtener la jornada actual
 function getCurrentMatchday(players) {
+  // Basándome en los datos de Oblak (hasta jornada 36), Giménez y Koke
   let maxMatchday = 0;
-  
   players.forEach(player => {
     if (player.weekPoints && player.weekPoints.length > 0) {
       player.weekPoints.forEach(wp => {
@@ -18,7 +18,8 @@ function getCurrentMatchday(players) {
     }
   });
   
-  return maxMatchday;
+  // Los datos van hasta jornada 36, pero según el calendario oficial estamos en jornada 38
+  return Math.max(maxMatchday, 38); // Usar 36 como jornada actual basada en los datos reales
 }
 
 // Luego exporta el controlador que usa esa función
@@ -159,15 +160,12 @@ exports.getLeagueStandingsByPoints = async (req, res) => {
   try {
     const { leagueId } = req.params;
 
-    // Obtener la liga para conocer la jornada de creación
+    // Obtener la liga
     const League = require('../models/league.model');
     const league = await League.findById(leagueId);
     if (!league) {
       return res.status(404).json({ success: false, message: 'Liga no encontrada' });
     }
-
-    const creationMatchday = league.creationMatchday || 1;
-    console.log(`Liga ${league.name} creada en jornada ${creationMatchday}`);
 
     // Obtener todos los equipos de la liga
     const teams = await Team.find({ league: leagueId }).populate('user', 'username name');
@@ -176,21 +174,24 @@ exports.getLeagueStandingsByPoints = async (req, res) => {
     const response = await axios.get('https://api-fantasy.llt-services.com/api/v4/players');
     const allPlayers = response.data;
 
-    // Obtener la jornada actual
+    // Obtener la jornada actual basada en los datos reales
     const currentMatchday = getCurrentMatchday(allPlayers);
     console.log(`Jornada actual: ${currentMatchday}`);
 
-    // Calcular puntos para cada equipo solo desde creationMatchday
-    // Calcular puntos para cada equipo solo desde creationMatchday
-    const standings = await Promise.all(teams.map(async (team) => {
+    // Calcular puntos para cada equipo DESDE SU JORNADA DE INICIO INDIVIDUAL
+    const standings = teams.map((team) => {
       const playerIds = team.playersData.map(player => player.id);
-
       let totalPoints = 0;
       let matchdaysPlayed = 0;
 
-      for (let matchday = creationMatchday; matchday <= currentMatchday; matchday++) {
-        // Pasar el equipo completo
-        const matchdayPoints = calculateTeamPointsForMatchday(team, playerIds, allPlayers, matchday, creationMatchday);
+      // CORRECCIÓN: Usar joinedMatchday del equipo individual
+      const teamStartingMatchday = team.joinedMatchday || league.creationMatchday || 1;
+      
+      console.log(`Equipo ${team.user?.username || team.user?.name || 'desconocido'}: empezó en jornada ${teamStartingMatchday}`);
+
+      // Calcular puntos solo desde la jornada de inicio del equipo
+      for (let matchday = teamStartingMatchday; matchday <= currentMatchday; matchday++) {
+        const matchdayPoints = calculateTeamPointsForMatchday(team, playerIds, allPlayers, matchday, teamStartingMatchday);
         if (matchdayPoints > 0) {
           totalPoints += matchdayPoints;
           matchdaysPlayed++;
@@ -203,14 +204,14 @@ exports.getLeagueStandingsByPoints = async (req, res) => {
         name: team.user.username || team.user.name || 'Usuario',
         total_points: totalPoints,
         matchdays_played: matchdaysPlayed,
-        avg_points: matchdaysPlayed > 0 ? (totalPoints / matchdaysPlayed).toFixed(1) : '0'
+        avg_points: matchdaysPlayed > 0 ? (totalPoints / matchdaysPlayed).toFixed(1) : '0',
+        starting_matchday: teamStartingMatchday // Para debugging
       };
-    }));
-
+    });
 
     standings.sort((a, b) => b.total_points - a.total_points);
-    console.log(`Clasificación generada con ${standings.length} equipos`);
 
+    console.log(`Clasificación generada con ${standings.length} equipos`);
     res.status(200).json({ success: true, data: standings });
   } catch (error) {
     console.error('Error al obtener clasificación por puntos:', error);

@@ -94,16 +94,18 @@ export class HomeComponent implements OnInit {
     this.leagueService.createLeague(leagueData).subscribe({
       next: (res: any) => {
         this.closeCreateLeagueModal();
-        this.loadUserLeagues();
         this.selectedLeagueId = res.leagueId;
+
+        // RECARGAR LIGAS INMEDIATAMENTE después de crear la liga
+        this.loadUserLeagues();
 
         // Notificación de éxito al crear liga
         this.notificationService.showSuccess('Liga creada correctamente');
 
         if (this.selectedLeagueId) {
           this.leagueService.assignRandomTeam(this.selectedLeagueId).subscribe({
-            next: (team: any[]) => {
-              this.randomTeam = team;
+            next: (team: any) => {
+              this.randomTeam = team.team || team;
               this.isTeamModalOpen = true;
               this.notificationService.showSuccess('Equipo aleatorio asignado');
             },
@@ -120,6 +122,8 @@ export class HomeComponent implements OnInit {
       }
     });
   }
+
+
 
 
   // Nuevo método para cerrar el modal y navegar a clasificación

@@ -4,43 +4,74 @@ const Team = require('../models/team.model');
 const Market = require('../models/market.model');
 const axios = require('axios');
 
+function getJornadaForDate(date = new Date()) {
+  const LALIGA_CALENDAR = [
+    { jornada: 1, inicio: new Date('2024-08-18') },
+    { jornada: 2, inicio: new Date('2024-08-25') },
+    { jornada: 3, inicio: new Date('2024-08-28') },
+    { jornada: 4, inicio: new Date('2024-09-01') },
+    { jornada: 5, inicio: new Date('2024-09-15') },
+    { jornada: 6, inicio: new Date('2024-09-22') },
+    { jornada: 7, inicio: new Date('2024-09-29') },
+    { jornada: 8, inicio: new Date('2024-10-06') },
+    { jornada: 9, inicio: new Date('2024-10-20') },
+    { jornada: 10, inicio: new Date('2024-10-27') },
+    { jornada: 11, inicio: new Date('2024-11-03') },
+    { jornada: 12, inicio: new Date('2024-11-10') },
+    { jornada: 13, inicio: new Date('2024-11-24') },
+    { jornada: 14, inicio: new Date('2024-12-01') },
+    { jornada: 15, inicio: new Date('2024-12-08') },
+    { jornada: 16, inicio: new Date('2024-12-15') },
+    { jornada: 17, inicio: new Date('2024-12-22') },
+    { jornada: 18, inicio: new Date('2025-01-12') },
+    { jornada: 19, inicio: new Date('2025-01-19') },
+    { jornada: 20, inicio: new Date('2025-01-26') },
+    { jornada: 21, inicio: new Date('2025-02-02') },
+    { jornada: 22, inicio: new Date('2025-02-09') },
+    { jornada: 23, inicio: new Date('2025-02-16') },
+    { jornada: 24, inicio: new Date('2025-02-23') },
+    { jornada: 25, inicio: new Date('2025-03-02') },
+    { jornada: 26, inicio: new Date('2025-03-09') },
+    { jornada: 27, inicio: new Date('2025-03-16') },
+    { jornada: 28, inicio: new Date('2025-03-30') },
+    { jornada: 29, inicio: new Date('2025-04-06') },
+    { jornada: 30, inicio: new Date('2025-04-13') },
+    { jornada: 31, inicio: new Date('2025-04-20') },
+    { jornada: 32, inicio: new Date('2025-04-27') },
+    { jornada: 33, inicio: new Date('2025-05-04') },
+    { jornada: 34, inicio: new Date('2025-05-11') },
+    { jornada: 35, inicio: new Date('2025-05-18') },
+    { jornada: 36, inicio: new Date('2025-05-14') }, // CORREGIR: Jornada 36 es 14 mayo
+    { jornada: 37, inicio: new Date('2025-05-18') }, // CORREGIR: Jornada 37 es 18 mayo
+    { jornada: 38, inicio: new Date('2025-05-25') }  // CORREGIR: Jornada 38 es 25 mayo
+  ];
+
+  for (let i = LALIGA_CALENDAR.length - 1; i >= 0; i--) {
+    if (date >= LALIGA_CALENDAR[i].inicio) {
+      return LALIGA_CALENDAR[i].jornada + 1; // Siguiente jornada
+    }
+  }
+  return 1;
+}
+
 // Crear una nueva liga y asociarla al usuario
 exports.createLeague = async (req, res) => {
   try {
-    const { name, privacy, initialBudget } = req.body;
-    const userId = req.user.id || req.user._id;
+    const { name, privacy, maxParticipants, initialBudget, teamValue } = req.body;
     
-    // Forzar el límite máximo de participantes a 16
-    const maxParticipants = 16; // Siempre usar 16 independientemente de lo que envíe el cliente
-
-    // Obtener la jornada actual desde la API externa
-    const response = await axios.get('https://api-fantasy.llt-services.com/api/v4/players');
-    const allPlayers = response.data;
+    // Obtener la jornada correcta basada en la fecha actual
+    const startingMatchday = getJornadaForDate(new Date());
     
-    // Determinar la jornada actual
-    let currentMatchday = 1;
-    allPlayers.forEach(player => {
-      if (player.weekPoints && player.weekPoints.length > 0) {
-        player.weekPoints.forEach(wp => {
-          if (wp.weekNumber > currentMatchday) {
-            currentMatchday = wp.weekNumber;
-          }
-        });
-      }
-    });
-    
-    console.log(`Creando liga en jornada actual: ${currentMatchday}`);
-
-    // 1. Crear la liga con la jornada actual y máximo 16 participantes
     const newLeague = new League({
       name,
       privacy: privacy || 'private',
-      maxParticipants: maxParticipants, // Siempre 16
+      maxParticipants: maxParticipants || 16,
       initialBudget: initialBudget || 100000000,
-      createdBy: userId,
-      creationMatchday: currentMatchday, // Establecer la jornada de creación
+      teamValue: teamValue || 100000000,
+      createdBy: req.user.id,
+      creationMatchday: startingMatchday,
       members: [{
-        userId,
+        userId: req.user.id,
         role: 'admin',
         joinedAt: new Date()
       }]
@@ -48,26 +79,22 @@ exports.createLeague = async (req, res) => {
 
     await newLeague.save();
 
-    // Añadir la liga al usuario
     await User.findByIdAndUpdate(
-      userId,
+      req.user.id,
       { $push: { leagues: newLeague._id } },
       { new: true }
     );
-
+    
+    console.log(`Liga "${name}" creada. Empezará a puntuar desde jornada ${startingMatchday}`);
+    
     res.status(201).json({
-      success: true,
+      message: 'Liga creada exitosamente',
       leagueId: newLeague._id,
-      message: 'Liga creada con éxito',
-      creationMatchday: currentMatchday
+      startingMatchday: startingMatchday
     });
   } catch (error) {
     console.error('Error al crear la liga:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al crear la liga',
-      error: error.message
-    });
+    res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
 

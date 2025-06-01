@@ -524,6 +524,55 @@ $accent-color: #ff3a3a;
   100% { transform: translateY(-50%) rotate(360deg); }
 }
 
+// Estilos para placeholders
+.placeholder-card {
+  background-color: rgba(255, 255, 255, 0.3) !important;
+  border: 2px dashed rgba(255, 255, 255, 0.5) !important;
+  opacity: 0.7;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.4) !important;
+    border-color: rgba(255, 255, 255, 0.7) !important;
+  }
+
+  .placeholder-text {
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-style: italic;
+  }
+
+  .placeholder-points {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+
+  .placeholder-image {
+    opacity: 0.4;
+    filter: grayscale(100%);
+  }
+
+  // Ocultar elementos que no aplican a placeholders
+  .team-badge,
+  .captain-badge,
+  .player-status-badge {
+    display: none !important;
+  }
+}
+
+.unsaved-changes-warning {
+  background-color: #ff9800;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+
+  i {
+    font-size: 16px;
+  }
+}
+
 // Responsive
 @media (max-width: 768px) {
   .team-header {

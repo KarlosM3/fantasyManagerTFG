@@ -46,6 +46,11 @@ export class CreateLeagueModalComponent implements OnInit {
   }
 
   closeModal(): void {
+    this.leagueForm.reset({
+      privacy: 'private',
+      maxParticipants: 10,
+      initialBudget: 100000000
+    });
     this.close.emit();
   }
 
