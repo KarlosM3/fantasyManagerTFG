@@ -72,20 +72,21 @@ export class PlayerBadgeService {
     switch (status.toLowerCase()) {
       case "disponible":
       case "ok":
-        return "fa-check-circle";
+        return "fas fa-check-circle";
       case "duda":
       case "doubtful":
-        return "fa-question-circle"; // Icono para jugadores en duda
+        return "fas fa-question-circle";
       case "lesionado":
       case "injured":
-        return "fa-notes-medical"; // Icono para jugadores lesionados
+        return "fas fa-notes-medical"; // Esta clase está correcta
       case "sancionado":
       case "suspended":
-        return "fa-ban"; // Icono para jugadores sancionados (alternativa a cards-blank)
+        return "fas fa-ban";
       default:
-        return "fa-check-circle";
+        return "fas fa-check-circle";
     }
   }
+
 
 
 

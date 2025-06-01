@@ -158,6 +158,164 @@ $accent-color: #ff3a3a;
   }
 }
 
+.player-card {
+  background-color: #333333;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 2px solid transparent;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    border-color: rgba(76, 175, 80, 0.3);
+  }
+
+  // Efecto especial para jugadores lesionados
+  &.injured-player {
+    border-color: rgba(239, 68, 68, 0.5);
+
+    .player-header {
+      position: relative;
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg,
+          transparent 40%,
+          rgba(239, 68, 68, 0.1) 50%,
+          transparent 60%);
+        pointer-events: none;
+      }
+    }
+  }
+}
+
+.player-header {
+  position: relative;
+  height: 120px;
+  background: linear-gradient(135deg, #444444 0%, #555555 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+
+  .position-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #000000;
+    z-index: 2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .player-image {
+    height: 90px;
+    width: auto;
+    object-fit: contain;
+    z-index: 1;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  }
+}
+
+// Mejoras en la información del jugador
+.player-info {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+
+  .player-name {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #ffffff;
+  }
+
+  .player-team {
+    font-size: 12px;
+    color: #b0b0b0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+// Mejoras en las estadísticas
+.player-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+
+    .stat-value {
+      font-weight: 600;
+      font-size: 14px;
+      color: #ffffff;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: #b0b0b0;
+      margin-top: 2px;
+    }
+  }
+}
+
+// Mejoras en el botón de acción
+.card-footer {
+  padding: 10px;
+  border-top: 1px solid #444444;
+
+  .action-btn {
+    width: 100%;
+    padding: 8px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &.buy-btn {
+      background: linear-gradient(135deg, #4caf50 0%, #5cb85c 100%);
+      color: white;
+
+      &:hover:not(:disabled) {
+        background: linear-gradient(135deg, #5cb85c 0%, #6cc66c 100%);
+        transform: translateY(-1px);
+      }
+    }
+
+    &:disabled {
+      background-color: #2a2a2a;
+      color: #888888;
+      cursor: not-allowed;
+    }
+  }
+}
+
 // Grid de tarjetas
 .players-grid {
   display: grid;
@@ -287,6 +445,71 @@ $accent-color: #ff3a3a;
   }
 }
 
+// Estilos para el badge de estado del jugador
+.player-status-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 3;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+
+  i {
+    font-size: 10px;
+  }
+
+  &.injured {
+    background-color: #ef4444 !important;
+    animation: pulse 2s infinite;
+  }
+
+  &.doubtful {
+    background-color: #f59e0b !important;
+  }
+
+  &.suspended {
+    background-color: #6b7280 !important;
+  }
+}
+
+// Animación para jugadores lesionados
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+// Mejoras en la sección del nombre del jugador
+.player-name-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+
+  .team-badge {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .player-details {
+    flex: 1;
+    min-width: 0; // Para permitir text-overflow
+  }
+}
+
 .players-table-container {
   flex: 1;
   overflow: auto;
@@ -294,6 +517,75 @@ $accent-color: #ff3a3a;
   border-radius: 8px;
   margin-bottom: 20px;
 }
+
+// Efecto especial para jugadores en venta con estado
+.player-card {
+  &.sale-player {
+    border: 2px solid rgba(76, 175, 80, 0.3);
+
+    &.injured-player {
+      border-color: rgba(239, 68, 68, 0.5);
+
+      .player-header::after {
+        background: linear-gradient(45deg,
+          transparent 40%,
+          rgba(239, 68, 68, 0.1) 50%,
+          transparent 60%);
+      }
+    }
+
+    &.doubtful-player {
+      border-color: rgba(245, 158, 11, 0.5);
+
+      .player-header::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg,
+          transparent 40%,
+          rgba(245, 158, 11, 0.1) 50%,
+          transparent 60%);
+        pointer-events: none;
+      }
+    }
+
+    &.suspended-player {
+      border-color: rgba(107, 114, 128, 0.5);
+
+      .player-header::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg,
+          transparent 40%,
+          rgba(107, 114, 128, 0.1) 50%,
+          transparent 60%);
+        pointer-events: none;
+      }
+    }
+  }
+}
+
+// Botón específico para ofertas
+.action-btn.buy-btn {
+  &:disabled {
+    background-color: #2a2a2a;
+    color: #888888;
+    cursor: not-allowed;
+
+    &:hover {
+      transform: none;
+      background-color: #2a2a2a;
+    }
+  }
+}
+
 
 .loading-state, .empty-state {
   display: flex;
@@ -578,18 +870,35 @@ $accent-color: #ff3a3a;
   }
 }
 
-// Sección de mercado
+// Estilos específicos para jugadores en venta
 .market-section {
-  margin-top: 30px;
-  margin-bottom: 20px;
+  margin-top: 32px;
 
   h2 {
-    font-size: 20px;
-    font-weight: 600;
-    margin-bottom: 15px;
     color: #ffffff;
-    border-bottom: 1px solid #444444;
-    padding-bottom: 10px;
+    font-size: 24px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #4caf50;
+    padding-bottom: 8px;
+  }
+}
+
+// Información adicional de venta
+.sale-info {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+  .expiry-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #f59e0b;
+
+    i {
+      font-size: 10px;
+    }
   }
 }
 
@@ -639,6 +948,26 @@ $accent-color: #ff3a3a;
   }
 }
 
+// Responsive improvements
+@media (max-width: 768px) {
+  .players-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .player-header {
+    height: 100px;
+
+    .player-image {
+      height: 70px;
+    }
+  }
+
+  .player-status-badge {
+    font-size: 9px;
+    padding: 3px 6px;
+  }
+}
 
 // Responsive ajustments
 @media (max-width: 768px) {

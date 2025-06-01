@@ -5,6 +5,7 @@ import { LeagueService } from "../../modals/create-league-modal/services/create-
 import { forkJoin } from "rxjs"
 import { AuthService } from "../../auth/services/auth.service"
 import { NotificationService } from "../../services/notification.service"
+import { PlayerBadgeService } from "../../services/player-badge.service"
 
 @Component({
   selector: "app-market",
@@ -52,7 +53,7 @@ export class MarketComponent implements OnInit {
   positionMap: any = {
     "1": "Portero",
     "2": "Defensa",
-    "3": "Centrocampista",
+    "3": "Medio",
     "4": "Delantero",
   }
 
@@ -61,7 +62,8 @@ export class MarketComponent implements OnInit {
     private activeLeagueService: ActiveLeagueService,
     private leagueservice: LeagueService,
     private authService: AuthService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private playerBadgeService: PlayerBadgeService
   ) {}
 
   ngOnInit(): void {
@@ -405,7 +407,52 @@ export class MarketComponent implements OnInit {
     return colors[positionId] || "#9E9E9E"
   }
 
+  // Métodos para el estado del jugador
+  shouldShowPlayerStatus(player: any): boolean {
+    return this.playerBadgeService.shouldShowBadge(player);
+  }
 
+  getPlayerStatusClass(player: any): string {
+    const status = this.playerBadgeService.getPlayerStatus(player);
+    return this.playerBadgeService.getStatusClass(status);
+  }
+
+  getPlayerStatusColor(player: any): string {
+    const status = this.playerBadgeService.getPlayerStatus(player);
+    return this.playerBadgeService.getStatusColor(status);
+  }
+
+  getPlayerStatusIcon(player: any): string {
+    const status = this.playerBadgeService.getPlayerStatus(player);
+    return this.playerBadgeService.getStatusIcon(status);
+  }
+
+  getPlayerStatusText(player: any): string {
+    return this.playerBadgeService.getPlayerStatus(player);
+  }
+
+  // Método para añadir clase CSS especial a jugadores lesionados
+  getPlayerCardClass(player: any): string {
+    const status = this.playerBadgeService.getPlayerStatus(player);
+    return status.toLowerCase() === 'lesionado' ? 'injured-player' : '';
+  }
+
+  formatExpiryDate(expiryDate: string | Date): string {
+    const date = new Date(expiryDate);
+    const now = new Date();
+    const diffMs = date.getTime() - now.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+    if (diffMs < 0) {
+      return 'Expirado';
+    } else if (diffHours < 24) {
+      return `${diffHours}h ${diffMinutes}m`;
+    } else {
+      const diffDays = Math.floor(diffHours / 24);
+      return `${diffDays}d ${diffHours % 24}h`;
+    }
+  }
 
   showSuccessMessage(message: string): void {
     this.notificationService.showSuccess(message);

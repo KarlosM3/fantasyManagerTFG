@@ -64,20 +64,39 @@
         <div class="players-grid" *ngIf="!isLoading && paginatedPlayers.length > 0; else loadingOrEmpty">
           <div class="player-card" *ngFor="let player of paginatedPlayers">
             <div class="player-header">
-              <span class="position-badge" [style.background-color]="getPositionColor(player.positionId)">
+              <!-- Badge de posición -->
+              <div class="position-badge" [style.background-color]="getPositionColor(player.positionId)">
                 {{ positionMap[player.positionId] }}
-              </span>
-              <img
-                [src]="player.images?.transparent['256x256']"
-                [alt]="player.nickname"
-                class="player-image"
-                (error)="player.imageError = true"
-                [ngClass]="{'hidden': player.imageError}"
-              />
+              </div>
+
+              <!-- Badge de estado del jugador -->
+              <div class="player-status-badge"
+                  *ngIf="shouldShowPlayerStatus(player)"
+                  [ngClass]="getPlayerStatusClass(player)"
+                  [style.background-color]="getPlayerStatusColor(player)">
+                <i [class]="getPlayerStatusIcon(player)"></i>
+                {{ getPlayerStatusText(player) }}
+              </div>
+
+              <!-- Imagen del jugador -->
+              <img [src]="player.images?.transparent?.['256x256'] || 'assets/images/no-player.png'"
+                  [alt]="player.nickname || 'Jugador'"
+                  class="player-image">
             </div>
+
             <div class="player-info">
-              <div class="player-name">{{ player.nickname || 'Sin nombre' }}</div>
-              <div class="player-team">{{ player.team?.name }}</div>
+              <!-- Nombre del jugador con escudo del equipo -->
+              <div class="player-name-section">
+                <img [src]="player.team?.badgeColor || 'assets/images/no-team.png'"
+                    [alt]="player.team?.name"
+                    class="team-badge">
+                <div class="player-details">
+                  <div class="player-name">{{ player.nickname || 'Sin nombre' }}</div>
+                  <div class="player-team">{{ player.team?.name }}</div>
+                </div>
+              </div>
+
+              <!-- Estadísticas del jugador -->
               <div class="player-stats">
                 <div class="stat">
                   <div class="stat-value">{{ player.points }}</div>
@@ -87,17 +106,20 @@
                   <div class="stat-value">{{ formatMarketValue(player.marketValue) }}</div>
                   <div class="stat-label">Valor</div>
                 </div>
-                <div class="stat" *ngIf="player.bidCount > 0">
-                  <div class="stat-value">{{ player.bidCount }}</div>
+                <div class="stat" *ngIf="player.currentBid > 0">
+                  <div class="stat-value">{{ player.bidCount || 0 }}</div>
                   <div class="stat-label">Pujas</div>
                 </div>
               </div>
             </div>
+
             <div class="card-footer">
-              <button
-                class="action-btn buy-btn"
-                (click)="openBuyModal(player)">
-                Comprar
+              <button class="action-btn buy-btn"
+                      [disabled]="player.inMyTeam || teamBudget < player.marketValue"
+                      (click)="openBuyModal(player)">
+                <span *ngIf="player.inMyTeam">Tu jugador</span>
+                <span *ngIf="!player.inMyTeam && player.currentBid > 0">Pujar</span>
+                <span *ngIf="!player.inMyTeam && player.currentBid === 0">Comprar</span>
               </button>
             </div>
           </div>
@@ -107,22 +129,45 @@
         <div class="market-section" *ngIf="listedPlayers.length > 0">
           <h2>Jugadores en venta</h2>
           <div class="players-grid">
-            <div class="player-card" *ngFor="let listing of listedPlayers">
+            <div class="player-card"
+                [ngClass]="getPlayerCardClass(listing.player)"
+                *ngFor="let listing of listedPlayers">
               <div class="player-header">
-                <span class="position-badge" [style.background-color]="getPositionColor(listing.player.positionId)">
+                <!-- Badge de posición -->
+                <div class="position-badge" [style.background-color]="getPositionColor(listing.player.positionId)">
                   {{ positionMap[listing.player.positionId] }}
-                </span>
-                <img
-                  [src]="listing.player.images?.transparent['256x256']"
-                  [alt]="listing.player.nickname"
-                  class="player-image"
-                  (error)="listing.imageError = true"
-                  [ngClass]="{'hidden': listing.imageError}"
-                />
+                </div>
+
+                <!-- Badge de estado del jugador -->
+                <div class="player-status-badge"
+                    *ngIf="shouldShowPlayerStatus(listing.player)"
+                    [ngClass]="getPlayerStatusClass(listing.player)"
+                    [style.background-color]="getPlayerStatusColor(listing.player)">
+                  <i [class]="getPlayerStatusIcon(listing.player)"></i>
+                  {{ getPlayerStatusText(listing.player) }}
+                </div>
+
+                <!-- Imagen del jugador -->
+                <img [src]="listing.player.images?.transparent?.['256x256'] || 'assets/images/no-player.png'"
+                    [alt]="listing.player.nickname || 'Jugador'"
+                    class="player-image"
+                    (error)="listing.imageError = true"
+                    [ngClass]="{'hidden': listing.imageError}">
               </div>
+
               <div class="player-info">
-                <div class="player-name">{{ listing.player.nickname || 'Sin nombre' }}</div>
-                <div class="player-team">{{ listing.player.team?.name }}</div>
+                <!-- Nombre del jugador con escudo del equipo -->
+                <div class="player-name-section">
+                  <img [src]="listing.player.team?.badgeColor || 'assets/images/no-team.png'"
+                      [alt]="listing.player.team?.name"
+                      class="team-badge">
+                  <div class="player-details">
+                    <div class="player-name">{{ listing.player.nickname || 'Sin nombre' }}</div>
+                    <div class="player-team">{{ listing.player.team?.name }}</div>
+                  </div>
+                </div>
+
+                <!-- Estadísticas del jugador en venta -->
                 <div class="player-stats">
                   <div class="stat">
                     <div class="stat-value">{{ listing.player.points }}</div>
@@ -137,13 +182,22 @@
                     <div class="stat-label">Ofertas</div>
                   </div>
                 </div>
+
+                <!-- Información adicional de la venta -->
+                <div class="sale-info" *ngIf="listing.expiryDate">
+                  <div class="expiry-info">
+                    <i class="fas fa-clock"></i>
+                    <span>Expira: {{ formatExpiryDate(listing.expiryDate) }}</span>
+                  </div>
+                </div>
               </div>
+
               <div class="card-footer">
-                <button
-                  class="action-btn buy-btn"
-                  (click)="openOfferModal(listing)"
-                  [disabled]="listing.seller === userId">
-                  {{ listing.seller === userId ? 'Tu jugador' : 'Hacer oferta' }}
+                <button class="action-btn buy-btn"
+                        [disabled]="listing.seller === userId"
+                        (click)="openOfferModal(listing)">
+                  <span *ngIf="listing.seller === userId">Tu jugador</span>
+                  <span *ngIf="listing.seller !== userId">Hacer oferta</span>
                 </button>
               </div>
             </div>
