@@ -1,10 +1,9 @@
-// Variables - Actualizado para coincidir con el tema de Domonios Fantasy
-$team-primary-color: #ff3e3e; // Rojo para Fantasy
-$team-secondary-color: #1e88e5; // Azul para botones
-$team-accent-color: #10b981; // Verde para badges disponible
-$team-background: #121212; // Fondo negro
-$card-background: #ffffff; // Tarjetas blancas
-$pitch-bg-color: #2e7d32; // Campo verde
+$team-primary-color: #ff3e3e;
+$team-secondary-color: #1e88e5;
+$team-accent-color: #10b981;
+$team-background: #121212;
+$card-background: #ffffff;
+$pitch-bg-color: #2e7d32;
 $pitch-lines-color: rgba(255, 255, 255, 0.7);
 $text-light: #ffffff;
 $text-dark: #333333;
@@ -18,7 +17,6 @@ $sidebar-active: #333333;
 $text-color: #ffffff;
 $accent-color: #ff3a3a;
 
-// Mixins
 @mixin glass-effect {
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
@@ -50,10 +48,10 @@ $accent-color: #ff3a3a;
 
 .page-container {
   display: flex;
-  min-height: calc(100vh - 60px); // Ajusta según la altura de tu header
+  min-height: calc(100vh - 60px);
 }
 
-// Sidebar
+
 .sidebar {
   width: 250px;
   background-color: $sidebar-bg;
@@ -85,7 +83,6 @@ $accent-color: #ff3a3a;
   }
 }
 
-// Team container
 .team-container {
   display: flex;
   padding: 20px;
@@ -97,7 +94,6 @@ $accent-color: #ff3a3a;
   position: relative;
 }
 
-// Main content
 .main-content {
   flex: 1;
   padding: 20px;
@@ -105,8 +101,6 @@ $accent-color: #ff3a3a;
   overflow-y: auto;
 }
 
-// Header
-/* Estilos para el encabezado del equipo */
 .team-header {
   display: flex;
   flex-direction: column;
@@ -114,8 +108,8 @@ $accent-color: #ff3a3a;
   margin-bottom: 24px;
   padding-bottom: 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  align-items: center; /* Esto centra los elementos hijos */
-  width: 100%; /* Asegura que ocupe todo el ancho disponible */
+  align-items: center;
+  width: 100%;
 }
 
 .team-header h2 {
@@ -129,7 +123,7 @@ $accent-color: #ff3a3a;
 .matchday-status {
   display: flex;
   align-items: center;
-  justify-content: center; /* Centra el contenido del banner */
+  justify-content: center;
   padding: 8px 14px;
   border-radius: 6px;
   font-weight: 600;
@@ -137,8 +131,8 @@ $accent-color: #ff3a3a;
   transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 0;
-  width: auto; /* Ajusta el ancho al contenido */
-  max-width: 100%; /* Evita desbordamiento */
+  width: auto;
+  max-width: 100%;
 }
 
 .matchday-status i {
@@ -164,21 +158,20 @@ $accent-color: #ff3a3a;
   border-left: 4px solid #007bff;
 }
 
-/* Estilos para los botones de acción */
 .team-actions {
   display: flex;
   gap: 12px;
-  justify-content: center; /* Centra los botones */
+  justify-content: center;
   flex-wrap: wrap;
-  width: 100%; /* Asegura que ocupe todo el ancho disponible */
+  width: 100%;
 }
 
 .team-actions-row {
   display: flex;
-  flex-direction: column; /* Cambia a columna para apilar elementos */
-  align-items: center; /* Centra horizontalmente */
+  flex-direction: column;
+  align-items: center;
   gap: 15px;
-  width: 100%; /* Asegura que ocupe todo el ancho disponible */
+  width: 100%;
 }
 
 .action-btn {
@@ -218,7 +211,6 @@ $accent-color: #ff3a3a;
   box-shadow: none;
 }
 
-/* Estilos específicos para cada tipo de botón */
 .formation-btn {
   background-color: #1e88e5;
   color: white;
@@ -250,7 +242,6 @@ $accent-color: #ff3a3a;
   background-color: #a5d6a7;
 }
 
-/* Estilos para el banner de jornada finalizada */
 .matchday-banner {
   background-color: #d4edda;
   color: #155724;
@@ -269,7 +260,6 @@ $accent-color: #ff3a3a;
   color: #28a745;
 }
 
-/* Estilo para botones deshabilitados */
 button[disabled] {
   opacity: 0.5;
   cursor: not-allowed;
@@ -503,9 +493,9 @@ button[disabled] {
   }
 
   .duda i {
-    color: #f28543; /* Color más oscuro para el icono */
-    font-size: 23px; /* Tamaño ligeramente mayor */
-    font-weight: bold; /* Hacer el icono más grueso */
+    color: #f28543;
+    font-size: 23px;
+    font-weight: bold;
   }
 
   .lesionado {
@@ -576,9 +566,9 @@ button[disabled] {
 
   .player-image-container {
     position: relative;
-    width: 50px; // Reducido de 60px
-    height: 50px; // Reducido de 60px
-    margin: 0 auto 5px; // Reducido el margen inferior
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 5px;
     z-index: 2;
 
     img {
@@ -608,19 +598,19 @@ button[disabled] {
 
       // Colores diferentes por posición
       .goalkeepers & {
-        background-color: #ffcc00; // Amarillo para porteros
+        background-color: #ffcc00;
       }
 
       .defenders & {
-        background-color: #ff3e3e; // Rojo para defensas
+        background-color: #ff3e3e;
       }
 
       .midfielders & {
-        background-color: #1e88e5; // Azul para centrocampistas
+        background-color: #1e88e5;
       }
 
       .forwards & {
-        background-color: #10b981; // Verde para delanteros
+        background-color: #10b981;
       }
     }
   }
@@ -637,7 +627,7 @@ button[disabled] {
 
   .player-name {
     font-weight: bold;
-    font-size: 12px; // Ligeramente más pequeño para caber en tarjetas más compactas
+    font-size: 12px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -663,8 +653,8 @@ button[disabled] {
   .player-actions {
     display: flex;
     justify-content: center;
-    gap: 4px; // Reducido de 8px
-    margin-top: 4px; // Reducido de 8px
+    gap: 4px;
+    margin-top: 4px;
     opacity: 0;
     transform: translateY(10px);
     transition: all 0.3s ease;
@@ -677,13 +667,13 @@ button[disabled] {
   }
 
   .icon-btn {
-    width: 24px; // Reducido de 30px
-    height: 24px; // Reducido de 30px
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     border: none;
     cursor: pointer;
     font-weight: bold;
-    font-size: 10px; // Reducido de 12px
+    font-size: 10px;
     transition: all 0.2s ease;
 
     &.captain-btn {
@@ -715,7 +705,6 @@ button[disabled] {
   }
 }
 
-// Añadir estilos para las tarjetas de placeholder
 .placeholder-card {
   background-color: rgba(255, 255, 255, 0.5);
   border: 2px dashed #666;
@@ -742,11 +731,9 @@ button[disabled] {
   }
 
   .player-actions {
-    // Ocultar acciones para placeholders
     display: none;
   }
 
-  // No mostrar escudo para placeholders
   .team-badge {
     display: none;
   }
@@ -931,7 +918,6 @@ button[disabled] {
   }
 }
 
-// Estilo para el mensaje informativo de placeholders
 .placeholder-info {
   margin: 15px 0;
   padding: 10px;
@@ -941,7 +927,6 @@ button[disabled] {
   color: rgba(255, 255, 255, 0.8);
 }
 
-// Team stats
 .team-stats {
   margin-top: 20px;
   display: flex;
@@ -974,7 +959,6 @@ button[disabled] {
   }
 }
 
-// Modals
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1023,7 +1007,6 @@ button[disabled] {
   }
 }
 
-// Estilos para el modo de venta
 .mode-message {
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 8px;
@@ -1048,7 +1031,6 @@ button[disabled] {
   }
 }
 
-// Estilos para jugadores seleccionables en modo venta
 .player-card {
   &.sellable {
     cursor: pointer;
@@ -1186,7 +1168,6 @@ button[disabled] {
   }
 }
 
-// Estilos para el modal de formación mejorado
 .formation-modal {
   max-width: 700px;
 }
@@ -1227,7 +1208,6 @@ button[disabled] {
   }
 }
 
-// Mini campo de fútbol para visualizar formaciones
 .mini-pitch {
   width: 120px;
   height: 160px;

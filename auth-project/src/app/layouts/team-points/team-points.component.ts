@@ -1,4 +1,3 @@
-// team-points.component.ts
 import { Component, OnInit, ChangeDetectorRef } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { PointsService } from "../../services/points.service";
@@ -145,7 +144,6 @@ export class TeamPointsComponent implements OnInit {
   }
 
 
-  // team-points.component.ts
   loadTeamWithPoints(): void {
     this.loading = true;
     this.errorMessage = '';
@@ -312,7 +310,6 @@ export class TeamPointsComponent implements OnInit {
   }
 
   applyFormation(): void {
-    // Usar el nuevo método con placeholders
     this.applyFormationWithPlaceholders();
   }
 

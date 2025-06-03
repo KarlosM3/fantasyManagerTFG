@@ -31,8 +31,7 @@ export interface Player {
   providedIn: 'root'
 })
 export class PlayerService {
-  // URL que apunta al backend
-  private apiUrl = 'http://localhost:3000/api/players'; // URL relativa a tu backend
+  private apiUrl = 'http://localhost:3000/api/players';
 
   constructor(private http: HttpClient) { }
 

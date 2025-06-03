@@ -15,7 +15,7 @@ body {
 
 /* Header y Navbar */
 .app-header {
-  background-color: #1a1a25; /* Un poco más oscuro */
+  background-color: #1a1a25;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
@@ -23,7 +23,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.6rem 2rem; /* Un poco más compacto */
+  padding: 0.6rem 2rem;
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
@@ -79,7 +79,7 @@ body {
 
 /* Botón de inicio */
 .home-link {
-  background-color: #2d2d3a; /* Color más oscuro como en la imagen */
+  background-color: #2d2d3a;
   color: white;
   padding: 0.5rem 1.2rem;
   border-radius: 6px;
@@ -101,17 +101,17 @@ body {
 }
 
 .home-link i {
-  color: #ff6b6b; /* Icono en color para destacar */
+  color: #ff6b6b;
   font-size: 1.1rem;
 }
 
 /* Botón de cerrar sesión */
 .logout-btn {
-  background-color: #ff4757; /* Un rojo más intenso como en la imagen */
+  background-color: #ff4757;
   color: white;
   border: none;
   padding: 0.5rem 1.2rem;
-  border-radius: 6px; /* Bordes más redondeados */
+  border-radius: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -119,7 +119,7 @@ body {
   font-weight: 500;
   letter-spacing: 0.3px;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(255, 71, 87, 0.3); /* Sombra sutil */
+  box-shadow: 0 2px 4px rgba(255, 71, 87, 0.3);
 }
 
 .logout-btn:hover {

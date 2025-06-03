@@ -28,10 +28,8 @@ export class PlayersComponent implements OnInit {
   ngOnInit(): void {
     this.cargarJugadores();
 
-    // Obtener la liga activa del servicio
     this.ligaActivaId = this.activeLeagueService.getActiveLeague();
 
-    // Si no hay liga activa, intentar obtener la más reciente
     if (!this.ligaActivaId) {
       this.getRecentLeague();
     }
@@ -41,10 +39,8 @@ export class PlayersComponent implements OnInit {
     this.leagueService.getUserTeams().subscribe({
       next: (response: any) => {
         if (response && response.teams && response.teams.length > 0) {
-          // Usar el primer equipo de la lista (el más reciente)
           this.ligaActivaId = response.teams[0].leagueId;
 
-          // Actualizar la liga activa en el servicio
           if (this.ligaActivaId) {
             this.activeLeagueService.setActiveLeague(this.ligaActivaId);
             console.log('Liga activa establecida:', this.ligaActivaId);
@@ -64,7 +60,6 @@ export class PlayersComponent implements OnInit {
     if (this.ligaActivaId) {
       this.router.navigate(['/layouts/' + route, this.ligaActivaId]);
     } else {
-      // Si no hay liga activa, navegar a la ruta sin parámetro
       this.router.navigate(['/layouts/' + route]);
     }
   }
@@ -77,7 +72,6 @@ export class PlayersComponent implements OnInit {
     this.playerService.getPlayers().subscribe(
       (data) => {
         if (data && Array.isArray(data)) {
-          // Filtrar jugadores que NO están fuera de liga
           this.jugadores = data.filter(jugador => jugador.playerStatus !== 'out_of_league');
           this.jugadoresFiltrados = [...this.jugadores];
         } else {
@@ -99,7 +93,6 @@ export class PlayersComponent implements OnInit {
     if (filtro === 'Todos') {
       this.jugadoresFiltrados = [...this.jugadores];
     } else {
-      // Mapeo de filtros a positionId
       const positionMap: {[key: string]: string} = {
         'Porteros': '1',
         'Defensas': '2',
@@ -112,7 +105,6 @@ export class PlayersComponent implements OnInit {
       );
     }
 
-    // Aplicar ordenación si existe
     if (this.ordenActual) {
       this.ordenarJugadores(this.ordenActual);
     }
@@ -139,13 +131,11 @@ export class PlayersComponent implements OnInit {
       );
     }
 
-    // Luego filtramos por el término de búsqueda
     this.jugadoresFiltrados = jugadoresPorPosicion.filter(jugador =>
       jugador.nickname.toLowerCase().includes(termino) ||
       jugador.team.name.toLowerCase().includes(termino)
     );
 
-    // Aplicar ordenación si existe
     if (this.ordenActual) {
       this.ordenarJugadores(this.ordenActual);
     }
@@ -191,7 +181,6 @@ export class PlayersComponent implements OnInit {
   getLastFiveWeeks(jugador: Player): Array<{weekNumber: number, points: number}> {
     if (!jugador.weekPoints || !jugador.weekPoints.length) return [];
 
-    // Ordenamos por número de jornada descendente y tomamos las últimas 5
     return [...jugador.weekPoints]
       .sort((a, b) => b.weekNumber - a.weekNumber)
       .slice(0, 5)
@@ -200,17 +189,14 @@ export class PlayersComponent implements OnInit {
 
   // Métodos para navegación
   navigateTo(route: string) {
-    // Para rutas que requieren leagueId
     if (['my-team', 'classification', 'team-points', 'offers'].includes(route)) {
       this.navigateWithActiveLeague(route);
     } else {
-      // Para rutas que no requieren leagueId
       this.router.navigate(['/layouts/' + route]);
     }
   }
 
   cerrarSesion() {
-    // Aquí puedes agregar la lógica para cerrar sesión
     localStorage.removeItem('token');
     this.router.navigate(['/login']);
   }

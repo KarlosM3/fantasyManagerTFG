@@ -1,4 +1,3 @@
-// auth.service.ts
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -7,14 +6,13 @@ import { isPlatformBrowser } from '@angular/common';
 
 interface AuthResponse {
   token: string;
-  // otras propiedades si las hay
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:3000/api'; // URL de tu backend local
+  private apiUrl = 'http://localhost:3000/api';
   private token: string | null = null;
 
   constructor(
@@ -30,7 +28,6 @@ export class AuthService {
             this.token = response.token;
             this.setToken(response.token);
 
-            // Guardar el nombre del usuario
             if (response.user && response.user.name) {
               this.setUserName(response.user.name);
             }
@@ -39,14 +36,12 @@ export class AuthService {
       );
   }
 
-  // Método para guardar el nombre del usuario
   setUserName(name: string): void {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem('userName', name);
     }
   }
 
-  // Método para obtener el nombre del usuario
   getUserName(): string {
     if (isPlatformBrowser(this.platformId)) {
       return localStorage.getItem('userName') || 'Usuario';
@@ -89,7 +84,6 @@ export class AuthService {
     }
   }
 
-  // Método para obtener la URL de redirección
   getRedirectUrl(): string | null {
     if (isPlatformBrowser(this.platformId)) {
       return localStorage.getItem('redirectUrl');
@@ -97,14 +91,12 @@ export class AuthService {
     return null;
   }
 
-  // Método para limpiar la URL de redirección
   clearRedirectUrl(): void {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem('redirectUrl');
     }
   }
 
-  // Método para verificar y procesar invitaciones pendientes
   processPendingInvite(): boolean {
     if (isPlatformBrowser(this.platformId)) {
       const pendingCode = localStorage.getItem('pendingInviteCode');
@@ -116,7 +108,6 @@ export class AuthService {
     return false;
   }
 
-  // Método para guardar el código de invitación pendiente
   getPendingInviteCode(): string | null {
     if (isPlatformBrowser(this.platformId)) {
       return localStorage.getItem('pendingInviteCode');
@@ -125,12 +116,10 @@ export class AuthService {
   }
 
   getCurrentUserId(): string {
-  if (isPlatformBrowser(this.platformId)) {
-    // Si almacenas el ID de usuario en localStorage
-    return localStorage.getItem('userId') || '';
-
+    if (isPlatformBrowser(this.platformId)) {
+      return localStorage.getItem('userId') || '';
+    }
+    return '';
   }
-  return '';
-}
 
 }

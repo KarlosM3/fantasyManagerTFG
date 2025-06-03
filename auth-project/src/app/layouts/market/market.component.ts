@@ -68,7 +68,6 @@ export class MarketComponent implements OnInit {
 
   ngOnInit(): void {
     this.activeLeagueId = this.activeLeagueService.getActiveLeague();
-    // Obtener el ID del usuario del servicio de autenticación
     this.userId = this.authService.getUserName();
 
     if (this.activeLeagueId) {
@@ -94,7 +93,6 @@ export class MarketComponent implements OnInit {
         this.teamBudget = results.teamData.budget || 0;
         this.userBids = results.userBids || [];
 
-        // Marcar jugadores que ya están en mi equipo o tienen pujas
         this.players = this.players.map((player) => {
           const existingBid = this.userBids.find(bid => bid.player.id === player.id);
           return {
@@ -104,7 +102,6 @@ export class MarketComponent implements OnInit {
           };
         });
 
-        // Añadir jugadores en venta
         this.listedPlayers = results.listedPlayers;
 
         this.applyFilters();
@@ -117,14 +114,12 @@ export class MarketComponent implements OnInit {
     });
   }
 
-  // Cargar pujas del usuario
   loadUserBids() {
     if (this.activeLeagueId) {
       this.marketService.getUserBids(this.activeLeagueId).subscribe({
         next: (bids) => {
           this.userBids = bids;
 
-          // Actualizar las pujas actuales en la lista de jugadores
           this.players = this.players.map(player => {
             const existingBid = this.userBids.find(bid => bid.player.id === player.id);
             return {
@@ -160,7 +155,6 @@ export class MarketComponent implements OnInit {
   applyFilters(): void {
     let result = [...this.players]
 
-    // Aplicar filtro de búsqueda
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase()
       result = result.filter(
@@ -171,17 +165,14 @@ export class MarketComponent implements OnInit {
       )
     }
 
-    // Aplicar filtro de posición
     if (this.positionFilter !== "all") {
       result = result.filter((player) => player.positionId === this.positionFilter)
     }
 
-    // Aplicar ordenamiento
     result.sort((a, b) => {
       let valueA = a[this.sortOption]
       let valueB = b[this.sortOption]
 
-      // Convertir a número si es un valor numérico
       if (this.sortOption === "marketValue" || this.sortOption === "points") {
         valueA = Number(valueA)
         valueB = Number(valueB)
@@ -210,11 +201,9 @@ export class MarketComponent implements OnInit {
 
   onSortChange(option: string): void {
     if (this.sortOption === option) {
-      // Cambiar dirección si es la misma opción
       this.sortDirection = this.sortDirection === "asc" ? "desc" : "asc"
     } else {
       this.sortOption = option
-      // Por defecto, ordenar descendente para valor de mercado y puntos
       this.sortDirection = option === "marketValue" || option === "points" ? "desc" : "asc"
     }
     this.applyFilters()
@@ -229,7 +218,6 @@ export class MarketComponent implements OnInit {
     console.log('Abriendo modal para:', player.nickname);
     this.selectedPlayer = player;
 
-    // Establecer puja mínima (valor de mercado o puja existente)
     const existingBid = this.userBids.find(bid => bid.player.id === player.id);
     if (existingBid) {
       this.bidAmount = existingBid.amount;
@@ -267,17 +255,14 @@ export class MarketComponent implements OnInit {
     this.selectedListing = null;
   }
 
-  // Método para realizar una puja
   placeBid(): void {
     if (!this.selectedPlayer || !this.activeLeagueId) return;
 
-    // Validar que la puja sea mayor o igual al mínimo
     if (this.bidAmount < this.minBidAmount) {
       this.showNotification(`La puja debe ser al menos ${this.formatMarketValue(this.minBidAmount)}`, 'warning');
       return;
     }
 
-    // Validar que el usuario tenga suficiente presupuesto
     if (this.bidAmount > this.teamBudget) {
       this.showNotification('No tienes suficiente presupuesto para esta puja', 'error');
       return;
@@ -288,16 +273,13 @@ export class MarketComponent implements OnInit {
     this.marketService.placeBid(this.selectedPlayer.id, this.activeLeagueId, this.bidAmount)
       .subscribe({
         next: (response) => {
-          // Actualizar pujas locales
           this.loadUserBids();
 
-          // Actualizar la puja en la lista de jugadores
           const playerIndex = this.players.findIndex(p => p.id === this.selectedPlayer.id);
           if (playerIndex >= 0) {
             this.players[playerIndex].currentBid = this.bidAmount;
           }
 
-          // Cerrar modal y mostrar mensaje de éxito
           this.showBuyModal = false;
           this.showNotification('Puja realizada con éxito', 'success');
           this.isProcessing = false;
@@ -311,9 +293,7 @@ export class MarketComponent implements OnInit {
   }
 
 
-  // Método antiguo (mantener por compatibilidad)
   buyPlayer(): void {
-    // Redirigir al nuevo método de pujas
     this.placeBid();
   }
 
@@ -324,7 +304,7 @@ export class MarketComponent implements OnInit {
       next: (response) => {
         this.teamBudget = response.newBudget
         this.closeSellModal()
-        this.loadData() // Recargar datos
+        this.loadData()
       },
       error: (error) => {
         console.error("Error al vender jugador:", error)
@@ -337,13 +317,11 @@ export class MarketComponent implements OnInit {
   makeOffer(): void {
     if (!this.selectedListing || !this.activeLeagueId) return;
 
-    // Validar que la oferta sea mayor o igual al precio pedido
     if (this.offerAmount < this.selectedListing.askingPrice) {
       this.showNotification(`La oferta debe ser al menos ${this.formatMarketValue(this.selectedListing.askingPrice)}`, 'warning');
       return;
     }
 
-    // Validar que el usuario tenga suficiente presupuesto
     if (this.offerAmount > this.teamBudget) {
       this.showNotification('No tienes suficiente presupuesto para esta oferta', 'error');
       return;
@@ -354,10 +332,8 @@ export class MarketComponent implements OnInit {
     this.marketService.makeOffer(this.selectedListing._id, this.offerAmount)
       .subscribe({
         next: (response) => {
-          // Recargar datos
           this.loadData();
 
-          // Cerrar modal y mostrar mensaje de éxito
           this.showOfferModal = false;
           this.showNotification('Oferta realizada con éxito', 'success');
           this.isProcessing = false;
@@ -370,7 +346,6 @@ export class MarketComponent implements OnInit {
       });
   }
 
-  // Helpers para la paginación
   get paginatedPlayers(): any[] {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage
     return this.filteredPlayers.slice(startIndex, startIndex + this.itemsPerPage)
@@ -431,7 +406,6 @@ export class MarketComponent implements OnInit {
     return this.playerBadgeService.getPlayerStatus(player);
   }
 
-  // Método para añadir clase CSS especial a jugadores lesionados
   getPlayerCardClass(player: any): string {
     const status = this.playerBadgeService.getPlayerStatus(player);
     return status.toLowerCase() === 'lesionado' ? 'injured-player' : '';
@@ -462,23 +436,22 @@ export class MarketComponent implements OnInit {
     this.notificationService.showError(message);
   }
 
-  // Reemplazar el método showNotification existente
   showNotification(message: string, type: 'success' | 'error' | 'warning' | 'info'): void {
-  switch(type) {
-    case 'success':
-      this.notificationService.showSuccess(message);
-      break;
-    case 'error':
-      this.notificationService.showError(message);
-      break;
-    case 'warning':
-      this.notificationService.showWarning(message);
-      break;
-    case 'info':
-      this.notificationService.showInfo(message);
-      break;
+    switch(type) {
+      case 'success':
+        this.notificationService.showSuccess(message);
+        break;
+      case 'error':
+        this.notificationService.showError(message);
+        break;
+      case 'warning':
+        this.notificationService.showWarning(message);
+        break;
+      case 'info':
+        this.notificationService.showInfo(message);
+        break;
+    }
   }
-}
 
 
 

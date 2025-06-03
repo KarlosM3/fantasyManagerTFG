@@ -41,14 +41,14 @@ function getJornadaForDate(date = new Date()) {
     { jornada: 33, inicio: new Date('2025-05-04') },
     { jornada: 34, inicio: new Date('2025-05-11') },
     { jornada: 35, inicio: new Date('2025-05-18') },
-    { jornada: 36, inicio: new Date('2025-05-14') }, // CORREGIR: Jornada 36 es 14 mayo
-    { jornada: 37, inicio: new Date('2025-05-18') }, // CORREGIR: Jornada 37 es 18 mayo
-    { jornada: 38, inicio: new Date('2025-05-25') }  // CORREGIR: Jornada 38 es 25 mayo
+    { jornada: 36, inicio: new Date('2025-05-14') }, 
+    { jornada: 37, inicio: new Date('2025-05-18') }, 
+    { jornada: 38, inicio: new Date('2025-05-25') }  
   ];
 
   for (let i = LALIGA_CALENDAR.length - 1; i >= 0; i--) {
     if (date >= LALIGA_CALENDAR[i].inicio) {
-      return LALIGA_CALENDAR[i].jornada + 1; // Siguiente jornada
+      return LALIGA_CALENDAR[i].jornada + 1; 
     }
   }
   return 1;
@@ -138,8 +138,8 @@ exports.assignRandomTeam = async (req, res) => {
     const teamStructure = { GK: 2, DEF: 4, MID: 6, FWD: 3 };
     const maxPlayersPerTeam = 3;
     const league = await League.findById(leagueId);
-    const targetTeamValue = 100000000; // Valor máximo de 100M para el equipo
-    const transferBudget = league.initialBudget || 100000000; // Presupuesto para fichajes
+    const targetTeamValue = 100000000; 
+    const transferBudget = league.initialBudget || 100000000; 
 
     // Obtener todos los jugadores de la API externa
     const response = await axios.get('https://api-fantasy.llt-services.com/api/v3/players');
@@ -201,7 +201,7 @@ exports.assignRandomTeam = async (req, res) => {
       
       while (needed > 0 && pool.length > 0) {
         const player = pool[0];
-        pool.shift(); // Quitar el primer jugador
+        pool.shift(); 
         
         if (
           !selectedPlayers.find(p => p.id === player.id) &&
@@ -216,7 +216,7 @@ exports.assignRandomTeam = async (req, res) => {
       }
     }
 
-    // VERIFICACIÓN FINAL: Asegurar que el equipo no supere los 100M
+    
     if (totalSpent > targetTeamValue) {
       console.log(`El valor del equipo (${totalSpent}) excede el límite de 100M. Realizando ajustes...`);
       
@@ -258,7 +258,6 @@ exports.assignRandomTeam = async (req, res) => {
       }
     }
 
-    // VERIFICACIÓN EXPLÍCITA DE POSICIONES
     const requiredPositions = {
       "GK": 2,
       "DEF": 4,
@@ -306,7 +305,7 @@ exports.assignRandomTeam = async (req, res) => {
       league: leagueId,
       user: userId,
       players: [],
-      budget: transferBudget, // Presupuesto para fichajes (no se resta el valor del equipo)
+      budget: transferBudget,
       playersData: selectedPlayers,
       formation: '4-4-2'
     });
@@ -355,7 +354,7 @@ exports.getLeagueClassification = async (req, res) => {
       const matchdaysPlayed = hasCompleteTeam ? team.matchdaysPlayed || 0 : 0;
       
       return {
-        userId: team.user._id,  // Incluir el ID del usuario
+        userId: team.user._id, 
         name: team.user.name,
         points: totalPoints,
         teamValue: teamValue,
@@ -390,7 +389,7 @@ exports.generateInviteLink = async (req, res) => {
       await league.save();
     }
     
-    // Construye el enlace de invitación
+    // Enlace de invitación
     const inviteLink = `http://localhost:4200/join-league/${league.inviteCode}`;
     
     res.json({
@@ -477,8 +476,8 @@ exports.joinLeagueByCode = async (req, res) => {
       // Estructura y presupuesto
       const teamStructure = { GK: 2, DEF: 4, MID: 6, FWD: 3 };
       const maxPlayersPerTeam = 3;
-      const targetTeamValue = 100000000; // Valor máximo de 100M para el equipo
-      const transferBudget = league.initialBudget || 100000000; // Presupuesto para fichajes
+      const targetTeamValue = 100000000; 
+      const transferBudget = league.initialBudget || 100000000; 
 
       // Obtener todos los jugadores de la API externa
       const response = await axios.get('https://api-fantasy.llt-services.com/api/v3/players');
@@ -540,7 +539,7 @@ exports.joinLeagueByCode = async (req, res) => {
         
         while (needed > 0 && pool.length > 0) {
           const player = pool[0];
-          pool.shift(); // Quitar el primer jugador
+          pool.shift(); 
           
           if (
             !selectedPlayers.find(p => p.id === player.id) &&
@@ -555,7 +554,7 @@ exports.joinLeagueByCode = async (req, res) => {
         }
       }
 
-      // VERIFICACIÓN FINAL: Asegurar que el equipo no supere los 100M
+      // Asegurar que el equipo no supere los 100M
       if (totalSpent > targetTeamValue) {
         console.log(`El valor del equipo (${totalSpent}) excede el límite de 100M. Realizando ajustes...`);
         
@@ -597,7 +596,6 @@ exports.joinLeagueByCode = async (req, res) => {
         }
       }
 
-      // VERIFICACIÓN EXPLÍCITA DE POSICIONES
       const requiredPositions = {
         "GK": 2,
         "DEF": 4,
@@ -648,7 +646,7 @@ exports.joinLeagueByCode = async (req, res) => {
         budget: transferBudget,
         playersData: selectedPlayers,
         formation: '4-4-2',
-        matchdaysPlayed: 0 // Inicializar a 0 ya que los puntos se contarán desde la jornada de creación
+        matchdaysPlayed: 0 
       });
 
       return res.status(200).json({
@@ -656,7 +654,7 @@ exports.joinLeagueByCode = async (req, res) => {
         message: 'Te has unido a la liga correctamente',
         leagueId: league._id,
         team: selectedPlayers,
-        creationMatchday: creationMatchday // Devolver la jornada de creación para información
+        creationMatchday: creationMatchday 
       });
     } catch (teamError) {
       console.error('Error asignando equipo aleatorio:', teamError);
@@ -674,13 +672,6 @@ exports.joinLeagueByCode = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
-
 exports.generateInviteCode = async (req, res) => {
   try {
     const { leagueId } = req.params;
@@ -693,7 +684,7 @@ exports.generateInviteCode = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Liga no encontrada' });
     }
     
-    // Verificar permisos (opcional)
+    // Verificar permisos admin de la liga
     const isAdmin = league.members.some(m => 
       m.userId.toString() === userId.toString() && m.role === 'admin'
     );
@@ -704,7 +695,7 @@ exports.generateInviteCode = async (req, res) => {
     
     // Generar código de invitación si no existe
     if (!league.inviteCode) {
-      league.inviteCode = generateRandomCode(8); // Función que genera un código aleatorio
+      league.inviteCode = generateRandomCode(8); 
       await league.save();
     }
     
@@ -773,12 +764,12 @@ exports.getMyTeam = async (req, res) => {
     }, 0);
     
     res.json({
-      teamId: team._id, // Añadir explícitamente el ID del equipo
+      teamId: team._id, 
       teamValue,
       budget: team.budget,
       playersData: team.playersData,
       team: {
-        _id: team._id, // También incluirlo aquí para compatibilidad
+        _id: team._id, 
         formation: team.formation,
         startingEleven: team.startingEleven,
         captain: team.captain,
@@ -930,7 +921,7 @@ exports.getUserTeams = async (req, res) => {
     
     // Buscar todos los equipos del usuario y ordenarlos por fecha de creación (descendente)
     const teams = await Team.find({ user: userId })
-                            .sort({ createdAt: -1 }) // Ordenar por fecha de creación descendente
+                            .sort({ createdAt: -1 }) 
                             .populate('league', 'name');
     
     if (!teams || teams.length === 0) {

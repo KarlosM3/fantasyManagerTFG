@@ -77,15 +77,13 @@ export class MyTeamComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
     private leagueService: LeagueService,
-    private formationService: FormationService,
     public playerBadgeService: PlayerBadgeService,
     private pointsService: PointsService,
     private activeLeagueService: ActiveLeagueService,
     private notificationService: NotificationService,
-    private placeholderService: PlaceholderPlayerService, // Añadir este servicio
-    private teamFormationService: TeamFormationService, // Añadir este servicio
+    private placeholderService: PlaceholderPlayerService,
+    private teamFormationService: TeamFormationService,
   ) {}
 
   ngOnInit(): void {
@@ -93,16 +91,13 @@ export class MyTeamComponent implements OnInit {
       this.leagueId = params["leagueId"];
 
       if (!this.leagueId) {
-        // Primero verificar si hay una liga activa en el servicio
         const activeLiga = this.activeLeagueService.getActiveLeague();
 
         if (activeLiga) {
-          // Si hay una liga activa, usar esa
           this.leagueId = activeLiga;
           this.loadTeam();
           this.checkMatchdayStatus();
         } else {
-          // Si no hay liga activa, intentar obtener el equipo más reciente
           this.leagueService.getUserTeams().subscribe({
             next: (response: any) => {
               if (response && response.teams && response.teams.length > 0) {
@@ -120,42 +115,34 @@ export class MyTeamComponent implements OnInit {
           });
         }
       } else {
-        // Si hay leagueId en la URL, usarlo y actualizar la liga activa
         this.activeLeagueService.setActiveLeague(this.leagueId);
         this.loadTeam();
         this.checkMatchdayStatus();
       }
 
-       // Actualizar la propiedad ligaActivaId para el menú lateral
       this.ligaActivaId = this.activeLeagueService.getActiveLeague();
     });
 
       this.teamFormationService.clearTemporaryFormation();
 
-    // Verificar el estado de la jornada cada 5 minutos
     setInterval(() => {
       if (this.leagueId) {
         this.checkMatchdayStatus();
       }
     }, 5 * 60 * 1000);
 
-    // VERIFICAR si venimos de team-points y limpiar estado
+    // Verifica si venimos de team-points y limpiar estado
     this.route.queryParams.subscribe(params => {
       if (params['fromTeamPoints']) {
-        // Limpiar formación temporal si venimos de team-points
         this.teamFormationService.clearTemporaryFormation();
-        // Recargar datos limpios
         this.loadTeam();
       }
     });
   }
 
 
-
-
   // Método para verificar el estado de la jornada
   checkMatchdayStatus(): void {
-    // Obtener la jornada actual
     this.pointsService.getCurrentMatchday().subscribe(
       (data: any) => {
         this.currentMatchday = data.data.matchday;
@@ -171,7 +158,6 @@ export class MyTeamComponent implements OnInit {
                 (endData: any) => {
                   this.matchdayEnded = endData.data.hasEnded;
 
-                  // Actualizar el estado de bloqueo
                   // Solo bloqueamos si la jornada ha comenzado pero no ha terminado
                   this.matchdayLocked = this.matchdayStarted && !this.matchdayEnded;
 
@@ -221,7 +207,6 @@ export class MyTeamComponent implements OnInit {
   loadTeam(): void {
     this.leagueService.getMyTeam(this.leagueId).subscribe({
       next: (response: any) => {
-        // Verifica si la respuesta es un array o un objeto con una propiedad que contiene el array
         const data = Array.isArray(response.playersData) ? response.playersData : (response.team?.playersData || []);
 
         this.availableBudget = response.budget || 0
@@ -229,7 +214,6 @@ export class MyTeamComponent implements OnInit {
           ...player,
           position: this.positionMap[player.positionId as keyof typeof this.positionMap],
           image: player.images?.transparent?.["256x256"] || null,
-          // Asegurarse de que el escudo del equipo esté disponible
           team: {
             ...player.team,
             badgeColor: player.team?.badgeColor || null,
@@ -272,21 +256,18 @@ export class MyTeamComponent implements OnInit {
 
   // Método auxiliar para establecer capitán sin hacer llamadas al servidor
   private setCaptainSilently(player: Player): void {
-    // Quitar capitán anterior
     this.players.forEach((p) => (p.isCaptain = false));
     player.isCaptain = true;
   }
 
   // Método auxiliar para establecer vicecapitán sin hacer llamadas al servidor
   private setViceCaptainSilently(player: Player): void {
-    // Quitar vice-capitán anterior
     this.players.forEach((p) => (p.isViceCaptain = false));
     player.isViceCaptain = true;
   }
 
   // Método para restaurar la alineación guardada
   private restoreStartingEleven(startingEleven: any[]): void {
-    // Identificar jugadores por posición
     const starters = {
       GK: startingEleven.filter(p => p.position === 'GK' || this.positionMap[p.positionId as keyof typeof this.positionMap] === 'GK'),
       DEF: startingEleven.filter(p => p.position === 'DEF' || this.positionMap[p.positionId as keyof typeof this.positionMap] === 'DEF'),
@@ -396,19 +377,15 @@ export class MyTeamComponent implements OnInit {
 
   calculateTeamStats(): void {
     this.totalPoints = this.players.reduce((sum, player) => sum + (player.points || 0), 0)
-    // Asumiendo que el valor del jugador está en otra propiedad, ajusta según corresponda
     this.teamValue = this.players.reduce((sum, player) => {
-      // Usa la propiedad correcta según tu API
       const value = player.marketValue || 0
       return sum + Number(value)
     }, 0)
   }
 
   setCaptain(player: Player): void {
-    // Quitar capitán anterior
     this.players.forEach((p) => (p.isCaptain = false))
     player.isCaptain = true
-    // Actualizar en el servidor
     this.leagueService.updateTeamCaptain(this.leagueId, player.id).subscribe({
       next: () => {
         console.log("Capitán actualizado con éxito")
@@ -422,10 +399,8 @@ export class MyTeamComponent implements OnInit {
   }
 
   setViceCaptain(player: Player): void {
-    // Quitar vice-capitán anterior
     this.players.forEach((p) => (p.isViceCaptain = false))
     player.isViceCaptain = true
-    // Aquí se implementaría la llamada al servicio para actualizar en el servidor
   }
 
   openFormationModal(): void {
@@ -490,9 +465,8 @@ export class MyTeamComponent implements OnInit {
     })
   }
 
-  // Añadir este nuevo método para aplicar formación con placeholders
+  // Método para aplicar formación con placeholders
   applyFormationWithPlaceholders(): void {
-    // Limpiar arrays antes de aplicar formación
     this.startingGoalkeeper = [];
     this.startingDefenders = [];
     this.startingMidfielders = [];
@@ -567,10 +541,7 @@ export class MyTeamComponent implements OnInit {
 
 
   onFormationChange(): void {
-    // LIMPIAR formación temporal antes de aplicar nueva
     this.teamFormationService.clearTemporaryFormation();
-
-    // Aplicar nueva formación
     this.applyFormationWithPlaceholders();
   }
 
@@ -579,7 +550,6 @@ export class MyTeamComponent implements OnInit {
     this.formationErrorMessage = message
     this.showFormationErrorMessage = true
 
-    // Auto-ocultar después de 5 segundos
     setTimeout(() => {
       this.showFormationErrorMessage = false
     }, 5000)
@@ -590,12 +560,10 @@ export class MyTeamComponent implements OnInit {
     this.formationErrorMessage = message
     this.showFormationErrorMessage = true
 
-    // Auto-ocultar después de 5 segundos
     setTimeout(() => {
       this.showFormationErrorMessage = false
     }, 5000)
 
-    // Sugerir formación alternativa
     const suggestedFormation = this.findClosestValidFormation(
       this.defenders.length,
       this.midfielders.length,
@@ -618,7 +586,6 @@ export class MyTeamComponent implements OnInit {
   initiateSellMode(): void {
     this.sellMode = true;
     this.sellModeMessage = "Selecciona el jugador que deseas vender";
-    // Cancelar cualquier otro modo activo
     this.exchangeMode = false;
     this.playerToExchange = null;
   }
@@ -632,7 +599,6 @@ export class MyTeamComponent implements OnInit {
   listPlayerForSale(): void {
     if (!this.playerToSell || !this.leagueId) return;
 
-    // Validar que el precio sea al menos el valor de mercado
     if (this.askingPrice < this.minAskingPrice) {
       this.showErrorMessage(`El precio debe ser al menos ${this.formatCurrency(this.minAskingPrice)}`);
       return;
@@ -643,7 +609,7 @@ export class MyTeamComponent implements OnInit {
         next: (response) => {
           this.showSuccessMessage('Jugador puesto a la venta con éxito');
           this.closeSellModal();
-          this.loadTeam(); // Recargar datos
+          this.loadTeam();
         },
         error: (error) => {
           console.error('Error al poner jugador a la venta:', error);
@@ -652,7 +618,6 @@ export class MyTeamComponent implements OnInit {
       });
   }
 
-  // Funciones para controlar el banquillo
   toggleBench(): void {
     this.showBench = !this.showBench
   }
@@ -665,7 +630,6 @@ export class MyTeamComponent implements OnInit {
       }
       return;
     }
-    // Si el modo de venta está activo, abrir el modal de venta
     if (this.sellMode) {
       if (!this.isPlaceholderPlayer(player)) {
         this.openSellModal(player);
@@ -684,11 +648,9 @@ export class MyTeamComponent implements OnInit {
     this.exchangeMode = true
     this.selectedPlayer = player
 
-    // Mostrar un mensaje según la posición del jugador
     const positionName = this.getReadablePosition(player.position ?? "")
     this.exchangeModeMessage = `Selecciona un ${positionName} del banquillo para reemplazar a ${player.nickname}`
 
-    // Asegurar que el banquillo está visible
     this.showBench = true
   }
 
@@ -697,7 +659,6 @@ export class MyTeamComponent implements OnInit {
       return false
     }
 
-    // Comprobar si las posiciones son compatibles
     return benchPlayer.position === this.playerToExchange.position
   }
 
@@ -706,7 +667,6 @@ export class MyTeamComponent implements OnInit {
       return;
     }
 
-    // Obtener arrays para realizar el intercambio
     const { starter, starters, index } = this.getPlayerArrays(this.playerToExchange);
     if (starter && starters && index >= 0) {
       // Guardar el capitán/vice-capitán
@@ -797,7 +757,7 @@ export class MyTeamComponent implements OnInit {
     return this.playerBadgeService.getStatusColor(status)
   }
 
-  // Añadir este método para verificar si un jugador es un placeholder
+  // Método para verificar si un jugador es un placeholder
   isPlaceholderPlayer(player: Player): boolean {
     return this.placeholderService.isPlaceholder(player)
   }
@@ -832,7 +792,6 @@ export class MyTeamComponent implements OnInit {
           console.log("Cambios guardados con éxito");
           this.showSuccessMessage("Cambios guardados correctamente");
 
-          // AÑADIR ESTA LÍNEA
           this.teamFormationService.clearTemporaryFormation();
         },
         error: (error) => {
@@ -850,7 +809,6 @@ export class MyTeamComponent implements OnInit {
     this.notificationService.showError(message);
   }
 
-  // Añadir método para warnings
   private showWarningMessage(message: string): void {
     this.notificationService.showWarning(message);
   }

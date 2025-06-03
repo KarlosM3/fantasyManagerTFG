@@ -1,4 +1,3 @@
-// login.component.ts
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -36,19 +35,15 @@ export class LoginComponent {
 
     this.authService.login(user).subscribe({
       next: (data: any) => {
-        // Guardar explícitamente el nombre del usuario si no viene en la respuesta
         if (!data.user || !data.user.name) {
           const emailParts = user.email.split('@');
           this.authService.setUserName(emailParts[0]);
         }
-
         // Verificar si hay un código de invitación pendiente
         const pendingCode = this.authService.getPendingInviteCode();
         if (pendingCode) {
-          // Navegar a la página de unirse con el código
           this.router.navigate(['/join-league', pendingCode]);
         } else {
-          // Navegar a la página de inicio normal
           this.router.navigate(['/layouts/home']);
         }
       },

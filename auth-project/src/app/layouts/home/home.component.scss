@@ -1,7 +1,6 @@
-// Variables de colores
 $background-color: #1a1a1a;
 $container-bg: #222222;
-$accent-color: #ff3a3a; // Color rojo de "FANTASY"
+$accent-color: #ff3a3a;
 $text-color: #ffffff;
 $text-secondary: #aaaaaa;
 $border-color: #444444;
@@ -9,7 +8,6 @@ $sidebar-bg: #222222;
 $sidebar-active: #333333;
 $card-bg: #333333;
 
-// Estilos generales
 .home-container {
   background-color: $background-color;
   color: $text-color;
@@ -17,7 +15,6 @@ $card-bg: #333333;
   font-family: Arial, sans-serif;
 }
 
-// Header
 .main-header {
   display: flex;
   justify-content: space-between;
@@ -72,12 +69,10 @@ $card-bg: #333333;
 }
 
 
-// Contenido principal
 .main-content {
   display: flex;
 }
 
-// Sidebar
 .sidebar {
   width: 250px;
   background-color: $sidebar-bg;
@@ -108,7 +103,6 @@ $card-bg: #333333;
   }
 }
 
-// Contenido central
 .content {
   flex: 1;
   padding: 20px;
@@ -142,7 +136,6 @@ $card-bg: #333333;
   color: $text-color;
 }
 
-// Tarjeta de partido
 .match-card {
   background-color: $card-bg;
   border-radius: 5px;
@@ -213,7 +206,7 @@ $card-bg: #333333;
 }
 
 .create-league-btn {
-  background-color: #ff4d4d; /* Rojo similar al de "Fantasy" en tu logo */
+  background-color: #ff4d4d;
   color: white;
   border: none;
   border-radius: 4px;
@@ -265,9 +258,9 @@ $card-bg: #333333;
 .mini-cara {
   width: 50px;
   height: 50px;
-  object-fit: contain; /* Mantiene la proporción de la imagen */
+  object-fit: contain;
   display: block;
-  margin: 0 auto;       /* Centra la imagen si lo necesitas */
+  margin: 0 auto;
 }
 
 .primary-btn {
@@ -293,8 +286,8 @@ $card-bg: #333333;
 }
 
 .league-card {
-  width: 100%; /* Ancho completo para ocupar todo el contenedor */
-  max-width: none; /* Eliminar cualquier restricción de ancho máximo */
+  width: 100%;
+  max-width: none;
 }
 
 .league-card:hover {

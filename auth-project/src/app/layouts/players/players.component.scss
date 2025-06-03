@@ -1,7 +1,6 @@
-// Variables de colores (mismas que en home.component.scss)
 $background-color: #1a1a1a;
 $container-bg: #222222;
-$accent-color: #ff3a3a; // Color rojo de "FANTASY"
+$accent-color: #ff3a3a;
 $text-color: #ffffff;
 $text-secondary: #aaaaaa;
 $border-color: #444444;
@@ -9,7 +8,6 @@ $sidebar-bg: #222222;
 $sidebar-active: #333333;
 $card-bg: #333333;
 
-// Estilos generales
 .players-container {
   background-color: $background-color;
   color: $text-color;
@@ -17,12 +15,10 @@ $card-bg: #333333;
   font-family: Arial, sans-serif;
 }
 
-// Contenido principal
 .main-content {
   display: flex;
 }
 
-// Sidebar (reutilizado del home)
 .sidebar {
   width: 250px;
   background-color: $sidebar-bg;
@@ -51,13 +47,11 @@ $card-bg: #333333;
   }
 }
 
-// Contenido del mercado
 .players-content {
   flex: 1;
   padding: 20px;
 }
 
-// Barra de búsqueda
 .search-bar {
   margin-bottom: 20px;
 

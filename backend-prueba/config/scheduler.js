@@ -16,10 +16,8 @@ cron.schedule('0 0 * * *', async () => {
 cron.schedule('0 3 * * 1', async () => {
   console.log('Sincronizando puntos de la jornada...');
   try {
-    // Determinar la jornada actual (implementar lógica según tu sistema)
     const currentMatchday = getCurrentMatchday();
     
-    // Crear objetos req y res simulados para llamar al controlador
     const req = { params: { matchday: currentMatchday } };
     const res = {
       status: (code) => ({
@@ -34,11 +32,3 @@ cron.schedule('0 3 * * 1', async () => {
     console.error('Error al sincronizar puntos:', error);
   }
 });
-
-// Función para determinar la jornada actual
-function getCurrentMatchday() {
-  // Implementa tu lógica para determinar la jornada actual
-  // Podrías basarte en la fecha actual y un calendario predefinido
-  // Por ahora, devolvemos un valor fijo para pruebas
-  return 1;
-}

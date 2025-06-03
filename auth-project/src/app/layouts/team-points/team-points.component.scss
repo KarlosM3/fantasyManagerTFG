@@ -1,10 +1,9 @@
-// Variables - Actualizado para coincidir con el tema de Domonios Fantasy
-$team-primary-color: #ff3e3e; // Rojo para Fantasy
-$team-secondary-color: #1e88e5; // Azul para botones
-$team-accent-color: #10b981; // Verde para badges disponible
-$team-background: #121212; // Fondo negro
-$card-background: #ffffff; // Tarjetas blancas
-$pitch-bg-color: #2e7d32; // Campo verde
+$team-primary-color: #ff3e3e;
+$team-secondary-color: #1e88e5;
+$team-accent-color: #10b981;
+$team-background: #121212;
+$card-background: #ffffff;
+$pitch-bg-color: #2e7d32;
 $pitch-lines-color: rgba(255, 255, 255, 0.7);
 $text-light: #ffffff;
 $text-dark: #333333;
@@ -17,10 +16,10 @@ $accent-color: #ff3a3a;
 // Layout con menú lateral
 .page-container {
   display: flex;
-  min-height: calc(100vh - 60px); // Ajusta según la altura de tu header
+  min-height: calc(100vh - 60px);
 }
 
-// Sidebar
+
 .sidebar {
   width: 250px;
   background-color: $sidebar-bg;
@@ -63,7 +62,7 @@ $accent-color: #ff3a3a;
 // Main container - Ajusta este estilo existente
 .team-container {
   padding: 20px;
-  background-color: transparent; // Cambiado de $team-background a transparent
+  background-color: transparent;
   max-width: 1200px;
   margin: 0 auto;
   color: $text-light;
@@ -359,19 +358,19 @@ $accent-color: #ff3a3a;
 
       // Colores diferentes por posición
       .goalkeepers & {
-        background-color: #ffcc00; // Amarillo para porteros
+        background-color: #ffcc00;
       }
 
       .defenders & {
-        background-color: #ff3e3e; // Rojo para defensas
+        background-color: #ff3e3e;
       }
 
       .midfielders & {
-        background-color: #1e88e5; // Azul para centrocampistas
+        background-color: #1e88e5;
       }
 
       .forwards & {
-        background-color: #10b981; // Verde para delanteros
+        background-color: #10b981;
       }
     }
   }
@@ -430,9 +429,9 @@ $accent-color: #ff3a3a;
 }
 
 .duda i {
-  color: #f28543; /* Color más oscuro para el icono */
-  font-size: 23px; /* Tamaño ligeramente mayor */
-  font-weight: bold; /* Hacer el icono más grueso */
+  color: #f28543;
+  font-size: 23px;
+  font-weight: bold;
 }
 
 .lesionado {

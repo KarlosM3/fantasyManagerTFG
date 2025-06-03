@@ -14,7 +14,7 @@ import { RegisterComponent } from './register/register.component';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    AuthRoutingModule // Usa el módulo de rutas de autenticación
+    AuthRoutingModule
   ]
 })
 export class AuthModule { }

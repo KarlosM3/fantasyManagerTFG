@@ -1,6 +1,5 @@
 <div class="page-container">
 
-  <!-- Menú lateral izquierdo -->
     <div class="sidebar">
       <div class="menu-item active" routerLink="/layouts/home" routerLinkActive="active">Mis Ligas</div>
       <div class="menu-item" routerLink="/layouts/players" routerLinkActive="active">Jugadores</div>
@@ -48,7 +47,6 @@
           <span>{{ matchdayStatusMessage }}</span>
         </div>
 
-        <!-- Botones a la derecha -->
         <div class="team-actions">
           <button class="action-btn formation-btn" (click)="openFormationModal()">
             <i class="fas fa-tactics"></i>
@@ -68,7 +66,6 @@
       </div>
     </div>
 
-    <!-- Añadir el indicador de estado -->
       <app-team-data-status componentType="my-team"></app-team-data-status>
 
     <!-- Mensaje de modo venta -->
@@ -360,16 +357,6 @@
           <button class="primary-btn" (click)="closeFormationModal()">Cerrar</button>
         </div>
       </div>
-
-      <!-- Mensaje de error/advertencia
-      <div *ngIf="showFormationErrorMessage" class="formation-error">
-        <p>{{ formationErrorMessage }}</p>
-        <button *ngIf="formationErrorMessage.includes('Faltan')"
-                class="quick-transfer-btn"
-                (click)="openTransfersModal(); closeFormationModal()">
-          Buscar jugadores
-        </button>
-      </div>-->
     </div>
 
     <!-- Modal de Venta -->

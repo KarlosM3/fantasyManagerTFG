@@ -1,4 +1,3 @@
-// league-guard.service.ts
 import { Injectable } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
 import { LeagueService } from '../../modals/create-league-modal/services/create-league.service';
@@ -18,9 +17,8 @@ export class LeagueGuard implements CanActivate {
     return this.leagueService.getUserLeagues().pipe(
       map(leagues => {
         if (leagues.length > 0) {
-          return true; // Usuario tiene ligas, permitir acceso
+          return true;
         } else {
-          // Usuario no tiene ligas, redirigir a home
           this.router.navigate(['/layouts/home']);
           return false;
         }

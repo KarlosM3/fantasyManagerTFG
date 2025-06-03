@@ -5,7 +5,7 @@ export interface PlayerPoints {
       '256x256': string;
     };
   };
-  positionId: number; // Cambiado a number en lugar de string
+  positionId: number;
   position: string;
   nickname: string;
   lastSeasonPoints: number | null;
@@ -15,7 +15,7 @@ export interface PlayerPoints {
     name: string;
     slug: string;
     badgeColor: string;
-    badge?: string; // Añadido para compatibilidad con la visualización
+    badge?: string;
   };
   points: number;
   averagePoints: number;
@@ -23,7 +23,7 @@ export interface PlayerPoints {
     weekNumber: number;
     points: number;
   }[];
-  matchdayPoints?: number; // Añadido con ? para indicar que es opcional
+  matchdayPoints?: number;
 }
 
 export interface MatchdayPoints {

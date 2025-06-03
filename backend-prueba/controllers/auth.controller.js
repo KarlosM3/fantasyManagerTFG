@@ -22,7 +22,6 @@ exports.register = async (req, res) => {
     // Guardar usuario (la contraseña se encripta en el middleware pre-save)
     await user.save();
     
-    // Responder
     res.status(201).json({ message: 'Usuario registrado correctamente' });
   } catch (error) {
     console.error(error.message);
@@ -74,7 +73,6 @@ exports.login = async (req, res) => {
 // Obtener información del usuario autenticado
 exports.getUser = async (req, res) => {
   try {
-    // req.user.id viene del middleware de autenticación
     const user = await User.findById(req.user.id).select('-password');
     res.json(user);
   } catch (error) {

@@ -22,7 +22,6 @@ export class ClassificationComponent implements OnInit {
   ligaActivaId: string | null = null;
   loading: boolean = false;
   error: string = '';
-  // Añadir propiedad para almacenar la jornada de creación
   creationMatchday: number = 1;
 
   constructor(
@@ -71,7 +70,6 @@ export class ClassificationComponent implements OnInit {
       this.ligaActivaId = this.activeLeagueService.getActiveLeague();
     });
   }
-
 
   // Método para cargar todos los datos de clasificación
   loadClassificationData(): void {

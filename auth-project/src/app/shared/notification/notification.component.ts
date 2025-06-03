@@ -1,11 +1,10 @@
-// shared/notification/notification.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NotificationService } from '../../services/notification.service';
 
 interface Notification {
   show: boolean;
   message: string;
-  type: 'success' | 'error' | 'warning' | 'info'; // Añadir 'info'
+  type: 'success' | 'error' | 'warning' | 'info';
   timeout?: any;
 }
 

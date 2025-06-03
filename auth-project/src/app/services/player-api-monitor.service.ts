@@ -31,7 +31,6 @@ export class PlayerApiMonitorService {
   }
 
   private startMonitoring() {
-    // Verificar cada 3 minutos
     interval(180000)
       .pipe(
         switchMap(() => this.checkPlayerApiStatus())
@@ -40,7 +39,6 @@ export class PlayerApiMonitorService {
         const previousStatus = this.apiStatusSubject.value;
 
         if (previousStatus && status) {
-          // Detectar nueva jornada
           if (status.currentMatchday > previousStatus.currentMatchday) {
             this.showNotification(
               `Nueva jornada disponible: Jornada ${status.currentMatchday}`,
@@ -48,7 +46,6 @@ export class PlayerApiMonitorService {
             );
           }
 
-          // Detectar mejoras en la frescura de datos
           if (status.dataFreshness !== previousStatus.dataFreshness) {
             this.showDataFreshnessNotification(status.dataFreshness);
           }
@@ -66,7 +63,6 @@ export class PlayerApiMonitorService {
   private checkPlayerApiStatus(): Observable<PlayerApiStatus> {
     const startTime = Date.now();
 
-    // CAMBIO IMPORTANTE: Usar tu backend como proxy
     return this.http.get<any[]>('http://localhost:3000/api/external/players')
       .pipe(
         map(players => {
@@ -151,14 +147,12 @@ export class PlayerApiMonitorService {
     console.log(`- Jugadores con actividad reciente: ${playersWithRecentActivity}`);
     console.log(`- Total jugadores activos temporada: ${totalActivePlayersInSeason}`);
 
-    // LÓGICA INTELIGENTE PARA TODOS LOS ESTADOS
     let dataFreshness: 'fresh' | 'stale' | 'outdated';
     let referenceTotal = 0;
     let completionPercentage = 0;
 
     // Determinar el total de referencia según el número de jugadores con datos
     if (playersWithCurrentMatchday >= 400) {
-      // Jornada completamente finalizada (muchos jugadores con datos)
       referenceTotal = playersWithRecentActivity;
       completionPercentage = playersWithCurrentMatchday / referenceTotal;
 
@@ -185,7 +179,7 @@ export class PlayerApiMonitorService {
 
     } else if (playersWithCurrentMatchday >= 50) {
       // Jornada en sus primeras fases
-      referenceTotal = Math.min(playersWithRecentActivity, 500); // Limitar expectativas
+      referenceTotal = Math.min(playersWithRecentActivity, 500);
       completionPercentage = playersWithCurrentMatchday / referenceTotal;
 
       if (completionPercentage >= 0.8) {
@@ -203,11 +197,9 @@ export class PlayerApiMonitorService {
       dataFreshness = 'outdated';
     }
 
-    // Ajuste especial: Si la jornada detectada es menor que 38 pero esperamos 38
-    const expectedMatchday = 38; // Puedes hacer esto dinámico
+    const expectedMatchday = 38;
     if (currentMatchday < expectedMatchday) {
       console.log(`Jornada detectada (${currentMatchday}) menor que esperada (${expectedMatchday})`);
-      // La jornada 38 aún no tiene datos suficientes, usar jornada actual como referencia
       dataFreshness = playersWithCurrentMatchday >= 300 ? 'fresh' : 'stale';
     }
 

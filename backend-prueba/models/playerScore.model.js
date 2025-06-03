@@ -1,4 +1,3 @@
-// playerScore.model.js
 const mongoose = require('mongoose');
 
 const playerScoreSchema = new mongoose.Schema({

@@ -64,7 +64,7 @@ export class LeagueService {
     return this.http.post(`${this.apiUrl}/${leagueId}/my-team/lineup`, { players });
   }
 
-  // Nuevo método para guardar todos los cambios del equipo
+  // Método para guardar todos los cambios del equipo
   saveTeamChanges(leagueId: string, teamChanges: {
     formation: string;
     players: Player[];

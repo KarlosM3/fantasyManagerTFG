@@ -1,4 +1,3 @@
-// src/app/shared/team-data-status/team-data-status.component.ts
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { PlayerApiMonitorService, PlayerApiStatus } from '../../services/player-api-monitor.service';

@@ -576,7 +576,7 @@ exports.listPlayerForSale = async (req, res) => {
     
     // Crear listado de venta
     const expiryDate = new Date();
-    expiryDate.setDate(expiryDate.getDate() + 3); // 3 días de duración
+    expiryDate.setDate(expiryDate.getDate() + 3); 
     
     const listing = await MarketListening.create({
       league: leagueId,
@@ -587,7 +587,6 @@ exports.listPlayerForSale = async (req, res) => {
       status: 'active'
     });
     
-    // Generar una oferta automática (entre 80% y 95% del precio pedido)
     const minPercentage = 0.80;
     const maxPercentage = 0.95;
     const randomPercentage = minPercentage + Math.random() * (maxPercentage - minPercentage);
@@ -752,7 +751,6 @@ exports.makeOffer = async (req, res) => {
 
 
 // Aceptar una oferta
-// En market.controller.js, método acceptOffer
 exports.acceptOffer = async (req, res) => {
   try {
     const { offerId } = req.body;
@@ -850,7 +848,7 @@ exports.acceptOffer = async (req, res) => {
         newBudget: sellerTeam.budget
       });
     } else {
-      // Procesar oferta de usuario real (código existente)
+      // Procesar oferta de usuario real
       const buyerTeam = await Team.findOne({ 
         user: offer.buyer, 
         league: offer.listing.league 
@@ -880,8 +878,7 @@ exports.acceptOffer = async (req, res) => {
 
       const playerToTransfer = sellerTeam.playersData[playerIndex];
 
-      // Verificar límites del equipo comprador
-      // 1. Límites por posición
+      // Límites del equipo comprador
       const positionCounts = {
         1: 0, // Porteros
         2: 0, // Defensas
@@ -1043,7 +1040,6 @@ exports.getReceivedOffers = async (req, res) => {
       offersByListing[listingId].offers.push(offer);
     }
     
-    // Convertir a array
     const result = Object.values(offersByListing);
     
     res.status(200).json(result);

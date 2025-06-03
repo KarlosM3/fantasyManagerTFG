@@ -2,7 +2,7 @@ export interface Player {
   id: string;
   nickname?: string;
   positionId: string;
-  position?: string; // Derivado de positionId
+  position?: string;
   marketValue?: number;
   team?: {
     name: string;

@@ -50,13 +50,11 @@ export class NotificationService {
     this.showNotification(message, 'warning');
   }
 
-  // AÑADIR este método
   showInfo(message: string): void {
     this.showNotification(message, 'info');
   }
 
   showNotification(message: string, type: 'success' | 'error' | 'warning' | 'info'): void { // Añadir 'info'
-    // Limpiar timeout anterior si existe
     if (this.notification.timeout) {
       clearTimeout(this.notification.timeout);
     }
@@ -68,7 +66,7 @@ export class NotificationService {
       type,
       timeout: setTimeout(() => {
         this.hideNotification();
-      }, 3000) // Desaparece después de 3 segundos
+      }, 3000)
     };
 
     this.notifySubscribers();

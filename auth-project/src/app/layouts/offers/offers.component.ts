@@ -52,7 +52,7 @@ export class OffersComponent implements OnInit {
       .subscribe({
         next: (response) => {
           this.showNotification('Oferta aceptada con éxito', 'success');
-          this.loadOffers(); // Recargar ofertas
+          this.loadOffers();
         },
         error: (error) => {
           console.error('Error al aceptar oferta:', error);
@@ -66,7 +66,7 @@ export class OffersComponent implements OnInit {
       .subscribe({
         next: (response) => {
           this.showNotification('Oferta rechazada', 'success');
-          this.loadOffers(); // Recargar ofertas
+          this.loadOffers();
         },
         error: (error) => {
           console.error('Error al rechazar oferta:', error);

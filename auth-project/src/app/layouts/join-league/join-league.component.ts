@@ -16,8 +16,8 @@ export class JoinLeagueComponent implements OnInit {
   errorMessage: string | null = null;
   randomTeam: any[] = [];
   isTeamModalOpen = false;
-  leagueId: string = ''; // Añade esta propiedad
-  isAuthenticated = false; // Propiedad para verificar si el usuario está autenticado
+  leagueId: string = '';
+  isAuthenticated = false;
 
   constructor(
     private route: ActivatedRoute,

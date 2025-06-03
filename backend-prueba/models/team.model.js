@@ -1,4 +1,3 @@
-// team.model.js - Añadir el campo joinedMatchday
 const mongoose = require('mongoose');
 
 const teamSchema = new mongoose.Schema({

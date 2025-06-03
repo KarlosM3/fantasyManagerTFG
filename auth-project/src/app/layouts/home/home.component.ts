@@ -96,10 +96,8 @@ export class HomeComponent implements OnInit {
         this.closeCreateLeagueModal();
         this.selectedLeagueId = res.leagueId;
 
-        // RECARGAR LIGAS INMEDIATAMENTE después de crear la liga
         this.loadUserLeagues();
 
-        // Notificación de éxito al crear liga
         this.notificationService.showSuccess('Liga creada correctamente');
 
         if (this.selectedLeagueId) {
@@ -124,9 +122,6 @@ export class HomeComponent implements OnInit {
   }
 
 
-
-
-  // Nuevo método para cerrar el modal y navegar a clasificación
   closeTeamModalAndGoToClassification() {
     this.isTeamModalOpen = false;
     if (this.selectedLeagueId) {
@@ -135,7 +130,6 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  // Si tienes esta función para abrir equipo aleatorio de una liga existente
   onSelectLeague(liga: any) {
     this.leagueService.assignRandomTeam(liga._id).subscribe({
       next: (team) => {
@@ -196,7 +190,6 @@ export class HomeComponent implements OnInit {
 
     this.leagueService.deleteLeague(this.leagueToDelete._id).subscribe({
       next: (response) => {
-        // REEMPLAZAR alert() por notificación
         this.notificationService.showSuccess('Liga eliminada correctamente');
 
         this.loadUserLeagues();
@@ -205,7 +198,6 @@ export class HomeComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error al eliminar la liga:', error);
-        // REEMPLAZAR alert() por notificación de error
         this.notificationService.showError(
           error.error?.message || 'Error al eliminar la liga. Inténtalo de nuevo más tarde'
         );
@@ -238,12 +230,10 @@ export class HomeComponent implements OnInit {
 
   async copyInviteLink(inputElement: HTMLInputElement): Promise<void> {
     try {
-      // Método moderno para copiar
       if (navigator.clipboard) {
         await navigator.clipboard.writeText(this.inviteLink);
         this.notificationService.showSuccess('Enlace copiado al portapapeles');
       } else {
-        // Fallback para navegadores antiguos
         inputElement.select();
         document.execCommand('copy');
         this.notificationService.showSuccess('Enlace copiado al portapapeles');

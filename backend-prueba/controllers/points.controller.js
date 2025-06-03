@@ -1,8 +1,5 @@
-// points.controller.js
 const axios = require('axios');
 const Team = require('../models/team.model');
-
-// Obtener puntos de todos los jugadores de un equipo para una jornada
 
 // Definir la función auxiliar para obtener la jornada actual
 function getCurrentMatchday(players) {
@@ -19,7 +16,7 @@ function getCurrentMatchday(players) {
   });
   
   // Los datos van hasta jornada 36, pero según el calendario oficial estamos en jornada 38
-  return Math.max(maxMatchday, 38); // Usar 36 como jornada actual basada en los datos reales
+  return Math.max(maxMatchday, 38); 
 }
 
 // Luego exporta el controlador que usa esa función
@@ -102,7 +99,7 @@ exports.getTeamPointsForMatchday = async (req, res) => {
       
       // Marcar si es capitán y calcular puntos con bonificación
       const isCaptain = captainId === player.id;
-      const effectivePoints = isCaptain ? points * 2 : points; // Puntos efectivos para el cálculo total
+      const effectivePoints = isCaptain ? points * 2 : points;
       
       return {
         ...player,
@@ -121,7 +118,7 @@ exports.getTeamPointsForMatchday = async (req, res) => {
     // Aplicar penalización por posiciones vacías
     let penaltyPoints = 0;
     if (emptyPositions > 0 && emptyPositions < 11) {
-      penaltyPoints = emptyPositions * -4; // -4 puntos por cada posición vacía
+      penaltyPoints = emptyPositions * -4; 
       console.log(`Penalización de ${penaltyPoints} puntos por ${emptyPositions} posiciones vacías`);
     }
     
@@ -205,7 +202,7 @@ exports.getLeagueStandingsByPoints = async (req, res) => {
         total_points: totalPoints,
         matchdays_played: matchdaysPlayed,
         avg_points: matchdaysPlayed > 0 ? (totalPoints / matchdaysPlayed).toFixed(1) : '0',
-        starting_matchday: teamStartingMatchday // Para debugging
+        starting_matchday: teamStartingMatchday
       };
     });
 
@@ -260,7 +257,6 @@ function calculateTeamPointsForMatchday(team, playerIds, allPlayers, matchday, c
   const emptyPositions = placeholders.length;
   
   // Aplicar penalización por posiciones vacías
-  // Si todas las posiciones están vacías, no se aplica penalización
   if (emptyPositions > 0 && emptyPositions < 11) {
     totalPoints -= emptyPositions * 4; // -4 puntos por cada posición vacía
     console.log(`Equipo ${team.user.username || 'desconocido'}: Penalización de ${emptyPositions * 4} puntos por ${emptyPositions} posiciones vacías`);
@@ -350,9 +346,8 @@ exports.hasMatchdayEnded = async (req, res) => {
       player.weekPoints && player.weekPoints.some(wp => wp.weekNumber === matchday)
     ).length;
     
-    // Si un alto porcentaje de jugadores activos ya tiene puntos para esta jornada,
     // podemos asumir que la jornada ha terminado
-    const completionThreshold = 0.71; // 73% de jugadores con puntos
+    const completionThreshold = 0.71; // 71% de jugadores con puntos
     const hasEnded = playersWithPointsInCurrentMatchday / activePlayers.length > completionThreshold;
     
     res.status(200).json({

@@ -20,7 +20,6 @@
         </button>
       </div>
 
-      <!-- Mensaje de error con diferentes opciones según el tipo de error -->
       <div *ngIf="errorMessage" class="error-message"
            [class.league-full-error]="errorMessage.includes('liga ya está llena')">
         <p>{{ errorMessage }}</p>

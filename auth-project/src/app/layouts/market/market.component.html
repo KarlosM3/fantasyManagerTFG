@@ -1,6 +1,5 @@
 <div class="page-container">
 
-  <!-- Menú lateral izquierdo -->
     <div class="sidebar">
       <div class="menu-item active" routerLink="/layouts/home" routerLinkActive="active">Mis Ligas</div>
       <div class="menu-item" routerLink="/layouts/players" routerLinkActive="active">Jugadores</div>
@@ -156,7 +155,6 @@
               </div>
 
               <div class="player-info">
-                <!-- Nombre del jugador con escudo del equipo -->
                 <div class="player-name-section">
                   <img [src]="listing.player.team?.badgeColor || 'assets/images/no-team.png'"
                       [alt]="listing.player.team?.name"

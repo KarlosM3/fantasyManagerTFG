@@ -78,7 +78,7 @@ export class PlayerBadgeService {
         return "fas fa-question-circle";
       case "lesionado":
       case "injured":
-        return "fas fa-notes-medical"; // Esta clase está correcta
+        return "fas fa-notes-medical";
       case "sancionado":
       case "suspended":
         return "fas fa-ban";
