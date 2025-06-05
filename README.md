@@ -1,24 +1,48 @@
-# Fantasy Manager
+# Fantasy Manager ⚽
 
-Una aplicación web de fantasy football que permite a los usuarios crear ligas, gestionar equipos y competir con amigos.
+Una aplicación web de fantasy football que permite a los usuarios crear ligas, gestionar equipos, fichar jugadores y competir con amigos en timepo real.
 
-## Características principales
+## 🚀 Características principales
 
-* Autenticación segura: Registro e inicio de sesión de usuarios
+* Autenticación segura: Registro e inicio de sesión de usuarios con JWT.
 
-* Creación de ligas: Crea tus propias ligas personalizadas
+* Creación y gestión de ligas: Crea ligas privadas, invita a amigos y compite.
 
-* Equipos aleatorios: Sistema de asignación automática de equipos
+* Asignación automática de equipos: Recibe un equipo aleatorio equilibrado al unirte a una liga.
 
-* Buscar jugadores: Visualiza todos los jugadores actuales de la liga
+* Mercado de fichajes: Compra y vende jugadores, visualiza su estado y sus puntos antes de comprar
 
-* Clasificación en tiempo real: Visualiza el ranking de todos los participantes
+* Visualización de jugadores: Busca y filtra jugadores por posición y puntos.
 
-* Sistema de invitaciones: Comparte enlaces para que tus amigos se unan a tus ligas
+* Clasificación en tiempo real: Consulta el ranking actualizado de todos los managers de la liga.
 
-* Mercado de fichajes: (En desarrollo)
+* Sistema de invitaciones: Comparte enlaces únicos para que tus amigos se unan fácilmente.
 
-## Tecnologías utilizadas
+* Gestión avanzada de equipo: Cambia formación, nombra capitán y vicecapitán, realiza cambios en el once titular y guarda los cambios para poder puntuar en la jornada.
+
+* Panel de puntos y jornadas: Consulta los puntos de tu equipo y de cualquier usuario por jornada.
+
+## 📺 Vídeo del proyecto
+
+https://youtu.be/bB5OY3XAzK4
+
+## 🖼️ Capturas de pantalla
+
+### Pantalla principal sin ligas y con ligas (Home)
+
+![Image](https://github.com/user-attachments/assets/8fd95bef-0bcb-4b77-9c3c-1d59610abba7)
+
+![Image](https://github.com/user-attachments/assets/01751da5-5d5f-4f16-bb18-dc223ccf60ae)
+
+### Pantalla gestion del equipo (Mi equipo)
+
+![Image](https://github.com/user-attachments/assets/2f113228-179a-42c7-8a71-dd290a9d19d5)
+
+### Pantalla mercado de fichajes
+
+![Image](https://github.com/user-attachments/assets/8e7ff3cb-5bf8-4f9a-a4ff-6684c87ab19e)
+
+## 🛠 Tecnologías utilizadas
 
 Frontend
 
@@ -26,7 +50,7 @@ Frontend
 
     TypeScript
 
-    SCSS y HTML para estilos
+    SCSS y HTML
 
 Backend
 
@@ -39,40 +63,52 @@ Backend
     JWT para autenticación
 
 
-## Pasos para instalar
+## ⚡ Instalación rápida
 
-
-### Clonar el repositorio
+### Clona el repositorio
     git clone https://github.com/tu-usuario/fantasy-manager.git
 
-### Instalar dependencias del backend
-    cd ../backend-prueba
+### Instala dependencias del backend
+    cd backend-prueba
     npm install
 
-### Instalar dependencias del frontend
+### Instala dependencias del frontend
     cd ../auth-project
     npm install
 
-### Iniciar el servidor de desarrollo
-    npm start
+### Crea el archivo .env
+    Necesitarás que te proporcione la conexión a la base de datos y demas claves.
 
-## Una vez instalado
+## Inicia el proyecto
 
-### Iniciar backend
+### Inicia backend
     cd ../backend-prueba
     npm run dev
 
-### Iniciar frontend
+### Inicia frontend
     cd .../auth-project
     ng serve
 
-## Uso
+Abre la app en tu navegador en http://localhost:4200
 
-  * Regístrate o inicia sesión
+## 📝 Uso
 
-  * Crea una nueva liga o únete a una existente mediante un enlace de invitación
+  * Regístrate o inicia sesión.
 
-  * Buscar jugadores en el mercado
+  * Crea una nueva liga o únete a una existente mediante un enlace de invitación.
 
-Abre tu navegador en http://localhost:4200
+  * Gestiona tu equipo: cambia formación, vende y compra jugadores, selecciona capitán.
+
+  * Consulta la clasificación y los puntos de cada jornada.
+  
+  * Accede al mercado para fichar jugadores, viendo su estado y escudo.
+
+## Contribuye
+
+¿Te gustaría mejorar Fantasy Manager?
+¡Las contribuciones son bienvenidas! Haz un fork, crea tu rama (git checkout -b feature/nueva-funcionalidad), haz tus cambios y envía un pull request.
+
+## Licencia
+
+MIT
 
