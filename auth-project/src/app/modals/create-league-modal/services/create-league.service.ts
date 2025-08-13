@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Player } from '../../../player.interface';
+import { environment } from '../../../../environment/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LeagueService {
-  private apiUrl = 'http://localhost:3000/api/leagues';
+  private apiUrl = `${environment.apiUrl}/leagues`;
 
   constructor(private http: HttpClient) {}
 

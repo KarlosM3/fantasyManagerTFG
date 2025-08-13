@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, interval, Observable, of } from 'rxjs';
 import { switchMap, catchError, map } from 'rxjs/operators';
+import { environment } from '../../environment/environment';
 
 export interface PlayerApiStatus {
   lastDataUpdate: Date;
@@ -63,7 +64,7 @@ export class PlayerApiMonitorService {
   private checkPlayerApiStatus(): Observable<PlayerApiStatus> {
     const startTime = Date.now();
 
-    return this.http.get<any[]>('http://localhost:3000/api/external/players')
+    return this.http.get<any[]>(`${environment.apiUrl}/external/players`)
       .pipe(
         map(players => {
           const responseTime = Date.now() - startTime;
