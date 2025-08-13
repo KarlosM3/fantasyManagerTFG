@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
+require('dotenv').config({ path: '/etc/secrets/.env' });
 const connectDB = require('./config/db');
 
 // Inicializar app
