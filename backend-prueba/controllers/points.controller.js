@@ -15,8 +15,7 @@ function getCurrentMatchday(players) {
     }
   });
   
-  // Los datos van hasta jornada 36, pero según el calendario oficial estamos en jornada 38
-  return Math.max(maxMatchday, 38); 
+  return maxMatchday;
 }
 
 // Luego exporta el controlador que usa esa función
