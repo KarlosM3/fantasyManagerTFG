@@ -7,7 +7,7 @@ const axios = require('axios');
 function getJornadaForDate(date = new Date()) {
   const LALIGA_CALENDAR = [
     { jornada: 1, inicio: new Date('2025-08-15') },
-    { jornada: 2, inicio: new Date('2025-08-24') },
+    { jornada: 2, inicio: new Date('2025-08-22') },
     { jornada: 3, inicio: new Date('2025-08-31') },
     { jornada: 4, inicio: new Date('2025-09-14') },
     { jornada: 5, inicio: new Date('2025-09-21') },
@@ -48,7 +48,7 @@ function getJornadaForDate(date = new Date()) {
 
   for (let i = LALIGA_CALENDAR.length - 1; i >= 0; i--) {
     if (date >= LALIGA_CALENDAR[i].inicio) {
-      return LALIGA_CALENDAR[i].jornada; 
+      return LALIGA_CALENDAR[i].jornada + 1; 
     }
   }
   return 1;
